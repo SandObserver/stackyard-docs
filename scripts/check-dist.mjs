@@ -97,6 +97,21 @@ report('secrets', secretHits);
 /* House style. */
 report('style', files.filter((f) => f.startsWith('src') && read(f).includes('—')));
 
+/* The development and changelog pages are generated from the application
+   repository. When that checkout is absent they render a link instead, which
+   is a valid page and would otherwise pass every check above. */
+const generated = [
+  ['dist/docs/development/index.html', 'CONTRIBUTING.md'],
+  ['dist/docs/changelog/index.html', 'CHANGELOG.md'],
+];
+report(
+  'genpage',
+  generated
+    .filter(([f]) => existsSync(f))
+    .filter(([f]) => read(f).includes('was not available for this build'))
+    .map(([f, src]) => `${f} fell back: ${src} was not read. Set STACKYARD_REPO.`),
+);
+
 /* The placeholder domain must never ship. */
 report('domain', html.filter((f) => read(f).includes('stackyard.example')).map((f) => relative(DIST, f)));
 

@@ -32,10 +32,18 @@ jobs:
       - name: Install
         run: npm ci
 
-      # sync-widgets.mjs is deliberately not run here. It reads ../stackyard,
-      # which is not present on a runner. The copies under public/ are committed.
+      # The development and changelog pages are generated from the application
+      # repository at build time. Without it they fall back to a link, and the
+      # checks below would pass against a site two pages short of the real one.
+      - name: Fetch the application repository
+        run: git clone --depth 1 https://github.com/SandObserver/stackyard.git "$RUNNER_TEMP/stackyard"
+
+      # sync-widgets.mjs is deliberately not run here. The copies under public/
+      # are committed, so the previews do not depend on this checkout.
       - name: Build
         run: npm run build
+        env:
+          STACKYARD_REPO: ${{ runner.temp }}/stackyard
 
       - name: Check build output
         run: npm run check

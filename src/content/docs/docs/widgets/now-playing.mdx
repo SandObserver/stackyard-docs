@@ -1,0 +1,41 @@
+---
+title: Now Playing
+description: What is playing right now on Plex, Jellyfin, Emby, or Navidrome.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Shows the current session on a media server, with progress.
+
+Sizes: Small.
+
+<WidgetGroup caption="The reel takes the colour of the service it is reading from."
+  items={[
+    { type: 'nowplaying', file: 'index.html', id: 'np-plex',     title: 'Now Playing, Plex',     label: 'Plex' },
+    { type: 'nowplaying', file: 'index.html', id: 'np-jellyfin', title: 'Now Playing, Jellyfin', label: 'Jellyfin' },
+    { type: 'nowplaying', file: 'index.html', id: 'np-emby',     title: 'Now Playing, Emby',     label: 'Emby' },
+  ]} />
+
+## Media servers
+
+Pick one server per widget. Add a second widget for a second server.
+
+| Server | Credentials |
+| --- | --- |
+| Plex | Server URL and a Plex token (`X-Plex-Token`). |
+| Jellyfin | URL and an API key. |
+| Emby | URL and an API key. |
+| Navidrome | URL, username, and password. |
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Media server | Which server to read. | Yes |
+| Server URL | The server address. Plex defaults to port 32400, Jellyfin and Emby to 8096, Navidrome to 4533. | Yes |
+| Token, API key, or password | The credential for that server. Stored as a secret. | Yes |
+| Username | Navidrome only. | Navidrome |
+| Click URL | Where clicking the widget opens. | No |
+
+When nothing is playing the widget says so rather than going blank. If several sessions are active, arrows step between them.
+

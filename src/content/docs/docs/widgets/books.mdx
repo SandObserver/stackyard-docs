@@ -1,0 +1,36 @@
+---
+title: Books
+description: Reading progress from Audiobookshelf, Komga, or Kavita.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Shows what you are reading and how far through you are.
+
+Sizes: Small.
+
+<WidgetGroup caption="Two libraries. Small reads an Audiobookshelf list, medium a Komga library."
+  items={[
+    { type: 'books', file: 'index.html', id: 'w-books',    card: 'dark', title: 'Books widget, small',  label: 'Small' },
+    { type: 'books', file: 'index.html', id: 'w-books-md', size: 'medium', card: 'dark', title: 'Books widget, medium', label: 'Medium' },
+  ]} />
+
+## Services
+
+| Service | Where the API key comes from |
+| --- | --- |
+| Audiobookshelf | Settings, API Keys (v2.26 and later), or your account token. |
+| Komga | Account Settings, API Keys. |
+| Kavita | User Settings, 3rd Party Clients. |
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Service | Which library to read. | Yes |
+| URL | The service address. Audiobookshelf defaults to port 13378, Komga to 25600, Kavita to 5000. | Yes |
+| API key | The credential for that service. Stored as a secret. | Yes |
+| Show | Recently Added, Unread and On-deck, or a Custom List. | Yes |
+| List | Which collection or reading list to show. Enter the URL and key first, then Fetch to load the options. | Custom List only |
+| Click URL | Where clicking the widget opens. | No |
+

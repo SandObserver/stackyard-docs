@@ -1,0 +1,32 @@
+[
+  {
+    "id": "demo-0",
+    "name": "Photo Library",
+    "provider": "kopia",
+    "status": "healthy",
+    "lastFinished": "2026-08-22T04:30:00.000Z",
+    "nextRun": "2026-08-23T04:30:00.000Z",
+    "size": "612.9 GB",
+    "href": ""
+  },
+  {
+    "id": "demo-1",
+    "name": "Docker Volumes",
+    "provider": "kopia",
+    "status": "error",
+    "lastFinished": "2026-08-21T04:30:00.000Z",
+    "nextRun": "2026-08-23T04:30:00.000Z",
+    "size": "18.2 GB",
+    "href": ""
+  },
+  {
+    "id": "demo-2",
+    "name": "Media Archive",
+    "provider": "kopia",
+    "status": "running",
+    "lastFinished": "2026-08-21T23:00:00.000Z",
+    "nextRun": "2026-08-23T23:00:00.000Z",
+    "size": "3.41 TB",
+    "href": ""
+  }
+]

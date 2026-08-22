@@ -1,0 +1,1 @@
+{"widgetSize":"small","widgetConfig":{"slots":[{"provider":"duplicati","customName":"Nextcloud Nightly","jobId":"1","dupUrl":"https://duplicati.example.com"}]}}

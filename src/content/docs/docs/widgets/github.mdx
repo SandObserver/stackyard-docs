@@ -1,0 +1,51 @@
+---
+title: GitHub
+description: Your open pull requests, or a contribution graph.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Two views of one GitHub account. Pick which one the widget shows.
+
+Sizes: Small, Medium, Large, X-Large.
+
+<WidgetGroup caption="The two views. The pull requests shown are made up, to fill the card."
+  items={[
+    { type: 'github', file: 'contributions.html',  id: 'gh-github',        card: 'translucent', title: 'GitHub contributions', label: 'Contributions' },
+    { type: 'github', file: 'pullrequests.html',   id: 'gh-github-prs-md', card: 'translucent', size: 'medium', title: 'GitHub pull requests', label: 'Pull requests' },
+  ]} />
+
+## Views
+
+| View | What it shows |
+| --- | --- |
+| Pull Requests | Open pull requests, filtered by your relationship to them. |
+| Contributions | The contribution graph. |
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| View | Pull Requests or Contributions. | Yes |
+| GitHub Username | The account to read. | Yes |
+| Personal Access Token | A classic PAT with `repo` and `read:user` scope, or a fine-grained PAT with equivalent read access. Stored as a secret and used only by this widget. | Yes |
+| Click URL | Where clicking the widget opens. Leave blank to disable. | No |
+| Pull request filters | Which open PRs to show: Created, Assigned, Mentioned, Review requested. Multiple filters combine. Defaults to Created. | Pull Requests view |
+
+### Getting a token
+
+1. Sign in to GitHub and open [Settings, Developer settings, Personal access tokens](https://github.com/settings/tokens).
+2. Choose **Tokens (classic)**, then **Generate new token (classic)**.
+3. Name it something you will recognise later, such as `stackyard`.
+4. Set an expiry. GitHub will not show the token again after you leave the page.
+5. Tick **repo** and **read:user**.
+6. Generate it, then copy the value immediately.
+
+Paste it into the widget's **Personal Access Token** field and save.
+
+The `repo` scope is what lets the widget see pull requests in private repositories. If you only care about public ones, `public_repo` and `read:user` are enough.
+
+The Contributions view reads GitHub's GraphQL API, which classic tokens support in full. A fine-grained token works if you grant it equivalent read access.
+
+The token is stored as a secret. It is kept on the server and never sent back to the browser. If the widget shows **Bad token**, the value is wrong, expired, or missing a scope.
+

@@ -1,0 +1,43 @@
+{
+  "services": [
+    {
+      "id": "svc_demo_gluetun",
+      "type": "gluetun",
+      "name": "Gluetun",
+      "color": "#30D158",
+      "adminUrl": "http://gluetun.example.com",
+      "kind": "point",
+      "city": "Vancouver",
+      "country": "Canada",
+      "lat": 49.2827,
+      "lng": -123.1207
+    },
+    {
+      "id": "svc_demo_conduit",
+      "type": "conduit",
+      "name": "Conduit",
+      "color": "#BF5AF2",
+      "adminUrl": "http://conduit.example.com",
+      "kind": "regions",
+      "regions": {
+        "BR": 6,
+        "DE": 4,
+        "ID": 3,
+        "IN": 8,
+        "JP": 2,
+        "KE": 1,
+        "MX": 3,
+        "NG": 2,
+        "PL": 1,
+        "VN": 4,
+        "ZA": 2
+      },
+      "limit": 50,
+      "connected": 36,
+      "live": 3
+    }
+  ],
+  "meta": {
+    "showLegend": true
+  }
+}

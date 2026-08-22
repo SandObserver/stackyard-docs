@@ -1,0 +1,39 @@
+---
+title: Backup
+description: Last and next run for Duplicati or Kopia jobs.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Backup job status, one slot per job.
+
+Sizes: Small holds one slot, Medium holds three.
+
+<WidgetGroup caption="Small shows one job. Medium shows three, here with one failed and one still running."
+  items={[
+    { type: 'backup', file: 'backup.html', id: 'w-backup',    card: 'translucent', title: 'Backup widget, small',  label: 'Small' },
+    { type: 'backup', file: 'backup.html', id: 'w-backup-md', size: 'medium', card: 'translucent', title: 'Backup widget, medium', label: 'Medium' },
+  ]} />
+
+## Providers
+
+| Provider | Credentials |
+| --- | --- |
+| Duplicati | URL, and a password if the interface has one. |
+| Kopia | URL, and a username and password if the server has them. |
+
+## Slot configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Provider | Duplicati, Kopia, or None. | Yes |
+| URL | The service address. Duplicati defaults to port 8200, Kopia to 51515. | Yes |
+| Password | Stored as a secret. | No |
+| Username | Kopia only. | No |
+| Job or Source | Which job to watch. Enter the URL and credentials first, then load the list. | No |
+| Click URL | Where clicking the slot opens. | No |
+| Display Name | Overrides the name shown on the card. | No |
+| Poll Interval (sec) | How often to re-read. Duplicati only. Defaults to 60. | No |
+
+Each slot shows the last run, the next scheduled run, and whether a run is in progress. An unreachable service says so rather than reporting success.
+

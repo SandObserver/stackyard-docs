@@ -1,0 +1,53 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { marked } from 'marked';
+import { readRepoFile, stripTitle, absolutiseLinks } from '../../lib/repo';
+
+const REPO = 'https://github.com/SandObserver/stackyard';
+const raw = readRepoFile('CONTRIBUTING.md');
+
+const html = raw
+  ? await marked.parse(absolutiseLinks(stripTitle(raw)))
+  : `<p>The contributing guide is read from the Stackyard repository at build time, and that
+     checkout was not available for this build. Read it on
+     <a href="${REPO}/blob/main/CONTRIBUTING.md">GitHub</a>.</p>`;
+
+const reference = [
+  ['architecture.md', 'Architecture', 'How a request is served, and where config lives.'],
+  ['design-system.md', 'Design system', 'Colour, type, geometry and motion.'],
+  ['api-errors.md', 'API errors', 'The error shape the API returns, and what each code means.'],
+  ['releasing.md', 'Releasing', 'How a version is cut and published.'],
+];
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Development',
+    description: 'How to work on Stackyard, taken from the repository at build time.',
+  }}
+>
+  <p>
+    This page is generated from <code>CONTRIBUTING.md</code> in the Stackyard repository, so it
+    matches the source. Links in it resolve to files on GitHub.
+  </p>
+
+  <Fragment set:html={html} />
+
+  <h2 id="reference">Reference</h2>
+  <p>Deeper notes in the repository, beyond the ones linked above.</p>
+  <table>
+    <thead>
+      <tr><th>Document</th><th>Covers</th></tr>
+    </thead>
+    <tbody>
+      {
+        reference.map(([file, title, blurb]) => (
+          <tr>
+            <td><a href={`${REPO}/blob/main/docs/${file}`}>{title}</a></td>
+            <td>{blurb}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</StarlightPage>

@@ -1,0 +1,16 @@
+{
+  "bays": [
+    { "device_id": "1b8f4a20-6c35-4d17-91ea-70c2f5b8d413", "device_status": 0, "hasSmart": true, "model_name": "ST8000VN004-2M2101", "device_name": "sda", "temp": 38, "capacity": 8001563222016 },
+    { "device_id": "2c9e5b31-7d46-4e28-a2fb-81d306c9e524", "device_status": 0, "hasSmart": true, "model_name": "ST8000VN004-2M2101", "device_name": "sdb", "temp": 39, "capacity": 8001563222016 },
+    { "device_id": "3da06c42-8e57-4f39-b30c-92e417daf635", "device_status": 1, "hasSmart": true, "model_name": "TOSHIBA MG08ACA16TE", "device_name": "sdc", "temp": 47, "capacity": 16000900661248 },
+    { "device_id": "4eb17d53-9f68-4a40-c41d-a3f528eb1746", "device_status": 0, "hasSmart": true, "model_name": "TOSHIBA MG08ACA16TE", "device_name": "sdd", "temp": 41, "capacity": 16000900661248 },
+    { "device_id": "5fc28e64-a079-4b51-d52e-b40639fc0857", "device_status": 2, "hasSmart": true, "model_name": "WDC WD80EAZZ-00BKLB0", "device_name": "sde", "temp": 55, "capacity": 8001563222016 },
+    { "device_id": "60d39f75-b18a-4c62-e63f-c5174a0d1968", "device_status": 0, "hasSmart": true, "model_name": "WDC WD80EAZZ-00BKLB0", "device_name": "sdf", "temp": 40, "capacity": 8001563222016 },
+    { "device_id": "71e4a086-c29b-4d73-f740-d6285b1e2a79", "device_status": 3, "hasSmart": true, "model_name": "WDC WD40EFRX-68N32N0", "device_name": "sdg", "temp": 43, "capacity": 4000787030016 },
+    { "device_id": "82f5b197-d3ac-4e84-a851-e7396c2f3b8a", "device_status": 0, "hasSmart": true, "model_name": "CT1000MX500SSD1", "device_name": "sdh", "temp": 33, "capacity": 1000204886016 },
+    { "device_id": "93a6c208-e4bd-4f95-b962-f84a7d304c9b", "device_status": 0, "hasSmart": false, "model_name": "Samsung SSD 870 EVO 500GB", "device_name": "sdi", "temp": null, "capacity": 500107862016 },
+    null
+  ],
+  "href": "http://truenas.example.com/ui/storage",
+  "provider": "truenas"
+}

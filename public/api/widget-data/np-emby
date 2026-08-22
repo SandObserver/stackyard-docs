@@ -1,0 +1,6 @@
+{
+  "provider": "emby",
+  "sessions": [
+    { "title": "House of the Dragon", "subtitle": "S1 E7 · 1080p", "progress": 0.455, "state": "paused", "type": "episode", "player": "Bedroom Tablet" }
+  ]
+}

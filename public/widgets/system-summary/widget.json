@@ -1,0 +1,815 @@
+{
+  "name": "system-summary",
+  "label": "widget.label",
+  "sizes": [
+    "small",
+    "medium"
+  ],
+  "card": "dark",
+  "fields": [
+    {
+      "key": "statProvider",
+      "type": "select",
+      "label": "statProvider.label",
+      "default": "system",
+      "options": [
+        {
+          "value": "system",
+          "label": "statProvider.opt.system"
+        },
+        {
+          "value": "glances",
+          "label": "statProvider.opt.glances"
+        },
+        {
+          "value": "beszel",
+          "label": "statProvider.opt.beszel"
+        },
+        {
+          "value": "unraid",
+          "label": "statProvider.opt.unraid"
+        }
+      ]
+    },
+    {
+      "key": "glancesUrl",
+      "type": "text",
+      "label": "glancesUrl.label",
+      "placeholder": "glancesUrl.placeholder",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "glances"
+      }
+    },
+    {
+      "key": "glancesUser",
+      "type": "text",
+      "label": "glancesUser.label",
+      "optional": true,
+      "showIf": {
+        "field": "statProvider",
+        "equals": "glances"
+      }
+    },
+    {
+      "key": "glancesPass",
+      "type": "secret",
+      "label": "glancesPass.label",
+      "optional": true,
+      "showIf": {
+        "field": "statProvider",
+        "equals": "glances"
+      }
+    },
+    {
+      "key": "beszelUrl",
+      "type": "text",
+      "label": "beszelUrl.label",
+      "placeholder": "beszelUrl.placeholder",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "beszel"
+      }
+    },
+    {
+      "key": "beszelUser",
+      "type": "text",
+      "label": "beszelUser.label",
+      "placeholder": "beszelUser.placeholder",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "beszel"
+      }
+    },
+    {
+      "key": "beszelPass",
+      "type": "secret",
+      "label": "beszelPass.label",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "beszel"
+      }
+    },
+    {
+      "key": "beszelSystem",
+      "type": "select",
+      "label": "beszelSystem.label",
+      "optionsFrom": "systems",
+      "hint": "beszelSystem.hint",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "beszel"
+      }
+    },
+    {
+      "key": "unraidUrl",
+      "type": "text",
+      "label": "unraidUrl.label",
+      "placeholder": "unraidUrl.placeholder",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "unraid"
+      }
+    },
+    {
+      "key": "unraidApiKey",
+      "type": "secret",
+      "label": "unraidApiKey.label",
+      "showIf": {
+        "field": "statProvider",
+        "equals": "unraid"
+      }
+    },
+    {
+      "key": "slots",
+      "type": "group",
+      "label": "slots.label",
+      "min": 3,
+      "max": 3,
+      "fields": [
+        {
+          "key": "type",
+          "type": "select",
+          "label": "slots.type.label",
+          "default": "cpu",
+          "options": [
+            {
+              "value": "cpu",
+              "label": "slots.type.opt.cpu"
+            },
+            {
+              "value": "ram",
+              "label": "slots.type.opt.ram"
+            },
+            {
+              "value": "temp",
+              "label": "slots.type.opt.temp"
+            },
+            {
+              "value": "disk",
+              "label": "slots.type.opt.disk"
+            },
+            {
+              "value": "iowait",
+              "label": "slots.type.opt.iowait"
+            },
+            {
+              "value": "procs",
+              "label": "slots.type.opt.procs"
+            }
+          ]
+        },
+        {
+          "key": "primary",
+          "type": "text",
+          "label": "slots.primary.label",
+          "default": "/",
+          "placeholder": "slots.primary.placeholder",
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "secondary",
+          "type": "text",
+          "label": "slots.secondary.label",
+          "placeholder": "slots.secondary.placeholder",
+          "optional": true,
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "thermalZone",
+          "type": "number",
+          "label": "slots.thermalZone.label",
+          "default": 0,
+          "showIf": {
+            "field": "type",
+            "equals": "temp"
+          }
+        },
+        {
+          "key": "color",
+          "type": "color",
+          "label": "slots.color.label",
+          "default": "#0091FF"
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "system"
+      }
+    },
+    {
+      "key": "slots",
+      "type": "group",
+      "label": "slots.label",
+      "min": 3,
+      "max": 3,
+      "fields": [
+        {
+          "key": "type",
+          "type": "select",
+          "label": "slots.type.label",
+          "default": "cpu",
+          "options": [
+            {
+              "value": "cpu",
+              "label": "slots.type.opt.cpu"
+            },
+            {
+              "value": "ram",
+              "label": "slots.type.opt.ram"
+            },
+            {
+              "value": "temp",
+              "label": "slots.type.opt.temp"
+            },
+            {
+              "value": "disk",
+              "label": "slots.type.opt.disk"
+            },
+            {
+              "value": "iowait",
+              "label": "slots.type.opt.iowait"
+            },
+            {
+              "value": "procs",
+              "label": "slots.type.opt.procs"
+            }
+          ]
+        },
+        {
+          "key": "primary",
+          "type": "text",
+          "label": "slots.primary.label",
+          "default": "/",
+          "placeholder": "slots.primary.placeholder",
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "secondary",
+          "type": "text",
+          "label": "slots.secondary.label",
+          "placeholder": "slots.secondary.placeholder",
+          "optional": true,
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "sensor",
+          "type": "select",
+          "label": "slots.sensor.label",
+          "optionsFrom": "sensors",
+          "hint": "slots.sensor.hint",
+          "showIf": {
+            "field": "type",
+            "equals": "temp"
+          }
+        },
+        {
+          "key": "color",
+          "type": "color",
+          "label": "slots.color.label",
+          "default": "#0091FF"
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "glances"
+      }
+    },
+    {
+      "key": "slots",
+      "type": "group",
+      "label": "slots.label",
+      "min": 3,
+      "max": 3,
+      "fields": [
+        {
+          "key": "type",
+          "type": "select",
+          "label": "slots.type.label",
+          "default": "cpu",
+          "options": [
+            {
+              "value": "cpu",
+              "label": "slots.type.opt.cpu"
+            },
+            {
+              "value": "ram",
+              "label": "slots.type.opt.ram"
+            },
+            {
+              "value": "temp",
+              "label": "slots.type.opt.temp"
+            },
+            {
+              "value": "disk",
+              "label": "slots.type.opt.disk"
+            },
+            {
+              "value": "iowait",
+              "label": "slots.type.opt.iowait"
+            }
+          ]
+        },
+        {
+          "key": "primary",
+          "type": "text",
+          "label": "slots.fsPrimary.label",
+          "default": "/",
+          "placeholder": "slots.fsPrimary.placeholder",
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "secondary",
+          "type": "text",
+          "label": "slots.fsSecondary.label",
+          "placeholder": "slots.fsSecondary.placeholder",
+          "optional": true,
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "sensor",
+          "type": "select",
+          "label": "slots.sensor.label",
+          "optionsFrom": "sensors",
+          "hint": "slots.sensor.hint",
+          "showIf": {
+            "field": "type",
+            "equals": "temp"
+          }
+        },
+        {
+          "key": "color",
+          "type": "color",
+          "label": "slots.color.label",
+          "default": "#0091FF"
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "beszel"
+      },
+      "hint": "slots.beszelHint"
+    },
+    {
+      "key": "slots",
+      "type": "group",
+      "label": "slots.label",
+      "min": 3,
+      "max": 3,
+      "fields": [
+        {
+          "key": "type",
+          "type": "select",
+          "label": "slots.type.label",
+          "default": "cpu",
+          "options": [
+            {
+              "value": "cpu",
+              "label": "slots.type.opt.cpu"
+            },
+            {
+              "value": "ram",
+              "label": "slots.type.opt.ram"
+            },
+            {
+              "value": "temp",
+              "label": "slots.type.opt.temp"
+            },
+            {
+              "value": "disk",
+              "label": "slots.type.opt.disk"
+            }
+          ]
+        },
+        {
+          "key": "primary",
+          "type": "text",
+          "label": "slots.sharePrimary.label",
+          "default": "/",
+          "placeholder": "slots.sharePrimary.placeholder",
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          },
+          "hint": "slots.share.hint"
+        },
+        {
+          "key": "secondary",
+          "type": "text",
+          "label": "slots.shareSecondary.label",
+          "placeholder": "slots.shareSecondary.placeholder",
+          "optional": true,
+          "showIf": {
+            "field": "type",
+            "equals": "disk"
+          }
+        },
+        {
+          "key": "sensor",
+          "type": "select",
+          "label": "slots.sensor.label",
+          "optionsFrom": "sensors",
+          "hint": "slots.sensor.hint",
+          "showIf": {
+            "field": "type",
+            "equals": "temp"
+          }
+        },
+        {
+          "key": "color",
+          "type": "color",
+          "label": "slots.color.label",
+          "default": "#0091FF"
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "unraid"
+      },
+      "hint": "slots.unraidHint"
+    },
+    {
+      "key": "network",
+      "type": "object",
+      "label": "network.label",
+      "fields": [
+        {
+          "key": "enabled",
+          "type": "toggle",
+          "label": "network.enabled.label",
+          "default": false
+        },
+        {
+          "key": "mode",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.mode.label",
+          "default": "speed",
+          "showIf": {
+            "field": "enabled",
+            "equals": true
+          },
+          "options": [
+            {
+              "value": "speed",
+              "label": "network.mode.opt.speed"
+            },
+            {
+              "value": "throughput",
+              "label": "network.mode.opt.throughput"
+            },
+            {
+              "value": "uptime",
+              "label": "network.mode.opt.uptime"
+            }
+          ]
+        },
+        {
+          "key": "provider",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.provider.label",
+          "default": "myspeed",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          },
+          "options": [
+            {
+              "value": "myspeed",
+              "label": "network.provider.opt.myspeed"
+            },
+            {
+              "value": "speedtest-tracker",
+              "label": "network.provider.opt.speedtest-tracker"
+            }
+          ]
+        },
+        {
+          "key": "url",
+          "type": "text",
+          "label": "network.url.label",
+          "placeholder": "network.url.placeholder",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          }
+        },
+        {
+          "key": "myspeedPass",
+          "type": "secret",
+          "label": "network.myspeedPass.label",
+          "optional": true,
+          "showIf": {
+            "field": "provider",
+            "equals": "myspeed"
+          }
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "system"
+      }
+    },
+    {
+      "key": "network",
+      "type": "object",
+      "label": "network.label",
+      "fields": [
+        {
+          "key": "enabled",
+          "type": "toggle",
+          "label": "network.enabled.label",
+          "default": false
+        },
+        {
+          "key": "mode",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.mode.label",
+          "default": "speed",
+          "showIf": {
+            "field": "enabled",
+            "equals": true
+          },
+          "options": [
+            {
+              "value": "speed",
+              "label": "network.mode.opt.speed"
+            },
+            {
+              "value": "throughput",
+              "label": "network.mode.opt.throughput"
+            },
+            {
+              "value": "uptime",
+              "label": "network.mode.opt.uptime"
+            }
+          ]
+        },
+        {
+          "key": "interface",
+          "type": "select",
+          "label": "network.interface.label",
+          "optionsFrom": "interfaces",
+          "hint": "network.interface.hint",
+          "showIf": {
+            "field": "mode",
+            "equals": "throughput"
+          }
+        },
+        {
+          "key": "provider",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.provider.label",
+          "default": "myspeed",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          },
+          "options": [
+            {
+              "value": "myspeed",
+              "label": "network.provider.opt.myspeed"
+            },
+            {
+              "value": "speedtest-tracker",
+              "label": "network.provider.opt.speedtest-tracker"
+            }
+          ]
+        },
+        {
+          "key": "url",
+          "type": "text",
+          "label": "network.url.label",
+          "placeholder": "network.url.placeholder",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          }
+        },
+        {
+          "key": "myspeedPass",
+          "type": "secret",
+          "label": "network.myspeedPass.label",
+          "optional": true,
+          "showIf": {
+            "field": "provider",
+            "equals": "myspeed"
+          }
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "glances"
+      }
+    },
+    {
+      "key": "network",
+      "type": "object",
+      "label": "network.label",
+      "fields": [
+        {
+          "key": "enabled",
+          "type": "toggle",
+          "label": "network.enabled.label",
+          "default": false
+        },
+        {
+          "key": "mode",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.mode.label",
+          "default": "speed",
+          "showIf": {
+            "field": "enabled",
+            "equals": true
+          },
+          "options": [
+            {
+              "value": "speed",
+              "label": "network.mode.opt.speed"
+            },
+            {
+              "value": "throughput",
+              "label": "network.mode.opt.throughput"
+            },
+            {
+              "value": "uptime",
+              "label": "network.mode.opt.uptime"
+            }
+          ]
+        },
+        {
+          "key": "interface",
+          "type": "select",
+          "label": "network.interface.label",
+          "optionsFrom": "interfaces",
+          "hint": "network.interface.hint",
+          "showIf": {
+            "field": "mode",
+            "equals": "throughput"
+          }
+        },
+        {
+          "key": "provider",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.provider.label",
+          "default": "myspeed",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          },
+          "options": [
+            {
+              "value": "myspeed",
+              "label": "network.provider.opt.myspeed"
+            },
+            {
+              "value": "speedtest-tracker",
+              "label": "network.provider.opt.speedtest-tracker"
+            }
+          ]
+        },
+        {
+          "key": "url",
+          "type": "text",
+          "label": "network.url.label",
+          "placeholder": "network.url.placeholder",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          }
+        },
+        {
+          "key": "myspeedPass",
+          "type": "secret",
+          "label": "network.myspeedPass.label",
+          "optional": true,
+          "showIf": {
+            "field": "provider",
+            "equals": "myspeed"
+          }
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "beszel"
+      }
+    },
+    {
+      "key": "network",
+      "type": "object",
+      "label": "network.label",
+      "fields": [
+        {
+          "key": "enabled",
+          "type": "toggle",
+          "label": "network.enabled.label",
+          "default": false
+        },
+        {
+          "key": "mode",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.mode.label",
+          "default": "speed",
+          "showIf": {
+            "field": "enabled",
+            "equals": true
+          },
+          "options": [
+            {
+              "value": "speed",
+              "label": "network.mode.opt.speed"
+            },
+            {
+              "value": "throughput",
+              "label": "network.mode.opt.throughput"
+            },
+            {
+              "value": "uptime",
+              "label": "network.mode.opt.uptime"
+            }
+          ]
+        },
+        {
+          "key": "interface",
+          "type": "select",
+          "label": "network.interface.label",
+          "optionsFrom": "interfaces",
+          "hint": "network.interface.hint",
+          "showIf": {
+            "field": "mode",
+            "equals": "throughput"
+          }
+        },
+        {
+          "key": "provider",
+          "type": "select",
+          "variant": "pills",
+          "label": "network.provider.label",
+          "default": "myspeed",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          },
+          "options": [
+            {
+              "value": "myspeed",
+              "label": "network.provider.opt.myspeed"
+            },
+            {
+              "value": "speedtest-tracker",
+              "label": "network.provider.opt.speedtest-tracker"
+            }
+          ]
+        },
+        {
+          "key": "url",
+          "type": "text",
+          "label": "network.url.label",
+          "placeholder": "network.url.placeholder",
+          "showIf": {
+            "field": "mode",
+            "equals": "speed"
+          }
+        },
+        {
+          "key": "myspeedPass",
+          "type": "secret",
+          "label": "network.myspeedPass.label",
+          "optional": true,
+          "showIf": {
+            "field": "provider",
+            "equals": "myspeed"
+          }
+        }
+      ],
+      "showIf": {
+        "field": "statProvider",
+        "equals": "unraid"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+---
+title: Weather
+description: Current conditions from Open-Meteo. No API key required.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Current weather for one place. Data comes from Open-Meteo, which needs no account and no API key.
+
+Sizes: Small.
+
+<WidgetGroup caption="Three locations. The artwork follows the conditions, and the card turns dark after sunset."
+  items={[
+    { type: 'weather', file: 'index.html', id: 'w-weather',       title: 'Weather, clear day', label: 'Clear day' },
+    { type: 'weather', file: 'index.html', id: 'w-weather-rain',  title: 'Weather, rain',      label: 'Rain' },
+    { type: 'weather', file: 'index.html', id: 'w-weather-night', title: 'Weather, night',     label: 'Night' },
+  ]} />
+
+## Picking a location
+
+Type a city into Search, press Fetch, then pick the matching place from the list. Choosing a place stores its coordinates with the widget.
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Search | A city name to look up. Not stored. | No |
+| Location | The place picked from the search results. | Yes |
+| Units | Celsius or Fahrenheit. Defaults to Celsius. | Yes |
+| Show feels like | Adds the apparent temperature. Off by default. | No |
+| Link URL | Where clicking the widget opens. | No |
+

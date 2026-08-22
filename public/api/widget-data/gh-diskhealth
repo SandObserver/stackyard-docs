@@ -1,0 +1,10 @@
+{
+  "bays": [
+    { "device_id": "a3f21c07-4b9e-4d31-9c62-1e7f0a5d88b1", "device_status": 0, "hasSmart": true, "model_name": "WDC WD40EFPX-68C6CN0", "device_name": "sda", "temp": 34, "capacity": 4000787030016 },
+    { "device_id": "c7d94e55-2a13-4f80-b6ad-93c4e10f7726", "device_status": 0, "hasSmart": true, "model_name": "WDC WD40EFPX-68C6CN0", "device_name": "sdb", "temp": 36, "capacity": 4000787030016 },
+    { "device_id": "e0b6a812-77cd-4e29-8f14-5b20d9c3ae4f", "device_status": 0, "hasSmart": true, "model_name": "Samsung SSD 990 PRO 2TB", "device_name": "nvme0n1", "temp": 41, "capacity": 2000398934016 },
+    null
+  ],
+  "href": "http://scrutiny.example.com/web/dashboard",
+  "provider": "scrutiny"
+}

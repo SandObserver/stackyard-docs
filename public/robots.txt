@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stackyard.sandobserver.com/sitemap-index.xml

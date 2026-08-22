@@ -1,0 +1,108 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { marked } from 'marked';
+import { readRepoFile, stripTitle, absolutiseLinks } from '../../lib/repo';
+
+const REPO = 'https://github.com/SandObserver/stackyard';
+const raw = readRepoFile('CHANGELOG.md');
+
+type Section = {
+  heading: string;
+  label: string;
+  meta: string;
+  body: string;
+  unreleased: boolean;
+};
+
+let intro = '';
+let sections: Section[] = [];
+let failed = false;
+
+if (raw) {
+  const html = await marked.parse(absolutiseLinks(stripTitle(raw)));
+  const parts = String(html).split(/(?=<h2\b)/);
+  intro = parts[0].startsWith('<h2') ? '' : parts.shift() ?? '';
+
+  for (const part of parts) {
+    const m = part.match(/<h2\b[^>]*>([\s\S]*?)<\/h2>/);
+    if (!m) continue;
+    const heading = m[1].replace(/<[^>]+>/g, '').trim();
+    const body = part.slice(m[0].length);
+    const dash = heading.match(/^(.*?)\s+-\s+(\d{4}-\d{2}-\d{2})$/);
+    sections.push({
+      heading,
+      label: (dash ? dash[1] : heading).replace(/^\[|\]$/g, ''),
+      meta: dash ? dash[2] : '',
+      body,
+      unreleased: /unreleased/i.test(heading),
+    });
+  }
+} else {
+  failed = true;
+}
+
+const unreleased = sections.find((s) => s.unreleased) ?? null;
+const released = sections.filter((s) => !s.unreleased);
+const latest = released[0] ?? null;
+const earlier = released.slice(1);
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Changelog',
+    description: 'Notable changes to Stackyard, taken from the repository at build time.',
+    tableOfContents: false,
+  }}
+>
+  {failed ? (
+    <p>
+      The changelog is read from the Stackyard repository at build time, and that checkout was
+      not available for this build. Read it on <a href={`${REPO}/blob/main/CHANGELOG.md`}>GitHub</a>.
+    </p>
+  ) : (
+    <>
+      <p class="cl-lede">
+        Generated from <code>CHANGELOG.md</code> in the repository. Per-release notes are on the{' '}
+        <a href={`${REPO}/releases`}>releases</a> page.
+      </p>
+
+      {latest && (
+        <section class="cl-latest">
+          <h2 class="cl-h">
+            {latest.label}
+            <span class="cl-badge">Latest release</span>
+            {latest.meta && <span class="cl-date">{latest.meta}</span>}
+          </h2>
+          <Fragment set:html={latest.body} />
+        </section>
+      )}
+
+      {unreleased && (
+        <details class="cl-item">
+          <summary>
+            <span class="cl-name">Unreleased</span>
+            <span class="cl-note">Not in a published version yet</span>
+          </summary>
+          <div class="cl-body"><Fragment set:html={unreleased.body} /></div>
+        </details>
+      )}
+
+      {earlier.length > 0 && (
+        <>
+          <h2 class="cl-h cl-earlier">Earlier releases</h2>
+          {earlier.map((s) => (
+            <details class="cl-item">
+              <summary>
+                <span class="cl-name">{s.label}</span>
+                {s.meta && <span class="cl-note">{s.meta}</span>}
+              </summary>
+              <div class="cl-body"><Fragment set:html={s.body} /></div>
+            </details>
+          ))}
+        </>
+      )}
+
+      <Fragment set:html={intro} />
+    </>
+  )}
+</StarlightPage>

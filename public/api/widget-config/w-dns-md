@@ -1,0 +1,1 @@
+{"widgetSize": "medium", "widgetConfig": {"provider": "pihole", "dnsUrl": "https://dns.example.com"}}

@@ -1,0 +1,41 @@
+---
+title: DNS
+description: Query and blocking counts from AdGuard Home, Pi-hole, Technitium, or NextDNS.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Shows how many DNS queries were blocked, with a breakdown of allowed, cached, and blocked.
+
+Sizes: Small, Medium.
+
+<WidgetGroup caption="Two different resolvers. Small gives the headline figure, medium adds the breakdown."
+  items={[
+    { type: 'dns', file: 'index.html', id: 'w-dns',    card: 'translucent', title: 'DNS widget, small',  label: 'Small' },
+    { type: 'dns', file: 'index.html', id: 'w-dns-md', size: 'medium', card: 'translucent', title: 'DNS widget, medium', label: 'Medium' },
+  ]} />
+
+## Providers
+
+| Provider | Credentials |
+| --- | --- |
+| AdGuard Home | Server URL, optional username and password. |
+| Pi-hole | Server URL, plus the password if one is set. |
+| Technitium | Server URL and an API token (Administration, Sessions, Create Token). |
+| NextDNS | An API key from my.nextdns.io (Account, API) and a profile ID. |
+
+NextDNS is a hosted service, so it takes no server URL.
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Provider | Which DNS server to read. | Yes |
+| Server URL | Container name and port, or a full URL. Not used by NextDNS. | Yes, except NextDNS |
+| Click URL | Where clicking the widget opens. Leave blank to disable. | No |
+| Username, Password | AdGuard Home only. | No |
+| Pi-hole Password | Leave blank if your Pi-hole has no password. | No |
+| API Token | Technitium only. Stored as a secret. | Technitium |
+| API Key | NextDNS only. Stored as a secret. | NextDNS |
+| Profile ID | The short NextDNS configuration ID. | NextDNS |
+

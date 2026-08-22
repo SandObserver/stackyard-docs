@@ -1,0 +1,108 @@
+---
+title: Docker
+description: Install Stackyard with Docker Compose or a single docker run command.
+next:
+  link: /docs/first-setup/
+  label: First setup
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Stackyard ships as one Docker image. There is nothing else to install, and no database to run.
+
+## Before you start
+
+New to Docker? It runs applications in containers, which are self-contained and do not install anything into your operating system. You need it installed before any of the steps below.
+
+- **Docker.** Install [Docker Desktop](https://docs.docker.com/get-started/get-docker/) on Windows or macOS, or Docker Engine on Linux. Docker Desktop includes Compose. On Linux, install the Compose plugin as well.
+- **A 64-bit machine.** The image is built for `linux/amd64` and `linux/arm64`. A Raspberry Pi 4 or 5 running a 64-bit OS works. A 32-bit OS does not.
+- **A free port on the host.** The examples use `8700`. Change it if something already uses it.
+- **A folder for persistent data.** Stackyard writes its config and uploaded images to two volumes. Without them, your dashboard is empty after every restart.
+
+You do not need a domain, a reverse proxy, or TLS to start. Two features need HTTPS later: Keep Screen Awake, and logging in from behind a proxy. See [Security](/docs/security/).
+
+If you use Unraid, use the [Unraid](/docs/installation/unraid/) page instead.
+
+## Install
+
+Compose is the recommended path. It keeps your settings in a file you can edit, back up and re-apply. Use `docker run` if you would rather not keep a file.
+
+<Tabs syncKey="install">
+<TabItem label="Docker Compose">
+
+Save this as `docker-compose.yml`:
+
+```yaml
+services:
+  stackyard:
+    image: ghcr.io/sandobserver/stackyard:latest
+    container_name: stackyard
+    restart: unless-stopped
+    ports:
+      - "8700:80"
+    volumes:
+      - ./data:/data
+      - ./icons:/icons
+```
+
+Start it, from the folder holding that file:
+
+```sh
+docker compose up -d
+```
+
+Then open `http://localhost:8700`.
+
+To apply a change to the file later, run the same command again.
+
+</TabItem>
+<TabItem label="docker run">
+
+```sh
+docker run -d \
+  --name stackyard \
+  --restart unless-stopped \
+  -p 8700:80 \
+  -v ./data:/data \
+  -v ./icons:/icons \
+  ghcr.io/sandobserver/stackyard:latest
+```
+
+Then open `http://localhost:8700`.
+
+Environment variables are passed with `-e`, for example `-e ALLOW_PRIVATE_IPS=true`.
+
+To change any of this later you must stop the container, remove it, and run the command again with your changes. This is the reason Compose is recommended.
+
+</TabItem>
+</Tabs>
+
+## What the settings mean
+
+| Setting | Purpose |
+| --- | --- |
+| `8700:80` | The container listens on port 80. Change `8700` to publish it elsewhere on the host. |
+| `./data:/data` | Holds `apps.json`, the single config file. |
+| `./icons:/icons` | Holds uploaded icons and stored wallpaper images. |
+
+Both volumes must persist. The container runs as UID 1000, so the folders on the host must be writable by it.
+
+Environment variables are all optional. See [Advanced configuration](/docs/advanced-configuration/).
+
+## The fuller compose file
+
+The repo ships a longer [`docker-compose.yml`](https://github.com/SandObserver/stackyard/blob/main/docker-compose.yml) with hardening:
+
+- All Linux capabilities dropped, then only the needed ones added back.
+- `no-new-privileges`, plus memory, process count and log size limits.
+- A container health check.
+- `extra_hosts` for reaching services on the host by IP.
+- Environment variables for a reverse proxy, Docker health checks, and the SSRF guard, each as a commented line.
+
+Use it once Stackyard is working. See [Advanced configuration](/docs/advanced-configuration/).
+
+## Registries
+
+The image is published to `ghcr.io/sandobserver/stackyard`, mirrored on Docker Hub as `sandobserver/stackyard`.
+
+Prefer `ghcr.io`. It is the registry the release signature covers. See [Security](/docs/security/).

@@ -1,0 +1,51 @@
+---
+title: Connections
+description: VPN and network service status, as a map or a single connection tile.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Two views of your network connections.
+
+Sizes: Small, Medium.
+
+<WidgetGroup caption="The two views. Map plots where traffic goes; VPN reports one tunnel."
+  items={[
+    { type: 'connections', file: 'connections-map.html', id: 'gh-connections', size: 'medium', title: 'Connections, map view', label: 'Map' },
+    { type: 'connections', file: 'connections-vpn.html', id: 'gh-vpn',         title: 'Connections, VPN view', label: 'VPN' },
+  ]} />
+
+## Views
+
+| View | What it shows |
+| --- | --- |
+| Map | Several services plotted on a world map, with an optional legend. |
+| VPN | One VPN connection and its state. |
+
+## VPN view
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Service | Gluetun or NetBird. | Yes |
+| Display Name | The label on the tile. | No |
+| Control Server URL | The Gluetun control server, for example `http://gluetun:8000`. | Gluetun |
+| Management API URL | The NetBird management API, for example `http://netbird:33073`. | NetBird |
+| API Key | Gluetun credential. Stored as a secret. | No |
+| Access Token (PAT) | NetBird credential. Stored as a secret. | NetBird |
+| Click URL | Where clicking the widget opens. | No |
+| Dot Color | The status dot colour. | Yes |
+
+## Map view
+
+Add one entry per service. Each takes a type, a URL, and its own credentials.
+
+| Service | What it needs |
+| --- | --- |
+| Gluetun | Control server URL. |
+| Psiphon Conduit | Metrics URL, for example `conduit:9090`. |
+| NetBird | Management API URL and an access token. |
+| Plausible | Plausible URL, a site ID (the domain), and a stats API key. |
+| Umami | Umami URL, a website ID, a username, and a password. |
+
+Each entry also takes an optional display name, an optional admin UI URL, and a dot colour. Show Legend adds a service key along the bottom of the map.
+

@@ -1,0 +1,17 @@
+{
+  "name": "Stackyard Documentation",
+  "short_name": "Stackyard Docs",
+  "description": "Documentation for Stackyard, a self-hosted homelab dashboard.",
+  "lang": "en",
+  "dir": "ltr",
+  "start_url": "/docs/",
+  "scope": "/",
+  "display": "minimal-ui",
+  "orientation": "any",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" },
+    { "src": "/favicon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

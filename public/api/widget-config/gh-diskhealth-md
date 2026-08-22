@@ -1,0 +1,1 @@
+{"widgetSize": "medium", "widgetConfig": {"widgetSubType": "disk-health", "diskProvider": "scrutiny", "scrutinyUrl": "http://service.example.com/", "scrutinyHref": "http://service.example.com/web/dashboard", "bays": ["2f18a4f8-9ae8-5a5d-8ec1-856104e5fd90", "65b81661-979e-50b8-813d-170248acbc35", null, null]}}

@@ -1,0 +1,1 @@
+{"widgetSize":"medium","widgetConfig":{"slots":[{"provider":"kopia","customName":"Photo Library","jobId":"1","kopiaUrl":"https://kopia.example.com"},{"provider":"kopia","customName":"Docker Volumes","jobId":"2","kopiaUrl":"https://kopia.example.com"},{"provider":"kopia","customName":"Media Archive","jobId":"3","kopiaUrl":"https://kopia.example.com"}]}}

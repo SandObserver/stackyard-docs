@@ -1,0 +1,1 @@
+{"widgetSize": "small", "widgetConfig": {"view": "vpn", "vpn": {"service": "gluetun", "url": "http://service.example.com", "color": "#30d158"}}}

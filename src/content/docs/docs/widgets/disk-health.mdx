@@ -1,0 +1,36 @@
+---
+title: Disk health
+description: SMART status per drive bay, from Scrutiny or TrueNAS.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+One tile per drive bay, coloured by SMART status.
+
+<WidgetGroup caption="Small, a three drive chassis, all healthy. Medium, an eight bay chassis with a failed drive, an age alert and one empty bay."
+  items={[
+    { type: 'disk-health', file: 'index.html', id: 'gh-diskhealth',    title: 'Disk health widget, small',  label: 'Small' },
+    { type: 'disk-health', file: 'index.html', id: 'gh-diskhealth-md', size: 'medium', title: 'Disk health widget, medium', label: 'Medium' },
+  ]} />
+
+Sizes: Small, Medium. Small holds four bays, Medium holds ten.
+
+## Sources
+
+| Source | Credentials |
+| --- | --- |
+| Scrutiny | Server URL. No key needed. |
+| TrueNAS | Server URL and an API key. |
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Source | Scrutiny or TrueNAS. Defaults to Scrutiny. | Yes |
+| URL | The service address, for example `scrutiny:8080` or `truenas.local`. | Yes |
+| TrueNAS API Key | Stored as a secret. | TrueNAS |
+| Click URL | Where clicking the widget opens. | No |
+| Bays | Which drive goes in which bay. Enter the URL first, then Fetch Drives and assign each bay. | Yes |
+
+States are Healthy, Warning, Failed, and Age Alert. A drive with no SMART data reports as such rather than as healthy.
+

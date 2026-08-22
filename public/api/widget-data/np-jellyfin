@@ -1,0 +1,6 @@
+{
+  "provider": "jellyfin",
+  "sessions": [
+    { "title": "Guardians of the Galaxy", "subtitle": "2014 · 2160p", "progress": 0.884, "state": "playing", "type": "movie", "player": "Study Desktop" }
+  ]
+}

@@ -1,0 +1,1 @@
+{"cpu":12,"ram":38,"temp":39,"temps":{"0":39},"disks":[{"mount":"/","usedPct":42.8,"totalGb":233},{"mount":"/srv/pool","usedPct":67.5,"totalGb":7452}],"iowait":0.4,"procs":186,"uptime":4823910,"download":412.6,"upload":38.4}

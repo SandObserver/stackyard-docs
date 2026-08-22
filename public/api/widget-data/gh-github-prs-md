@@ -1,0 +1,32 @@
+{
+  "view": "prs",
+  "totalCount": 4,
+  "label": "created",
+  "allUrl": "https://github.com/pulls",
+  "items": [
+    {
+      "number": 142,
+      "title": "fix: stop a failed poll being read as a value of zero",
+      "repo": "SandObserver/stackyard",
+      "url": "https://github.com/SandObserver/stackyard/pull/142"
+    },
+    {
+      "number": 139,
+      "title": "perf: sample the CPU once per tick instead of twice",
+      "repo": "SandObserver/stackyard",
+      "url": "https://github.com/SandObserver/stackyard/pull/139"
+    },
+    {
+      "number": 137,
+      "title": "chore: evict two console.log calls that outlived their usefulness",
+      "repo": "SandObserver/stackyard",
+      "url": "https://github.com/SandObserver/stackyard/pull/137"
+    },
+    {
+      "number": 134,
+      "title": "feat: tell widget authors why their manifest was refused",
+      "repo": "SandObserver/stackyard",
+      "url": "https://github.com/SandObserver/stackyard/pull/134"
+    }
+  ]
+}

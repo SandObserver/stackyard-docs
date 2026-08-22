@@ -1,0 +1,71 @@
+---
+/* Geometry must match WidgetPreview. See the note there. */
+interface Item {
+  type: string;
+  file: string;
+  id: string;
+  size?: 'small' | 'medium';
+  card?: 'dark' | 'light' | 'translucent' | null;
+  title: string;
+  label?: string;
+}
+
+interface Props {
+  items: Item[];
+  caption?: string;
+}
+
+const { items, caption } = Astro.props;
+
+const DESIGN = { small: [170, 170], medium: [360, 170] } as const;
+const CARD_W = { small: 152.67, medium: 330.34 } as const;
+const CARD_H = 150;
+const RADIUS = 28;
+
+const built = items.map((it) => {
+  const size = it.size ?? 'small';
+  const [dw, dh] = DESIGN[size];
+  const w = CARD_W[size];
+  const scale = Math.max(w / dw, CARD_H / dh);
+  return {
+    ...it,
+    size,
+    w,
+    dw,
+    dh,
+    scale,
+    tx: (w - dw * scale) / 2,
+    ty: (CARD_H - dh * scale) / 2,
+    src: `/widgets/${it.type}/${it.file}?id=${encodeURIComponent(it.id)}&size=${size}&lang=en`,
+  };
+});
+---
+
+<figure class="wpv wpv--group">
+  <div class="wpv__mat">
+    <div class="wpv__row">
+      {
+        built.map((b) => (
+          <div class="wpv__slot">
+            <div
+              class="wpv__card"
+              data-card={b.card ?? undefined}
+              style={`width:${b.w}px;height:${CARD_H}px;border-radius:${RADIUS}px;`}
+            >
+              <iframe
+                src={b.src}
+                title={b.title}
+                aria-label={b.title}
+                loading="lazy"
+                scrolling="no"
+                style={`width:${b.dw}px;height:${b.dh}px;transform:translate(${b.tx}px,${b.ty}px) scale(${b.scale});`}
+              />
+            </div>
+            {b.label && <span class="wpv__label">{b.label}</span>}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

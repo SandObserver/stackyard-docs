@@ -1,0 +1,6 @@
+{
+  "provider": "jellyfin",
+  "sessions": [
+    { "title": "The Dark Knight Rises", "subtitle": "2012 · 2160p", "progress": 0.641, "state": "playing", "type": "movie", "player": "Living Room TV" }
+  ]
+}

@@ -1,0 +1,74 @@
+---
+title: System summary
+description: CPU, memory, disk, temperature and network stats from this machine, Glances, Beszel, or Unraid.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+Three stat slots and an optional network row.
+
+Sizes: Small, Medium.
+
+<WidgetGroup caption="Two different machines. Small fits a few slots, medium fits more."
+  items={[
+    { type: 'system-summary', file: 'index.html', id: 'w-stats-sm', card: 'dark', title: 'System summary, small',  label: 'Small' },
+    { type: 'system-summary', file: 'index.html', id: 'w-stats',    size: 'medium', card: 'dark', title: 'System summary, medium', label: 'Medium' },
+  ]} />
+
+## Sources
+
+| Source | What it reads |
+| --- | --- |
+| This Machine | The container's own host metrics. |
+| Glances | A Glances instance. |
+| Beszel | A Beszel instance, for one registered system. |
+| Unraid | The Unraid API. |
+
+Not every source reports everything. Beszel does not report a process count. Unraid reports neither IO wait nor a process count.
+
+## Source configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Source | Which backend to read. Defaults to This Machine. | Yes |
+| Glances URL | For example `glances:61208`. | Glances |
+| Username, Password | Glances credentials, if it has any. | No |
+| Beszel URL | For example `beszel:8090`. | Beszel |
+| Account, Password | The Beszel login. | Beszel |
+| System | Which registered Beszel system to read. Enter the URL and account first, then load the list. | Beszel |
+| Unraid URL | For example `tower.local`. | Unraid |
+| Unraid API Key | Stored as a secret. | Unraid |
+
+## Slots
+
+The widget always shows three slots. Each one picks a resource.
+
+| Resource | Notes |
+| --- | --- |
+| CPU | |
+| RAM | |
+| Temperature | Needs a thermal zone (This Machine) or a sensor picked from the loaded list. |
+| Disk Mount | Takes a first path and an optional second one. |
+| IO Wait | Not available from Unraid. |
+| Processes | Not available from Beszel or Unraid. |
+
+What a disk slot asks for depends on the source: mount paths for This Machine, filesystem names for Glances and Beszel, share names for Unraid. Leaving an Unraid share empty reads the whole array.
+
+Each slot takes a colour.
+
+:::note
+A Glances running in Docker reports its own filesystems, not the host's. Mount the host paths into the Glances container for a disk slot to read them.
+:::
+
+## Network row
+
+Off by default. Turn on Show Network Row, then pick a mode.
+
+| Mode | What it shows |
+| --- | --- |
+| Speed | The last speed test result, from MySpeed or Speedtest Tracker. |
+| Throughput | Live throughput on one interface. |
+| Uptime | Uptime. |
+
+Speed mode takes a service URL, and a password if you use MySpeed. Throughput mode takes an interface picked from the loaded list.
+

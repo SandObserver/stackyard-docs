@@ -1,0 +1,6 @@
+{
+  "provider": "plex",
+  "sessions": [
+    { "title": "The Grand Budapest Hotel", "subtitle": "2014 · 2160p", "progress": 0.312, "state": "playing", "type": "movie", "player": "Living Room TV" }
+  ]
+}

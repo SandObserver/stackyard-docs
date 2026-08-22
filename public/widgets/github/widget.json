@@ -1,0 +1,91 @@
+{
+  "name": "github",
+  "label": "widget.label",
+  "sizes": [
+    "small",
+    "medium",
+    "large",
+    "xlarge"
+  ],
+  "card": "translucent",
+  "viewField": "githubView",
+  "defaultView": "prs",
+  "views": {
+    "prs": {
+      "label": "view.prs.label",
+      "src": "pullrequests.html"
+    },
+    "contributions": {
+      "label": "view.contributions.label",
+      "src": "contributions.html"
+    }
+  },
+  "fields": [
+    {
+      "key": "githubView",
+      "type": "select",
+      "variant": "pills",
+      "label": "githubView.label",
+      "options": [
+        {
+          "value": "prs",
+          "label": "githubView.opt.prs"
+        },
+        {
+          "value": "contributions",
+          "label": "githubView.opt.contributions"
+        }
+      ]
+    },
+    {
+      "key": "githubUser",
+      "type": "text",
+      "label": "githubUser.label",
+      "placeholder": "githubUser.placeholder"
+    },
+    {
+      "key": "githubToken",
+      "type": "secret",
+      "label": "githubToken.label",
+      "hint": "githubToken.hint"
+    },
+    {
+      "key": "githubHref",
+      "type": "text",
+      "label": "githubHref.label",
+      "optional": true,
+      "hint": "githubHref.hint"
+    },
+    {
+      "key": "githubPrFilters",
+      "type": "multiselect",
+      "label": "githubPrFilters.label",
+      "default": [
+        "created"
+      ],
+      "showIf": {
+        "field": "githubView",
+        "equals": "prs"
+      },
+      "hint": "githubPrFilters.hint",
+      "options": [
+        {
+          "value": "created",
+          "label": "githubPrFilters.opt.created"
+        },
+        {
+          "value": "assigned",
+          "label": "githubPrFilters.opt.assigned"
+        },
+        {
+          "value": "mentioned",
+          "label": "githubPrFilters.opt.mentioned"
+        },
+        {
+          "value": "review-requested",
+          "label": "githubPrFilters.opt.review-requested"
+        }
+      ]
+    }
+  ]
+}

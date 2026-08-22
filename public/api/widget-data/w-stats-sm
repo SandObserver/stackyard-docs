@@ -1,0 +1,1 @@
+{"cpu":33,"ram":55,"temp":46,"temps":{"0":46},"disks":[{"mount":"/","usedPct":61.4,"totalGb":467}],"iowait":null,"procs":321,"uptime":1565157}

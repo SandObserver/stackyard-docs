@@ -1,0 +1,627 @@
+---
+const title = 'Stackyard: a homelab dashboard you\'ll actually use';
+const description =
+  'A calm, customizable dashboard for your services, designed to be useful without becoming another wall of data.';
+
+const site = Astro.site?.href.replace(/\/$/, '') ?? '';
+const canonical = `${site}/`;
+const ogImage = `${site}/img/og.jpg`;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Stackyard',
+  description,
+  url: canonical,
+  image: ogImage,
+  applicationCategory: 'BrowserApplication',
+  operatingSystem: 'Docker, Linux, Windows, macOS',
+  license: 'https://www.apache.org/licenses/LICENSE-2.0',
+  isAccessibleForFree: true,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  softwareHelp: `${site}/docs/`,
+  codeRepository: 'https://github.com/SandObserver/stackyard',
+  author: { '@type': 'Person', name: 'SandObserver', url: 'https://github.com/SandObserver' },
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0d1117" />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Stackyard" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&display=swap"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <main id="main">
+<div class="wrap">
+  <nav class="nav">
+    <div class="brand">
+      <img src="/img/stackyard-mark.svg" alt="">
+      <span>Stackyard</span>
+    </div>
+    <div class="nav-right">
+      <a class="pill pill-solid" href="/docs/installation/docker/">Install</a>
+      <a class="pill pill-ghost" href="/docs/">Documentation</a>
+      <a class="pill pill-ghost" href="https://github.com/SandObserver/stackyard">GitHub</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <h1>A homelab dashboard you'll actually use.</h1>
+    <p>A calm, customizable dashboard for your services, designed to be useful without becoming another wall of data.</p>
+    <div class="cta-row">
+      <a class="btn btn-accent" href="/docs/installation/docker/">Install</a>
+      <a class="btn btn-quiet" href="https://stackyard-demo.onrender.com">Demo</a>
+    </div>
+  </header>
+</div>
+
+<div class="device-band">
+  <div class="device">
+    <div class="bezel">
+      <div class="screen">
+        <div class="screen-inner">
+          <div class="dgrid">
+
+            <div class="wcell">
+              <iframe
+                class="wframe"
+                src="/widgets/clock/analog.html?id=demo-clock-analog&size=small&lang=en"
+                title="Clock widget"
+                aria-label="Clock widget"
+                loading="lazy"
+                scrolling="no"
+                tabindex="-1"
+              ></iframe>
+            </div>
+
+            <div class="np">
+              <iframe
+                class="np-frame"
+                src="/widgets/nowplaying/index.html?id=w-nowplaying&size=small&lang=en"
+                title="Now Playing widget"
+                aria-label="Now Playing widget"
+                loading="lazy"
+                scrolling="no"
+                tabindex="-1"
+              ></iframe>
+            </div>
+
+            <div class="cell">
+              <div class="itile" style="background:#3d1854"><img src="/icons/homebridge.svg" alt=""></div>
+              <span class="ilabel">Homebridge</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="background:#f2f2f7"><img src="/icons/pi-hole.svg" alt=""></div>
+              <span class="ilabel">Pi-Hole</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="background:#f2f2f7"><img src="/icons/authentik.svg" alt=""></div>
+              <span class="ilabel">Authentik</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="background:#1c1c1e"><img src="/icons/portainer.svg" alt=""></div>
+              <span class="ilabel">Portainer</span>
+            </div>
+
+            <div class="cell">
+              <div class="itile" style="background:#1c1c1e">
+                <img src="/icons/jellyfin.svg" alt="">
+                <span class="badge" style="background:#1d6cf5" id="jellyfinCount">2</span>
+              </div>
+              <span class="ilabel">Jellyfin</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="background:#1c1c1e">
+                <img src="/icons/seerr.svg" alt="">
+                <span class="badge" style="background:#ffcc00;color:#1c1c1e" id="seerrCount">7</span>
+              </div>
+              <span class="ilabel">Seerr</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="background:#1c1c1e"><img src="/icons/npm.svg" alt=""></div>
+              <span class="ilabel">NPM</span>
+            </div>
+            <div class="cell">
+              <div class="folder">
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/sonarr.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/radarr.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/sabnzbd.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/prowlarr.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/tdarr.png" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/bazarr.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/agregarr.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/profilarr.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/tautulli.svg" alt=""></div>
+              </div>
+              <span class="ilabel">Media Hub</span>
+            </div>
+            <div class="cell">
+              <div class="folder">
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/ntfy.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/beszel-light.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/scrutiny-light.svg" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/speedtest-tracker.png" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/dozzle.svg" alt=""></div>
+              </div>
+              <span class="ilabel">Monitoring</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="background:#3b4250"><img src="/icons/settings.svg" alt=""></div>
+              <span class="ilabel">Settings</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="features">
+  <div class="wrap">
+
+    <div class="feature">
+      <div class="ftext">
+        <h2>More than just an app icon</h2>
+        <p>Add a health check, a fixed label, or a live activity badge to any app. The context you need stays right where you are already looking, without another widget.</p>
+      </div>
+      <div class="fvis">
+        <div class="bdemo">
+          <div class="bdemo-item">
+            <div class="banchor" style="background:#3A3A3C"><span class="badge" style="background:#30D158"></span></div>
+            <div class="bmeta">
+              <span class="bcap">Health check</span>
+              <span class="bsrc">Container health or a ping</span>
+            </div>
+          </div>
+          <div class="bdemo-item">
+            <div class="banchor" style="background:#4A4A6A"><span class="badge" style="background:#0091FF">4K</span></div>
+            <div class="bmeta">
+              <span class="bcap">Fixed label</span>
+              <span class="bsrc">Text you set</span>
+            </div>
+          </div>
+          <div class="bdemo-item">
+            <div class="banchor" style="background:#5A4636"><span class="badge" style="background:#ffcc00;color:#1c1c1e" id="seerrCount">7</span></div>
+            <div class="bmeta">
+              <span class="bcap">Live activity</span>
+              <span class="bsrc">A number from the service API</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="ftext">
+        <h2>Useful widgets, when you need them</h2>
+        <p>Pull in the information that is actually useful, from the services you already run. Add only what earns its place on the screen.</p>
+      </div>
+      <div class="fvis marquee" role="img" aria-label="Services Stackyard widgets can read from">
+        <div class="mrow mrow-a">
+          <span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-plex.svg" alt=""><span class="mname">Plex</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-jellyfin.svg" alt=""><span class="mname">Jellyfin</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-emby.svg" alt=""><span class="mname">Emby</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-navidrome.svg" alt=""><span class="mname">Navidrome</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-audiobookshelf.svg" alt=""><span class="mname">Audiobookshelf</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-komga.svg" alt=""><span class="mname">Komga</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-kavita.svg" alt=""><span class="mname">Kavita</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-github.svg" alt=""><span class="mname">GitHub</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-adguard-home.svg" alt=""><span class="mname">AdGuard Home</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-pi-hole.svg" alt=""><span class="mname">Pi-hole</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-technitium.svg" alt=""><span class="mname">Technitium</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-nextdns.svg" alt=""><span class="mname">NextDNS</span></span>
+          <span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-plex.svg" alt=""><span class="mname">Plex</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-jellyfin.svg" alt=""><span class="mname">Jellyfin</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-emby.svg" alt=""><span class="mname">Emby</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-navidrome.svg" alt=""><span class="mname">Navidrome</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-audiobookshelf.svg" alt=""><span class="mname">Audiobookshelf</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-komga.svg" alt=""><span class="mname">Komga</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-kavita.svg" alt=""><span class="mname">Kavita</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-github.svg" alt=""><span class="mname">GitHub</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-adguard-home.svg" alt=""><span class="mname">AdGuard Home</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-pi-hole.svg" alt=""><span class="mname">Pi-hole</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-technitium.svg" alt=""><span class="mname">Technitium</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-nextdns.svg" alt=""><span class="mname">NextDNS</span></span>
+        </div>
+        <div class="mrow mrow-b">
+          <span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-glances.svg" alt=""><span class="mname">Glances</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-beszel.svg" alt=""><span class="mname">Beszel</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-unraid.svg" alt=""><span class="mname">Unraid</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-scrutiny.svg" alt=""><span class="mname">Scrutiny</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-truenas-scale.svg" alt=""><span class="mname">TrueNAS</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-duplicati.svg" alt=""><span class="mname">Duplicati</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-kopia.svg" alt=""><span class="mname">Kopia</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-gluetun.svg" alt=""><span class="mname">Gluetun</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-conduit.svg" alt=""><span class="mname">Psiphon Conduit</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-netbird.svg" alt=""><span class="mname">NetBird</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-plausible.svg" alt=""><span class="mname">Plausible</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-umami.svg" alt=""><span class="mname">Umami</span></span><span class="mitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.4"/><path d="M9 2.6v1.7M9 13.7v1.7M3.5 9H1.8M16.2 9h-1.7M5.1 5.1 3.9 3.9M14.1 14.1l-1.2-1.2M12.9 5.1l1.2-1.2M3.9 14.1l1.2-1.2"/><path d="M17.5 21.5H8.8a3.9 3.9 0 0 1-.4-7.8 5 5 0 0 1 9.5.9 3.4 3.4 0 0 1-.4 6.9Z"/></svg><span class="mname">Weather</span></span>
+          <span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-glances.svg" alt=""><span class="mname">Glances</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-beszel.svg" alt=""><span class="mname">Beszel</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-unraid.svg" alt=""><span class="mname">Unraid</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-scrutiny.svg" alt=""><span class="mname">Scrutiny</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-truenas-scale.svg" alt=""><span class="mname">TrueNAS</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-duplicati.svg" alt=""><span class="mname">Duplicati</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-kopia.svg" alt=""><span class="mname">Kopia</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-gluetun.svg" alt=""><span class="mname">Gluetun</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-conduit.svg" alt=""><span class="mname">Psiphon Conduit</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-netbird.svg" alt=""><span class="mname">NetBird</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-plausible.svg" alt=""><span class="mname">Plausible</span></span><span class="mitem"><img loading="lazy" decoding="async" src="/icons/w-umami.svg" alt=""><span class="mname">Umami</span></span><span class="mitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3.4"/><path d="M9 2.6v1.7M9 13.7v1.7M3.5 9H1.8M16.2 9h-1.7M5.1 5.1 3.9 3.9M14.1 14.1l-1.2-1.2M12.9 5.1l1.2-1.2M3.9 14.1l1.2-1.2"/><path d="M17.5 21.5H8.8a3.9 3.9 0 0 1-.4-7.8 5 5 0 0 1 9.5.9 3.4 3.4 0 0 1-.4 6.9Z"/></svg><span class="mname">Weather</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="ftext">
+        <h2>No configuration files required</h2>
+        <p>Add apps, configure widgets, set up badges, and arrange your layout, all from the admin UI. Export your setup for a backup, import it to move to a new machine.</p>
+      </div>
+      <div class="fvis">
+        <div class="admin" role="img" aria-label="The Stackyard admin dashboard list">
+          <div class="achips">
+            <span class="achip on">All</span>
+            <span class="achip">Apps</span>
+            <span class="achip">Widgets</span>
+            <span class="achip">Folders</span>
+          </div>
+          <div class="arow">
+            <svg class="ahandle" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="19" r="2"/><circle cx="15" cy="19" r="2"/></svg>
+            <span class="aicon" style="background:#1c1c1e"><img src="/icons/w-github.svg" alt=""></span>
+            <span class="aname">GitHub</span>
+            <span class="apills">
+              <span class="apill" style="background:rgba(0,145,255,.20);color:#5CB8FF">Dock</span>
+              <span class="apill" style="background:rgba(219,52,242,.20);color:#EA8DFF">Badge</span>
+              <span class="apill" style="background:rgba(48,209,88,.20);color:#4AD968">Health</span>
+            </span>
+          </div>
+          <div class="arow">
+            <svg class="ahandle" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="19" r="2"/><circle cx="15" cy="19" r="2"/></svg>
+            <span class="aicon aicon-wg" style="background:#3A3A3C"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"></rect><circle cx="9.7" cy="9.7" r="1" fill="currentColor"></circle><line x1="9" y1="13.4" x2="13" y2="13.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></line></svg></span>
+            <span class="aname">Now Playing</span>
+            <span class="apills">
+              <span class="apill" style="background:rgba(0,210,224,.20);color:#3BDDEC">Widget</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="ftext">
+        <h2>Use it your way, wherever you are</h2>
+        <p>Available in English, Persian, Simplified Chinese, Spanish, German, and French, with right-to-left support built in. Install it on your phone's home screen for one-tap access.</p>
+      </div>
+      <div class="fvis">
+        <div class="langs">
+          <span class="lang">English</span>
+          <span class="lang">فارسی <b>RTL</b></span>
+          <span class="lang">简体中文</span>
+          <span class="lang">Español</span>
+          <span class="lang">Deutsch</span>
+          <span class="lang">Français</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="cta">
+  <div class="cta-in">
+    <div class="eyebrow">Your homelab deserves better</div>
+    <h2>Give your services a calm home that is easy to set up and good to come back to.</h2>
+    <a class="btn btn-accent" href="/docs/">Start building your dashboard</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap foot-in">
+    <div class="foot-l">
+      <div class="brand">
+        <img src="/img/stackyard-mark.svg" alt="">
+        <span>Stackyard</span>
+      </div>
+      <div class="foot-links">
+        <a href="https://github.com/SandObserver/stackyard">GitHub</a><span>·</span>
+        <a href="/docs/">Documentation</a><span>·</span>
+        <a href="https://stackyard-demo.onrender.com">Demo</a><span>·</span>
+        <a href="https://github.com/SandObserver/stackyard/releases">Releases</a><span>·</span>
+        <a href="https://github.com/SandObserver/stackyard/blob/main/SECURITY.md">Security</a><span>·</span>
+        <a href="/docs/support/">Support</a>
+      </div>
+    </div>
+    <div class="foot-r">
+      <div class="verbadge"><span>release</span><b>v1.7.1</b></div>
+      <div class="license">Apache License 2.0 · © 2026 SandObserver</div>
+    </div>
+  </div>
+</footer>
+    </main>
+    <script is:inline>
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+if (!reduced) {
+  const jf = document.getElementById('jellyfinCount');
+  const sr = document.getElementById('seerrCount');
+  const srcs = document.querySelectorAll('[data-live-seerr]');
+  setInterval(() => {
+    const a = Math.max(1, 2 + Math.round((Math.random() - 0.5) * 2));
+    const b = Math.max(1, 7 + Math.round((Math.random() - 0.5) * 2));
+    if (jf) jf.textContent = a;
+    if (sr) sr.textContent = b;
+    srcs.forEach(n => { n.textContent = b; });
+  }, 3400);
+}
+    </script>
+  </body>
+</html>
+
+<style is:global>
+
+    :root{
+      --bg-primary:#000000;
+      --bg-secondary:#1C1C1E;
+      --bg-elevated-secondary:#2C2C2E;
+      --bg-elevated-tertiary:#3A3A3C;
+      --label-primary:#FFFFFF;
+      --label-secondary:rgba(235,235,245,.70);
+      --a11y-dim:#A3A3A8;
+      --separator:rgba(255,255,255,.17);
+      --separator-opaque:#38383A;
+      --accent:#00D2E0;
+      --accent-strong:#3BDDEC;
+      --success:#30D158;
+      --radius-lg:14px;
+      --radius-md:10px;
+      --font-ui:-apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-display:'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      /* Keep the near-black ink. White on --accent measures 1.86:1 and fails WCAG AA. */
+      --on-accent-ink:#06181B;
+      --spring:cubic-bezier(.34,1.56,.64,1);
+      --gs:1;
+    }
+    *,*::before,*::after{box-sizing:border-box}
+    body{margin:0;background:var(--bg-primary);font-family:var(--font-ui);
+      -webkit-font-smoothing:antialiased}
+    a{color:var(--accent);text-decoration:none} a:hover{color:var(--accent-strong)}
+    .wrap{width:100%;max-width:1160px;margin:0 auto;padding:0 40px}
+
+    .nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0}
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand img{width:28px;height:28px;display:block}
+    .brand span{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--label-primary);letter-spacing:-0.015em}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .pill{height:40px;padding:0 20px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;position:relative;
+      font-size:14px;font-weight:600;letter-spacing:-0.005em}
+    /* Keep the hit area. The drawn pill is 40px, below the 44px minimum. */
+    .pill::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
+    .pill-solid{background:var(--label-primary);color:#101012}
+    .pill-ghost{background:rgba(255,255,255,.07);color:var(--label-secondary);border:1px solid var(--separator)}
+    .pill-ghost:hover{color:var(--label-primary)}
+
+    .hero{padding:44px 0 40px}
+    .hero h1{margin:0;font-family:var(--font-display);font-size:74px;line-height:1.02;letter-spacing:-0.035em;
+      font-weight:700;color:var(--label-primary);max-width:15ch;text-wrap:balance}
+    .hero p{margin:26px 0 0;font-size:19px;line-height:1.5;color:var(--a11y-dim);max-width:54ch;text-wrap:pretty}
+    .cta-row{display:flex;align-items:center;gap:12px;margin-top:34px}
+    .btn{height:50px;padding:0 26px;border-radius:25px;display:inline-flex;align-items:center;justify-content:center;
+      font-size:16px;font-weight:600;letter-spacing:-0.01em}
+    .btn-accent{background:var(--accent);color:var(--on-accent-ink)}
+    .btn-accent:hover{background:var(--accent-strong);color:var(--on-accent-ink)}
+    .btn-quiet{background:rgba(255,255,255,.08);color:var(--label-primary);border:1px solid var(--separator)}
+
+    /* Metrics come from dashboard.css: 1041px design width, six 152.67px
+       columns, 25px column gap, 30px row gap, 152px tile height. */
+    .device-band{padding:20px 0 0}
+    .device{max-width:1160px;margin:0 auto;padding:0 20px}
+    .bezel{background:#141416;border:1px solid rgba(255,255,255,.10);border-radius:26px 26px 0 0;
+      padding:12px 12px 0;box-shadow:0 -2px 60px rgba(0,0,0,.5)}
+    .screen{position:relative;border-radius:16px 16px 0 0;overflow:hidden;background:#0d1117}
+    .screen::before{content:"";position:absolute;inset:0;background-image:url("/img/wallpaper.jpg");
+      background-size:cover;background-position:center;background-repeat:no-repeat;
+      filter:brightness(.4);pointer-events:none}
+    .screen-inner{position:relative;z-index:1}
+    .screen-inner{--gs:1;
+      --col:calc(152.67px * var(--gs)); --tile-h:calc(152px * var(--gs));
+      --gap-c:calc(25px * var(--gs));   --gap-r:calc(30px * var(--gs));
+      --icon:calc(72px * var(--gs));    --art:calc(50px * var(--gs));
+      --ir:calc(16.1px * var(--gs));    --lbl:calc(13px * var(--gs));
+      --lblw:calc(84px * var(--gs));
+      padding:calc(34px * var(--gs)) calc(24px * var(--gs)) 0;
+      height:368px;overflow:hidden}
+    .dgrid{display:grid;grid-template-columns:repeat(auto-fit, var(--col));
+      grid-auto-rows:var(--tile-h);column-gap:var(--gap-c);row-gap:var(--gap-r);
+      width:100%;justify-content:center}
+
+    /* Icon geometry follows dashboard.js mkIcon and ICON_R: 72px wrap,
+       50px artwork, radius 72 * 0.2237. */
+    .cell{width:var(--col);height:var(--tile-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(6px * var(--gs))}
+    .itile{position:relative;width:var(--icon);height:var(--icon);border-radius:var(--ir);display:flex;align-items:center;justify-content:center;
+      isolation:isolate;flex-shrink:0}
+    .itile::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.14)}
+    .itile::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;
+      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 60%)}
+    .itile img{position:relative;z-index:1;width:var(--art);height:var(--art);object-fit:contain;display:block}
+    .ilabel{width:var(--lblw);font-size:var(--lbl);line-height:1.3846;letter-spacing:-0.0062em;font-weight:500;
+      color:rgba(255,255,255,.90);text-shadow:0 1px 4px rgba(0,0,0,.7);text-align:center;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .badge{position:absolute;top:calc(-7px * var(--gs));right:calc(-7px * var(--gs));z-index:3;min-width:calc(20px * var(--gs));height:calc(20px * var(--gs));padding:0 calc(5px * var(--gs));border-radius:calc(10px * var(--gs));
+      display:flex;align-items:center;justify-content:center;font-size:calc(11px * var(--gs));line-height:1;font-weight:700;color:#fff;
+      transform:translateZ(0)}
+
+    .folder{width:var(--icon);height:var(--icon);border-radius:var(--ir);background:rgba(120,130,160,.35);
+      display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:calc(3px * var(--gs));padding:calc(10px * var(--gs));
+      -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+      box-shadow:inset 1px 1px 0 rgba(255,255,255,.22),inset -1px -1px 0 rgba(0,0,0,.12)}
+    .fmini{border-radius:28%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+    .fmini img{width:72%;height:72%;object-fit:contain}
+
+    .wcell{width:var(--col);height:var(--tile-h);border-radius:calc(28px * var(--gs));overflow:hidden}
+    /* Keep the cell background. The widget document is transparent. */
+    .wcell{position:relative;background:#1c1c1e}
+    .wframe{position:absolute;top:0;left:0;display:block;border:0;width:170px;height:170px;
+      transform:scale(calc(0.8981 * var(--gs)));transform-origin:top left}
+
+    /* Card geometry and glass match dashboard.css. Changing either missizes the widget. */
+    .np{width:152.67px;height:152px;border-radius:28px;position:relative;overflow:hidden;
+      transform:scale(var(--gs));transform-origin:top left;
+      border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.32);
+      -webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
+    .np-frame{position:absolute;top:0;left:0;display:block;border:0;width:170px;height:170px;
+      transform:translate(0px,-0.335px) scale(0.8981);transform-origin:top left}
+
+    .features{background:var(--bg-secondary);padding:4px 0 8px}
+    .feature{display:flex;align-items:center;gap:96px;padding:64px 0}
+    .feature + .feature{border-top:1px solid var(--separator-opaque)}
+    .ftext{width:460px;flex-shrink:0}
+    .ftext h2{margin:0 0 14px;font-family:var(--font-display);font-size:30px;font-weight:700;
+      letter-spacing:-0.025em;color:var(--label-primary)}
+    .ftext p{margin:0;font-size:17px;line-height:1.55;color:var(--a11y-dim);text-wrap:pretty}
+    .fvis{flex:0 0 440px;display:flex;align-items:center;min-width:0}
+
+    .bdemo{display:flex;gap:16px;width:100%}
+    .bdemo-item{display:flex;flex-direction:column;align-items:center;gap:12px;width:136px;text-align:center}
+    .banchor{position:relative;width:60px;height:60px;border-radius:13.4px;isolation:isolate;flex-shrink:0}
+    .banchor::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.14)}
+    .banchor::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;
+      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 60%)}
+    .bmeta{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
+    .bcap{font-size:14px;font-weight:600;color:var(--label-primary)}
+    .bsrc{font-size:12.5px;line-height:1.32;color:var(--a11y-dim);text-wrap:balance}
+
+    .marquee{display:block;width:100%;overflow:hidden;padding:40px 0;
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+      mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+    /* Keep the trailing margin. Using gap breaks the -50% marquee loop. */
+    .mrow{display:flex;width:max-content;gap:0;align-items:center}
+    .mrow + .mrow{margin-top:34px}
+    .mrow-a{animation:drift-a 58s linear infinite}
+    .mrow-b{animation:drift-b 66s linear infinite}
+    @keyframes drift-a{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes drift-b{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+    .mitem{position:relative;flex-shrink:0;margin-right:34px;width:44px;height:44px;
+      display:flex;align-items:center;justify-content:center;
+      transition:transform .22s var(--spring), opacity .22s ease;opacity:.88}
+    .mitem:hover{transform:translateY(-3px) scale(1.09);opacity:1}
+    .mitem img,.mitem svg{width:38px;height:38px;object-fit:contain;display:block}
+    .mitem svg{color:#E8E8EC}
+    .mname{position:absolute;top:calc(100% + 3px);left:50%;transform:translate(-50%,4px);
+      padding:5px 10px;border-radius:8px;background:rgba(12,12,14,.94);
+      border:1px solid var(--separator);color:var(--label-primary);
+      font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;
+      opacity:0;transition:opacity .18s ease, transform .18s var(--spring);z-index:5}
+    .mitem:hover .mname{opacity:1;transform:translate(-50%,0)}
+    .mrow-a .mname{top:auto;bottom:calc(100% + 3px);transform:translate(-50%,-4px)}
+    .mrow-a .mitem:hover .mname{transform:translate(-50%,0)}
+
+    .admin{width:100%;background:var(--bg-elevated-secondary);border:1px solid var(--separator-opaque);
+      border-radius:26px;overflow:hidden}
+    .achips{display:flex;gap:6px;padding:14px 16px 12px}
+    .achip{height:26px;padding:0 11px;border-radius:13px;display:flex;align-items:center;
+      font-size:12px;font-weight:600;color:var(--label-secondary);background:rgba(120,120,128,.18)}
+    .achip.on{background:rgba(0,210,224,.20);color:var(--accent-strong)}
+    .arow{display:flex;align-items:center;gap:11px;height:52px;padding:0 16px;border-top:1px solid var(--separator)}
+    .ahandle{width:13px;height:13px;flex-shrink:0;color:rgba(235,235,245,.34)}
+    .aicon{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .aicon img{width:17px;height:17px;object-fit:contain;display:block}
+    .aicon-wg svg{width:20px;height:20px;color:rgba(235,235,245,.82)}
+    .aname{font-size:14px;color:var(--label-primary);flex:1;white-space:nowrap}
+    .apills{display:flex;gap:5px}
+    .apill{height:20px;padding:0 8px;border-radius:6px;display:flex;align-items:center;
+      font-size:11px;font-weight:600;letter-spacing:.01em}
+
+    .group{width:400px;background:var(--bg-elevated-secondary);border:1px solid var(--separator-opaque);
+      border-radius:26px}
+    .grow{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px}
+    .grow + .grow{border-top:1px solid var(--separator)}
+    .grow-l{font-size:15px;color:var(--label-primary)}
+    .grow-b{height:30px;padding:0 14px;border-radius:10px;border:1px solid var(--separator);
+      color:var(--label-secondary);font-size:13px;font-weight:600;display:flex;align-items:center}
+
+    .langs{display:flex;gap:10px;flex-wrap:wrap;width:100%}
+    .lang{height:36px;padding:0 16px;border-radius:18px;border:1px solid var(--separator);
+      display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--label-secondary)}
+    .lang b{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.03em}
+
+    .cta{background:var(--bg-elevated-tertiary);padding:58px 0}
+    .cta-in{text-align:center;max-width:720px;margin:0 auto;padding:0 40px}
+    .eyebrow{font-size:13px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+    .cta h2{margin:14px 0 0;font-family:var(--font-display);font-size:36px;line-height:1.14;
+      letter-spacing:-0.028em;font-weight:700;color:var(--label-primary);text-wrap:balance}
+    .cta .btn{margin-top:28px}
+
+    .footer{background:var(--bg-primary);padding:40px 0 48px}
+    .foot-in{display:flex;align-items:flex-start;justify-content:space-between;gap:40px}
+    .foot-l{display:flex;flex-direction:column;gap:14px}
+    .foot-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-10px 0}
+    .foot-links a{font-size:14px;color:var(--a11y-dim);display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
+    .foot-links a:hover{color:var(--label-primary)}
+    .foot-links span{color:rgba(255,255,255,.28);font-size:13px}
+    .foot-r{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+    .verbadge{display:flex;border-radius:5px;overflow:hidden;font-size:12px;font-weight:600}
+    .verbadge span{padding:4px 8px;background:var(--bg-elevated-tertiary);color:var(--label-secondary)}
+    .verbadge b{padding:4px 8px;background:#007ec6;color:#fff;font-weight:700}
+    .license{font-size:13px;color:rgba(255,255,255,.45)}
+
+
+    @media (max-width:1180px){
+      .wrap{padding:0 28px}
+      .hero h1{font-size:60px}
+      .feature{gap:56px}
+      .ftext{width:420px}
+      .fvis{flex:0 0 380px}
+    }
+    @media (max-width:900px){
+      .hero{padding:36px 0 32px}
+      .hero h1{font-size:46px;letter-spacing:-0.03em;max-width:100%}
+      .hero p{font-size:17px;margin-top:20px}
+      .btn{height:46px;padding:0 22px;font-size:15px}
+      .device{padding:0 14px}
+      .screen-inner{--gs:.80;height:294px}
+      .feature{flex-direction:column;align-items:flex-start;gap:30px;padding:46px 0}
+      .ftext{width:100%;max-width:560px}
+      .ftext h2{font-size:25px}
+      .ftext p{font-size:16px}
+      .fvis{flex:none;width:100%;max-width:460px}
+      .cta{padding:48px 0}
+      .cta h2{font-size:30px}
+      .cta-in{padding:0 28px}
+    }
+    @media (max-width:600px){
+      .wrap{padding:0 20px}
+      .nav{padding:18px 0;gap:12px}
+      .nav-right{gap:6px}
+      .pill{height:40px;padding:0 13px;font-size:13px}
+      .pill-ghost:last-child{display:none}
+      .brand span{font-size:17px}
+      .hero{padding:26px 0 26px}
+      .hero h1{font-size:34px;line-height:1.06}
+      .hero p{font-size:15.5px;margin-top:16px}
+      .cta-row{margin-top:24px;gap:9px}
+      .btn{height:44px;padding:0 18px;font-size:14.5px;border-radius:22px}
+      .device{padding:0 10px}
+      .bezel{border-radius:18px 18px 0 0;padding:8px 8px 0}
+      .screen{border-radius:12px 12px 0 0}
+      .screen-inner{--gs:.48;height:266px}
+      .features{padding:0}
+      .feature{padding:34px 0;gap:22px}
+      .ftext h2{font-size:22px}
+      .ftext p{font-size:15.5px}
+      .fvis{max-width:100%}
+      .bdemo{flex-direction:column;gap:16px}
+      .bdemo-item{flex-direction:row;align-items:center;gap:14px;width:100%;text-align:left}
+      .bmeta{align-items:flex-start;text-align:left}
+      .banchor{width:54px;height:54px;border-radius:12px}
+      .marquee{padding:44px 0}
+      .mname{font-size:11px;padding:4px 8px;border-radius:7px}
+      .mitem{width:38px;height:38px;margin-right:26px}
+      .mitem img,.mitem svg{width:32px;height:32px}
+      .arow{height:48px;padding:0 13px;gap:9px}
+      .aname{font-size:13.5px}
+      .apill{padding:0 6px;font-size:10.5px}
+      .lang{height:33px;padding:0 13px;font-size:13px}
+      .cta{padding:40px 0}
+      .cta h2{font-size:25px}
+      .eyebrow{font-size:11.5px;letter-spacing:.11em}
+      .footer{padding:30px 0 36px}
+      .foot-in{flex-direction:column;align-items:flex-start;gap:22px}
+      .foot-r{align-items:flex-start}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .mrow-a,.mrow-b{animation:none !important;transform:translateX(-25%)}
+    }
+  
+    .skip{position:absolute;left:-9999px;top:0;z-index:50;padding:10px 16px;border-radius:0 0 10px 0;
+      background:var(--accent);color:var(--on-accent-ink);font-weight:600}
+    .skip:focus{left:0}
+    a:focus-visible,.mitem:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+</style>

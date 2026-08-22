@@ -1,0 +1,912 @@
+:root {
+  --sy-teal: #00d2e0;
+  --sy-teal-hi: #3bddec;
+  --sy-red: #ff4245;
+  --sy-red-hi: #ff6165;
+  --sy-orange: #ff9230;
+  --sy-orange-hi: #ffa056;
+  --sy-green: #30d158;
+  --sy-green-hi: #4ad968;
+  --sy-blue: #0091ff;
+  --sy-blue-hi: #5cb8ff;
+  --sy-indigo: #6d7cff;
+  --sy-indigo-hi: #a7aaff;
+  --sy-purple: #db34f2;
+  --sy-purple-hi: #ea8dff;
+  --sy-pink: #ff375f;
+  --sy-pink-hi: #ff8ac4;
+  --sy-brown: #b78a66;
+  --sy-brown-hi: #dba679;
+
+  --sy-gray: #8e8e93;
+  --sy-gray4: #3a3a3c;
+  --sy-gray5: #2c2c2e;
+  --sy-gray6: #1c1c1e;
+  --sy-a11y-dim: #a3a3a8;
+  --sy-a11y-border: #838387;
+
+  --sy-radius-group: 26px;
+  --sy-radius-lg: 14px;
+  --sy-radius-md: 10px;
+
+  --sy-font: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --sy-font-display: 'Instrument Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --sl-font: var(--sy-font);
+  --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+:root,
+:root[data-theme='dark'] {
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #ebebf0;
+  --sl-color-gray-2: #c7c7cc;
+  --sl-color-gray-3: var(--sy-a11y-dim);
+  --sl-color-gray-4: #636366;
+  --sl-color-gray-5: var(--sy-gray4);
+  --sl-color-gray-6: var(--sy-gray5);
+  --sl-color-gray-7: var(--sy-gray6);
+  --sl-color-black: #000000;
+
+  --sl-color-accent-low: #04353a;
+  --sl-color-accent: #0090a0;
+  --sl-color-accent-high: var(--sy-teal-hi);
+
+  --sl-color-text: var(--sy-a11y-dim);
+  --sl-color-text-accent: var(--sy-teal-hi);
+  --sl-color-text-invert: #000000;
+
+  --sl-color-bg: #000000;
+  --sl-color-bg-nav: var(--sy-gray6);
+  --sl-color-bg-sidebar: var(--sy-gray6);
+  --sl-color-bg-inline-code: rgba(120, 120, 128, 0.24);
+  --sl-color-bg-accent: var(--sy-teal-hi);
+
+  --sl-color-hairline: #38383a;
+  --sl-color-hairline-light: rgba(255, 255, 255, 0.17);
+  --sl-color-hairline-shade: #38383a;
+
+  --sy-surface: var(--sy-gray5);
+  --sy-surface-2: var(--sy-gray4);
+  --sy-label: #ffffff;
+  --sy-dim: var(--sy-a11y-dim);
+  --sy-sep: rgba(255, 255, 255, 0.17);
+  --sy-overlay: rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme='light'] {
+  --sl-color-white: #000000;
+  --sl-color-gray-1: var(--sy-gray6);
+  --sl-color-gray-2: var(--sy-gray4);
+  --sl-color-gray-3: #6c6c70;
+  --sl-color-gray-4: #8e8e93;
+  --sl-color-gray-5: #c7c7cc;
+  --sl-color-gray-6: #e5e5ea;
+  --sl-color-gray-7: #f2f2f7;
+  --sl-color-black: #ffffff;
+
+  --sl-color-accent-low: #cdeff3;
+  --sl-color-accent: #00587e;
+  --sl-color-accent-high: #003f5c;
+
+  --sl-color-text: #3c3c43;
+  --sl-color-text-accent: #00587e;
+  --sl-color-text-invert: #ffffff;
+
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #f2f2f7;
+  --sl-color-bg-sidebar: #f2f2f7;
+  --sl-color-bg-inline-code: rgba(120, 120, 128, 0.16);
+  --sl-color-bg-accent: #00587e;
+
+  --sl-color-hairline: #c6c6c8;
+  --sl-color-hairline-light: rgba(60, 60, 67, 0.29);
+  --sl-color-hairline-shade: #d1d1d6;
+
+  --sy-surface: #f2f2f7;
+  --sy-surface-2: #ffffff;
+  --sy-label: #000000;
+  --sy-dim: #6c6c70;
+  --sy-sep: rgba(60, 60, 67, 0.29);
+  --sy-overlay: rgba(0, 0, 0, 0.05);
+
+  --sy-green-hi: #248a3d;
+  --sy-blue-hi: #0040dd;
+  --sy-purple-hi: #8944ab;
+  --sy-orange-hi: #c93400;
+  --sy-red-hi: #d70015;
+  --sy-indigo-hi: #3634a3;
+  --sy-pink-hi: #c9155a;
+  --sy-brown-hi: #7f6545;
+  --sy-teal-hi: #00587e;
+}
+
+.sl-markdown-content h1,
+.sl-markdown-content h2,
+.sl-markdown-content h3,
+.sl-markdown-content h4,
+.site-title {
+  font-family: var(--sy-font-display);
+  letter-spacing: -0.022em;
+  color: var(--sl-color-white);
+}
+.sl-markdown-content {
+  line-height: 1.6;
+}
+.sl-markdown-content :not(pre) > code {
+  border-radius: 8px;
+  padding: 0.15em 0.4em;
+}
+
+.sl-markdown-content .starlight-aside {
+  border: 0;
+  border-inline-start: 0;
+  border-radius: var(--sy-radius-lg);
+  padding: 14px 18px;
+  background: var(--sy-overlay);
+}
+.starlight-aside__title {
+  font-family: var(--sy-font);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  gap: 7px;
+}
+.starlight-aside__content {
+  color: var(--sl-color-gray-2);
+  font-size: 0.94rem;
+}
+.starlight-aside__content a {
+  color: var(--sl-color-text-accent);
+}
+.starlight-aside--note {
+  background: color-mix(in srgb, var(--sy-blue) 14%, transparent);
+}
+.starlight-aside--note .starlight-aside__title {
+  color: var(--sy-blue-hi);
+}
+.starlight-aside--tip {
+  background: color-mix(in srgb, var(--sy-teal) 14%, transparent);
+}
+.starlight-aside--tip .starlight-aside__title {
+  color: var(--sy-teal-hi);
+}
+.starlight-aside--caution {
+  background: color-mix(in srgb, var(--sy-orange) 14%, transparent);
+}
+.starlight-aside--caution .starlight-aside__title {
+  color: var(--sy-orange-hi);
+}
+.starlight-aside--danger {
+  background: color-mix(in srgb, var(--sy-red) 14%, transparent);
+}
+.starlight-aside--danger .starlight-aside__title {
+  color: var(--sy-red-hi);
+}
+
+.expressive-code .frame pre {
+  border-radius: var(--sy-radius-lg);
+  border: 1px solid var(--sl-color-hairline);
+}
+
+.sl-markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.94rem;
+}
+.sl-markdown-content th,
+.sl-markdown-content td {
+  border: 1px solid var(--sl-color-hairline);
+  padding: 8px 12px;
+  text-align: start;
+  vertical-align: top;
+}
+.sl-markdown-content th {
+  background: var(--sy-overlay);
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+.sy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 13px;
+  border-radius: var(--sy-radius-md);
+  font-family: var(--sy-font);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.006em;
+  white-space: nowrap;
+  vertical-align: middle;
+  margin: -6px 1px;
+  position: relative;
+  top: -1px;
+}
+.sy-btn--primary {
+  background: #0071a4;
+  color: #ffffff;
+}
+.sy-btn--ghost {
+  background: transparent;
+  border: 1px solid var(--sy-sep);
+  color: var(--sy-dim);
+}
+.sy-btn--save {
+  background: #248a3d;
+  color: #ffffff;
+}
+.sy-btn--danger {
+  background: transparent;
+  border: 1px solid var(--sy-red);
+  color: var(--sy-red-hi);
+}
+
+.sy-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 11px;
+  font-family: var(--sy-font);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  vertical-align: middle;
+  margin: -3px 1px;
+  position: relative;
+  top: -1px;
+}
+.sy-pill--dock {
+  background: color-mix(in srgb, var(--sy-indigo) 20%, transparent);
+  color: var(--sy-indigo-hi);
+}
+.sy-pill--badge {
+  background: color-mix(in srgb, var(--sy-blue) 20%, transparent);
+  color: var(--sy-blue-hi);
+}
+.sy-pill--health {
+  background: color-mix(in srgb, var(--sy-pink) 20%, transparent);
+  color: var(--sy-pink-hi);
+}
+.sy-pill--widget {
+  background: color-mix(in srgb, var(--sy-green) 20%, transparent);
+  color: var(--sy-green-hi);
+}
+.sy-pill--folder {
+  background: color-mix(in srgb, var(--sy-brown) 20%, transparent);
+  color: var(--sy-brown-hi);
+}
+
+.sy-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: var(--sy-overlay);
+  color: var(--sy-dim);
+  font-size: 12px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.sy-chip.is-on {
+  background: color-mix(in srgb, var(--sy-teal) 20%, transparent);
+  color: var(--sy-teal-hi);
+}
+
+.sy-toggle {
+  display: inline-block;
+  width: 44px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--sy-overlay);
+  position: relative;
+  vertical-align: middle;
+}
+.sy-toggle::after {
+  content: '';
+  position: absolute;
+  inset-block: 2px;
+  inset-inline-start: 2px;
+  width: 26px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+.sy-toggle.is-on {
+  background: var(--sy-green);
+}
+.sy-toggle.is-on::after {
+  inset-inline-start: auto;
+  inset-inline-end: 2px;
+}
+
+.sy-group {
+  margin: 1.2rem 0;
+  background: var(--sy-surface);
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: var(--sy-radius-group);
+  overflow: hidden;
+}
+.sy-group__head {
+  padding: 11px 14px 6px;
+  font-size: 12.5px;
+  color: var(--sy-dim);
+}
+.sy-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 7px 14px;
+  border-top: 1px solid var(--sy-sep);
+}
+.sy-group__head + .sy-row {
+  border-top: 0;
+}
+.sy-row:first-child {
+  border-top: 0;
+}
+.sy-row__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--sy-label);
+}
+.sy-row__sub {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--sy-dim);
+  margin-top: 1px;
+}
+.sy-row__value {
+  font-size: 14px;
+  color: var(--sy-dim);
+  text-align: end;
+}
+
+.sy-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin: 1.2rem 0;
+}
+.sy-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  width: 92px;
+}
+.sy-tile__art {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 14.3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+.sy-tile__art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 60%);
+}
+.sy-tile__art img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.sy-tile__name {
+  font-size: 12.5px;
+  color: var(--sl-color-gray-2);
+  text-align: center;
+}
+.sy-badge {
+  position: absolute;
+  top: -6px;
+  inset-inline-end: -6px;
+  z-index: 3;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.sy-caption {
+  margin-top: -0.6rem;
+  font-size: 13px;
+  color: var(--sy-dim);
+}
+
+.sy-tiles--row {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 26px;
+}
+.sy-tiles--row .sy-tile {
+  flex: 0 0 auto;
+}
+.sy-tiles--row .sy-tile__art {
+  flex: 0 0 auto;
+}
+/* Reserve two lines. A wrapping caption otherwise shifts its neighbours. */
+.sy-tiles--row .sy-tile__cap {
+  min-height: 2.7em;
+}
+.sy-tile--plain .sy-tile__art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.14);
+}
+.sy-tile__cap {
+  font-size: 12.5px;
+  color: var(--sy-dim);
+  text-align: center;
+  line-height: 1.35;
+}
+
+.sy-badge--stale {
+  opacity: 0.55;
+  outline: 1.5px dashed rgba(255, 255, 255, 0.92);
+  outline-offset: 1px;
+}
+:root[data-theme='light'] .sy-badge--stale {
+  outline-color: rgba(0, 0, 0, 0.55);
+}
+
+.sy-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 1.2rem 0;
+}
+.sy-order__step {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 4px;
+}
+.sy-order__step + .sy-order__step {
+  border-top: 1px solid var(--sy-sep);
+}
+.sy-order__rank {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--sy-overlay);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--sy-dim);
+  font-variant-numeric: tabular-nums;
+}
+.sy-order__demo {
+  width: 34px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+}
+.sy-order__text {
+  font-size: 14px;
+  color: var(--sy-label);
+}
+.sy-order__text small {
+  display: block;
+  font-size: 12.5px;
+  color: var(--sy-dim);
+  margin-top: 1px;
+}
+.sy-badge--inline {
+  position: static;
+  display: inline-flex;
+}
+
+.sy-row__handle {
+  width: 12px;
+  flex-shrink: 0;
+  color: var(--sy-dim);
+  opacity: 0.55;
+  line-height: 1;
+}
+.sy-row__handle::before {
+  content: '⠿';
+  font-size: 15px;
+}
+.sy-row__ico {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.sy-row__ico img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+.sy-row__ico--folder {
+  background: rgba(120, 130, 160, 0.35);
+}
+.sy-row__pills {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.sy-row__acts {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.sy-iconbtn {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--sy-overlay);
+  color: var(--sy-dim);
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.sy-iconbtn {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+button.sy-iconbtn:hover {
+  background: color-mix(in srgb, var(--sy-teal) 20%, transparent);
+  color: var(--sy-teal-hi);
+}
+button.sy-iconbtn:focus-visible {
+  outline: 2px solid var(--sy-teal);
+  outline-offset: 2px;
+}
+[data-reorder] .sy-row {
+  transition: background 0.2s ease;
+}
+
+.sy-table-wide table {
+  table-layout: fixed;
+}
+.sy-table-wide table th:nth-child(1),
+.sy-table-wide table td:nth-child(1) {
+  width: 20%;
+}
+.sy-table-wide table th:nth-child(2),
+.sy-table-wide table td:nth-child(2) {
+  width: 46%;
+}
+.sy-table-wide table th:nth-child(3),
+.sy-table-wide table td:nth-child(3) {
+  width: 34%;
+}
+.sy-table-wide table code {
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+}
+
+.sy-shot {
+  margin: 1.3rem 0;
+}
+.sy-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--sy-radius-lg);
+  border: 1px solid var(--sl-color-hairline);
+}
+.sy-shot figcaption {
+  margin-top: 0.55rem;
+  font-size: 13px;
+  color: var(--sy-dim);
+}
+
+.sy-shot--small img {
+  width: auto;
+  max-width: 190px;
+}
+
+/* Starlight adds margin-top to every adjacent sibling in markdown content.
+   Add any new component class here or its rows stagger. */
+.sl-markdown-content :where(
+  .sy-tiles, .sy-tile, .sy-order, .sy-order__step, .sy-group, .sy-row,
+  .sy-shot, .sy-tile__art, .sy-row__label, .sy-row__pills, .sy-row__acts,
+  .wpv, .wpv__mat, .wpv__card, .wpv-pair
+) > * {
+  margin-top: 0;
+}
+
+.sy-shot img.sy-shot__dark {
+  display: none;
+}
+:root[data-theme='dark'] .sy-shot img.sy-shot__light {
+  display: none;
+}
+:root[data-theme='dark'] .sy-shot img.sy-shot__dark {
+  display: block;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .sy-shot img.sy-shot__light {
+    display: none;
+  }
+  :root:not([data-theme='light']) .sy-shot img.sy-shot__dark {
+    display: block;
+  }
+}
+
+.header site-search {
+  display: block;
+  width: auto;
+  margin-inline-start: auto;
+}
+.header site-search > button {
+  width: 13rem;
+  max-width: none;
+}
+@media (max-width: 50rem) {
+  .header site-search > button {
+    width: auto;
+  }
+}
+
+  /* Card presets and glass values must match ui/css/dashboard.css. */
+  .wpv {
+    margin: 1.3rem 0;
+  }
+  .wpv__mat {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 22px 16px;
+    border-radius: var(--sy-radius-lg);
+    border: 1px solid var(--sl-color-hairline);
+    background-color: #0d1117;
+    overflow: hidden;
+  }
+  /* Keep the filter on this layer. On .wpv__mat it dims the card too. */
+  .wpv__mat::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
+      url('/img/wallpaper.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+    filter: blur(6px);
+    transform: scale(1.06);
+  }
+  .wpv__mat > * {
+    position: relative;
+  }
+  .wpv__card {
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+    background: rgba(0, 0, 0, 0.32);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    backdrop-filter: blur(16px) saturate(140%);
+  }
+  .wpv__card[data-card='dark'] {
+    background: #1c1c1e;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .wpv__card[data-card='light'] {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.12);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .wpv__card[data-card='translucent'] {
+    background: rgba(0, 0, 0, 0.25);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    backdrop-filter: blur(22px) saturate(140%);
+  }
+  .wpv__card iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    border: 0;
+    transform-origin: top left;
+    /* Keep max-width:none. Starlight caps embedded media at the container
+       width, which lays the widget out at the wrong size. */
+    max-width: none;
+    min-width: 0;
+    /* Keep color-scheme. Widget documents are transparent, and Chrome
+       otherwise paints an opaque white canvas behind them in dark mode. */
+    color-scheme: dark;
+    background: transparent;
+  }
+  .wpv figcaption {
+    margin-top: 0.55rem;
+    font-size: 13px;
+    color: var(--sy-dim);
+  }
+    .wpv-pair {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 1.3rem 0;
+  }
+  .wpv-pair .wpv {
+    margin: 0;
+    flex: 1 1 260px;
+  }
+
+  .wpv__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 20px 18px;
+  }
+  .wpv__slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+  }
+  .wpv__label {
+    font-size: 12.5px;
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.72);
+    text-align: center;
+  }
+
+/* Same reset, for the preview slots. */
+.sl-markdown-content :where(.wpv, .wpv__mat, .wpv__row, .wpv__slot, .wpv__card) > * {
+  margin-top: 0;
+}
+
+.sl-markdown-content .cl-lede {
+  color: var(--sl-color-gray-3);
+}
+.sl-markdown-content .cl-h {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.6rem;
+}
+.sl-markdown-content .cl-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  color: var(--sy-on-accent-ink, #06181b);
+  background: var(--sl-color-accent);
+}
+.sl-markdown-content .cl-date {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--sl-color-gray-3);
+}
+.sl-markdown-content .cl-earlier {
+  margin-top: 2.4rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--sl-color-hairline);
+}
+.sl-markdown-content .cl-item {
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: var(--sy-radius-md, 12px);
+  margin-top: 0.5rem;
+  background: var(--sl-color-black);
+  overflow: hidden;
+}
+.sl-markdown-content .cl-item > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.7rem 0.95rem;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 600;
+}
+.sl-markdown-content .cl-item > summary::-webkit-details-marker {
+  display: none;
+}
+.sl-markdown-content .cl-item > summary::before {
+  content: '';
+  flex: none;
+  width: 0.62em;
+  height: 0.62em;
+  margin-inline-end: 0.25rem;
+  border-right: 2px solid var(--sl-color-accent);
+  border-bottom: 2px solid var(--sl-color-accent);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  align-self: center;
+}
+.sl-markdown-content .cl-item[open] > summary::before {
+  transform: rotate(45deg);
+}
+.sl-markdown-content .cl-item > summary:hover {
+  background: var(--sl-color-gray-6);
+}
+.sl-markdown-content .cl-item > summary:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: -2px;
+}
+.sl-markdown-content .cl-note {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--sl-color-gray-3);
+}
+.sl-markdown-content .cl-body {
+  padding: 0.2rem 0.95rem 1rem;
+  border-top: 1px solid var(--sl-color-hairline);
+}
+.sl-markdown-content .cl-body > :first-child {
+  margin-top: 0.9rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sl-markdown-content .cl-item > summary::before {
+    transition: none;
+  }
+}
+
+/* marked emits loose lists, so each item is a <p> carrying Starlight's
+   paragraph spacing. Removing this restores the large gaps. */
+.sl-markdown-content .cl-latest li,
+.sl-markdown-content .cl-body li {
+  margin-top: 0.3rem;
+  line-height: 1.5;
+}
+.sl-markdown-content .cl-latest li > p,
+.sl-markdown-content .cl-body li > p {
+  margin: 0;
+}
+.sl-markdown-content .cl-latest li > p + p,
+.sl-markdown-content .cl-body li > p + p {
+  margin-top: 0.4rem;
+}
+.sl-markdown-content .cl-latest ul,
+.sl-markdown-content .cl-latest ol,
+.sl-markdown-content .cl-body ul,
+.sl-markdown-content .cl-body ol {
+  margin-top: 0.5rem;
+}
+.sl-markdown-content .cl-latest h3,
+.sl-markdown-content .cl-body h3 {
+  margin-top: 1.15rem;
+  font-size: 1.05rem;
+}
+
+/* Preview iframes are focusable. Keep the ring. */
+.wpv__card iframe:focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: -2px;
+}

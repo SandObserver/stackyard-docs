@@ -1,0 +1,39 @@
+---
+title: Dashboard switch
+description: A keyring of links to your other Stackyard instances.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+A launcher for other dashboards, drawn as hanging keys. Use it to move between instances, for example one dashboard per room or per site.
+
+It renders in the browser and makes no outbound request.
+
+Sizes: Small holds two keychains, Medium holds five.
+
+<WidgetGroup caption="Two keys is the limit at small, five at medium."
+  items={[
+    { type: 'dashboard-switch', file: 'index.html', id: 'demo-dashswitch',    card: 'dark', title: 'Dashboard switch, small',  label: 'Small' },
+    { type: 'dashboard-switch', file: 'index.html', id: 'demo-dashswitch-md', size: 'medium', card: 'dark', title: 'Dashboard switch, medium', label: 'Medium' },
+  ]} />
+
+## Configuration
+
+Each keychain is one link.
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Name | The label on the key, for example `Living Room`. | No |
+| Dashboard URL | Where the key opens. | Yes |
+| Fob colour | The key colour. Leave on Auto to derive it from the URL. | No |
+
+One setting applies to the whole widget:
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Open in | Same tab or new tab. Defaults to same tab. | Yes |
+
+:::note
+Stackyard has no user accounts. This widget links between separate instances, it does not switch users.
+:::
+

@@ -1,0 +1,58 @@
+{
+  "name": "weather",
+  "label": "widget.label",
+  "sizes": [
+    "small"
+  ],
+  "fields": [
+    {
+      "key": "cityQuery",
+      "type": "text",
+      "label": "cityQuery.label",
+      "placeholder": "cityQuery.placeholder",
+      "optional": true,
+      "transient": true
+    },
+    {
+      "key": "city",
+      "type": "select",
+      "label": "city.label",
+      "optionsFrom": "geocode",
+      "carries": [
+        "lat",
+        "lon"
+      ],
+      "hint": "city.hint"
+    },
+    {
+      "key": "units",
+      "type": "select",
+      "variant": "pills",
+      "label": "units.label",
+      "default": "c",
+      "options": [
+        {
+          "value": "c",
+          "label": "units.opt.c"
+        },
+        {
+          "value": "f",
+          "label": "units.opt.f"
+        }
+      ]
+    },
+    {
+      "key": "feelsLike",
+      "type": "toggle",
+      "label": "feelsLike.label",
+      "default": false
+    },
+    {
+      "key": "href",
+      "type": "text",
+      "label": "href.label",
+      "placeholder": "href.placeholder",
+      "optional": true
+    }
+  ]
+}

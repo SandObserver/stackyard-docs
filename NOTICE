@@ -1,0 +1,15 @@
+Stackyard docs and landing site
+Copyright 2026 SandObserver
+
+Licensed under the Apache License, Version 2.0.
+
+"Stackyard" and the Stackyard logo are marks of the project author. The Apache
+License does not grant permission to use them (see Section 6).
+
+Service icons under public/icons/ are the marks of their respective projects,
+included for identification only. They come from selfh.st/icons and
+homarr-labs/dashboard-icons and are not covered by this repository's licence.
+
+Widget code under public/widgets/ and public/js/ is copied verbatim from the
+Stackyard application repository and is covered by its licence, which is the
+same Apache License, Version 2.0.

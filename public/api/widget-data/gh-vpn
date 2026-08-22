@@ -1,0 +1,16 @@
+{
+  "service": "gluetun",
+  "name": "",
+  "href": "",
+  "color": "#30d158",
+  "connected": true,
+  "status": "running",
+  "ip": "203.0.113.42",
+  "city": "Vancouver",
+  "region": "British Columbia",
+  "country": "Canada",
+  "countryCode": "CA",
+  "org": "AS16509 Amazon Data Services Canada",
+  "lat": 49.2827,
+  "lng": -123.1207
+}

@@ -1,0 +1,1 @@
+{"widgetSize":"medium","widgetConfig":{"widgetSubType":"system-summary","slots":[{"type":"cpu"},{"type":"ram"},{"type":"disk","primary":"/","secondary":"/srv/pool"}],"network":{"enabled":true,"mode":"speed","provider":"myspeed"}}}

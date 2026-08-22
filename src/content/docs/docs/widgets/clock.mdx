@@ -1,0 +1,31 @@
+---
+title: Clock
+description: A digital or analog clock. It renders in the browser and makes no network calls.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+A clock in one of two styles. It makes no outbound request and needs no service.
+
+Sizes: Small.
+
+
+  <WidgetGroup caption="The two views. Both show your local time."
+  items={[
+    { type: 'clock', file: 'digital.html', id: 'demo-clock-digital', title: 'Digital clock', label: 'Digital' },
+    { type: 'clock', file: 'analog.html',  id: 'demo-clock-analog',  title: 'Analog clock',  label: 'Analog' },
+  ]} />
+  
+
+
+Both show your own local time.
+
+## Configuration
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Style | Digital or Analog. | Yes |
+| Theme | Dark or Light card. | Yes |
+| Timezone | An IANA timezone name, for example `America/Toronto`. Leave blank for the browser's local time. | No |
+| Show date | Shows the weekday and date under the time. | No |
+

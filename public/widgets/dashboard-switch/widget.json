@@ -1,0 +1,99 @@
+{
+  "name": "dashboard-switch",
+  "label": "widget.label",
+  "sizes": [
+    "small",
+    "medium"
+  ],
+  "card": "dark",
+  "fields": [
+    {
+      "key": "keychains",
+      "type": "group",
+      "label": "keychains.label",
+      "min": 1,
+      "max": 5,
+      "maxBySize": {
+        "small": 2,
+        "medium": 5
+      },
+      "hint": "keychains.hint",
+      "fields": [
+        {
+          "key": "name",
+          "type": "text",
+          "label": "keychains.name.label",
+          "placeholder": "keychains.name.placeholder",
+          "optional": true
+        },
+        {
+          "key": "url",
+          "type": "text",
+          "label": "keychains.url.label",
+          "placeholder": "keychains.url.placeholder"
+        },
+        {
+          "key": "color",
+          "type": "select",
+          "label": "keychains.color.label",
+          "optional": true,
+          "options": [
+            {
+              "value": "",
+              "label": "keychains.color.opt.default"
+            },
+            {
+              "value": "teal",
+              "label": "keychains.color.opt.teal"
+            },
+            {
+              "value": "cyan",
+              "label": "keychains.color.opt.cyan"
+            },
+            {
+              "value": "orange",
+              "label": "keychains.color.opt.orange"
+            },
+            {
+              "value": "pink",
+              "label": "keychains.color.opt.pink"
+            },
+            {
+              "value": "purple",
+              "label": "keychains.color.opt.purple"
+            },
+            {
+              "value": "green",
+              "label": "keychains.color.opt.green"
+            },
+            {
+              "value": "yellow",
+              "label": "keychains.color.opt.yellow"
+            },
+            {
+              "value": "blue",
+              "label": "keychains.color.opt.blue"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "openIn",
+      "type": "select",
+      "variant": "pills",
+      "label": "openIn.label",
+      "default": "same",
+      "options": [
+        {
+          "value": "same",
+          "label": "openIn.opt.same"
+        },
+        {
+          "value": "new",
+          "label": "openIn.opt.new"
+        }
+      ]
+    }
+  ]
+}

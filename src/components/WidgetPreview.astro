@@ -1,0 +1,50 @@
+---
+/* Geometry mirrors the product and must stay in step with it: the design
+   canvas from WIDGET_DESIGN, the card width from the 1041px six-column grid,
+   WIDGET_HEIGHTS for height, WIDGET_R for the corner, and mountScaledWidget's
+   cover fit in ui/js/utils.js. Changing any of them missizes every preview. */
+interface Props {
+  type: string;
+  file: string;
+  id: string;
+  size?: 'small' | 'medium';
+  card?: 'dark' | 'light' | 'translucent' | null;
+  title: string;
+  caption?: string;
+}
+
+const { type, file, id, size = 'small', card = null, title, caption } = Astro.props;
+
+const DESIGN = { small: [170, 170], medium: [360, 170] } as const;
+const CARD_W = { small: 152.67, medium: 330.34 } as const;
+const CARD_H = 150;
+const RADIUS = 28;
+
+const [dw, dh] = DESIGN[size];
+const w = CARD_W[size];
+const scale = Math.max(w / dw, CARD_H / dh);
+const tx = (w - dw * scale) / 2;
+const ty = (CARD_H - dh * scale) / 2;
+
+const src = `/widgets/${type}/${file}?id=${encodeURIComponent(id)}&size=${size}&lang=en`;
+---
+
+<figure class="wpv">
+  <div class="wpv__mat">
+    <div
+      class="wpv__card"
+      data-card={card ?? undefined}
+      style={`width:${w}px;height:${CARD_H}px;border-radius:${RADIUS}px;`}
+    >
+      <iframe
+        src={src}
+        title={title}
+        aria-label={title}
+        loading="lazy"
+        scrolling="no"
+        style={`width:${dw}px;height:${dh}px;transform:translate(${tx}px,${ty}px) scale(${scale});`}
+      ></iframe>
+    </div>
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>

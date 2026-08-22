@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analog Clock</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }
+
+  .widget {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px;
+  }
+  .mode-dark  { background: #1c1c1e; }
+  .mode-light { background: #ffffff; }
+
+  .face { display: block; }
+  .face text {
+    font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+  }
+  .disc-group { will-change: transform; }
+  .disc-group circle { mix-blend-mode: multiply; }
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;animation:none !important} }
+</style>
+</head>
+<body>
+<div class="widget mode-dark" id="widget" role="img" aria-label="Clock">
+  <svg class="face" id="face" aria-hidden="true"></svg>
+</div>
+<script>
+const id  = new URLSearchParams(location.search).get('id') || '';
+const API = '/api';
+const NS  = 'http://www.w3.org/2000/svg';
+
+/* Day and month names come from the browser, never from a catalog. */
+const _lang = new URLSearchParams(location.search).get('lang') || 'en';
+const _dateFmt = (() => {
+  try { return new Intl.DateTimeFormat(_lang, { weekday: 'long', month: 'long', day: 'numeric' }); }
+  catch { return new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric' }); }
+})();
+function _a11yLabel(now){
+  const hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
+  return `${hh}:${mm}, ${_dateFmt.format(now)}`;
+}
+
+const _reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const DISC = {
+  hour:   { color:'#18B4F0', r:0.30 },
+  minute: { color:'#FC1878', r:0.345 },
+  second: { color:'#FC9C00', r:0.255 },
+};
+const DIAL = {
+  light: { bg:'#ffffff', fill:'#ffffff', date:'rgba(0,0,0,0.4)',  tick:'#ffffff', dot:'#1C1C1E' },
+  dark:  { bg:'#1c1c1e', fill:'#FFFFFF', date:'rgba(0,0,0,0.42)', tick:'#ffffff', dot:'#1C1C1E' },
+};
+
+let _mode='dark', _timezone='', _showDate=true;
+let _groups=null, _dateText=null, _rafId=null, _running=false, _vb=0;
+
+function _now(){
+  if(!_timezone) return new Date();
+  /* toLocaleString drops milliseconds and freezes the second hand at whole
+     seconds. Timezone offsets are never sub-second. */
+  const d = new Date();
+  const shifted = new Date(d.toLocaleString('en-US', { timeZone: _timezone }));
+  shifted.setMilliseconds(d.getMilliseconds());
+  return shifted;
+}
+
+function el(tag, attrs){
+  const n=document.createElementNS(NS,tag);
+  for(const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+
+function buildShell(){
+  const w=document.getElementById('widget');
+  const face=document.getElementById('face');
+  w.className='widget mode-'+_mode;
+
+  const ww=w.clientWidth||220, wh=w.clientHeight||150;
+  const sz=Math.max(40, Math.min(ww-24, wh-24));
+  _vb=200;
+  face.setAttribute('width', sz);
+  face.setAttribute('height', sz);
+  face.setAttribute('viewBox', `0 0 ${_vb} ${_vb}`);
+  while(face.firstChild) face.removeChild(face.firstChild);
+
+  const V=_vb, cx=V/2, cy=V/2;
+  const dial=DIAL[_mode];
+
+  if(_mode==='dark'){
+    face.appendChild(el('circle',{ cx, cy, r:V*0.49, fill:dial.fill }));
+  } else {
+    face.appendChild(el('rect',{ x:0, y:0, width:V, height:V, fill:dial.fill }));
+  }
+
+  if(_showDate){
+    _dateText=el('text',{ x:cx, y:V-V*0.085, 'text-anchor':'middle',
+      'font-size':V*0.072, fill:dial.date });
+    face.appendChild(_dateText);
+  } else { _dateText=null; }
+
+  const dist=V*0.085;
+  _groups={};
+  for(const key of ['minute','hour','second']){
+    const d=DISC[key];
+    const g=el('g',{ class:'disc-group', transform:`rotate(0 ${cx} ${cy})` });
+    g.appendChild(el('circle',{ cx, cy:cy-dist, r:V*d.r, fill:d.color, 'fill-opacity':0.9 }));
+    const rOuter=cy-dist-V*d.r, tickLen=V*0.05, tw=V*0.014;
+    g.appendChild(el('line',{ x1:cx, y1:rOuter+tickLen, x2:cx, y2:rOuter,
+      stroke:dial.tick, 'stroke-width':tw, 'stroke-linecap':'round' }));
+    face.appendChild(g);
+    _groups[key]=g;
+  }
+
+  face.appendChild(el('circle',{ cx, cy, r:V*0.022, fill:dial.dot }));
+}
+
+function render(smoothSeconds){
+  const now=_now();
+  const h=now.getHours(), m=now.getMinutes(), s=now.getSeconds(), ms=now.getMilliseconds();
+  const cx=_vb/2, cy=_vb/2;
+  _groups.hour.setAttribute('transform',   `rotate(${((h%12)+m/60)*30} ${cx} ${cy})`);
+  _groups.minute.setAttribute('transform', `rotate(${(m+s/60)*6} ${cx} ${cy})`);
+  _groups.second.setAttribute('transform', `rotate(${(s+(smoothSeconds?ms/1000:0))*6} ${cx} ${cy})`);
+
+  document.getElementById('widget').setAttribute('aria-label', _a11yLabel(now));
+  if(_showDate && _dateText){
+    const D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    _dateText.textContent=`${D[now.getDay()]}, ${M[now.getMonth()]} ${now.getDate()}`;
+  }
+}
+
+function _loop(){
+  if(!_running) return;
+  render(true);
+  _rafId=requestAnimationFrame(_loop);
+}
+let _stepId=null;
+function _step(){
+  if(!_running) return;
+  render(false);
+  _stepId=setTimeout(_step, 1000 - (_now().getMilliseconds()));
+}
+function start(){
+  if(_running) return;
+  _running=true;
+  if(_reduceMotion) _step(); else _loop();
+}
+function stop(){
+  _running=false;
+  if(_rafId){ cancelAnimationFrame(_rafId); _rafId=null; }
+  if(_stepId){ clearTimeout(_stepId); _stepId=null; }
+}
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden) stop();
+  else { render(!_reduceMotion); start(); }
+});
+
+let _io=null;
+function watchVisibility(){
+  if(!('IntersectionObserver' in window)) return;
+  _io=new IntersectionObserver(entries=>{
+    for(const e of entries){
+      if(e.isIntersecting && !document.hidden) start();
+      else stop();
+    }
+  }, { threshold: 0 });
+  _io.observe(document.getElementById('face'));
+}
+
+let _rzId=null;
+addEventListener('resize', ()=>{
+  clearTimeout(_rzId);
+  _rzId=setTimeout(()=>{ const run=_running; stop(); buildShell(); render(!_reduceMotion); if(run) start(); }, 150);
+});
+
+async function boot(){
+  try{
+    const r=await fetch(`${API}/widget-config/${encodeURIComponent(id)}`);
+    if(r.ok){ const d=await r.json(); const wc=d.widgetConfig||{};
+      _mode=wc.clockMode||'dark';
+      _timezone=wc.clockTimezone||'';
+      _showDate=wc.clockShowDate!==false;
+    }
+  }catch{}
+  buildShell();
+  render(!_reduceMotion);
+  watchVisibility();
+  start();
+}
+
+boot();
+</script>
+</body>
+</html>

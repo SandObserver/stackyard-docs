@@ -60,8 +60,39 @@ const SELF = 'scripts/check-dist.mjs';
 const files = [
   ...SRC_ROOTS.flatMap((r) => globSync(`${r}/**/*`)),
   ...ROOT_FILES.filter(existsSync),
-].filter((f) => f !== SELF && statSync(f).isFile() && statSync(f).size < 3_000_000);
+]
+  .filter((f) => f !== SELF && statSync(f).isFile() && statSync(f).size < 3_000_000)
+  /* Binary bytes produce meaningless matches. */
+  .filter((f) => !/\.(png|jpe?g|ico|woff2?)$/i.test(f));
 report('hygiene', files.filter((f) => BANNED.test(read(f))));
+
+/* Nothing authored here may carry a credential or a real private address.
+   Scoped to what this repository writes. public/js and public/widgets are
+   verbatim copies of the application and carry its own placeholders. */
+const SECRET = [
+  [/(gh[pousr]_|github_pat_)[A-Za-z0-9_]{20,}/, 'GitHub token'],
+  [/\bsk-[A-Za-z0-9]{20,}/, 'API key'],
+  [/\bAKIA[0-9A-Z]{16}\b/, 'AWS key id'],
+  [/\bAIza[0-9A-Za-z_-]{20,}/, 'Google API key'],
+  [/\bxox[baprs]-[A-Za-z0-9-]{10,}/, 'Slack token'],
+  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, 'private key'],
+  [/\beyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\./, 'JWT'],
+  [/\b(?:10|127)\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/, 'private IP'],
+  [/\b192\.168\.\d{1,3}\.\d{1,3}\b/, 'private IP'],
+  [/\b172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}\b/, 'private IP'],
+];
+const authored = [...globSync('src/**/*'), ...globSync('public/api/**/*')]
+  .filter((f) => statSync(f).isFile() && !/\.(png|jpe?g|ico|woff2?)$/i.test(f));
+const secretHits = [];
+for (const f of authored) {
+  const t = read(f);
+  for (const [re, label] of SECRET) {
+    const m = t.match(re);
+    /* Documented examples are allowed, and only in prose. */
+    if (m && !(label === 'private IP' && f.endsWith('.md'))) secretHits.push(`${f}: ${label} ${m[0]}`);
+  }
+}
+report('secrets', secretHits);
 
 /* House style. */
 report('style', files.filter((f) => f.startsWith('src') && read(f).includes('—')));

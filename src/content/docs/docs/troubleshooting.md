@@ -218,6 +218,7 @@ Messages shown in the admin, and what each one means.
 | `Ping failed` / `Ping returned <status>` | The URL was reached but did not answer as expected. |
 | `That image is too large for the server to accept.` | Over the 2 MB upload limit. |
 | `That is not a color. Use #rrggbb or a CSS color name.` | The wallpaper colour field rejects anything else. |
+| `Wallpaper failed: <reason>` | The image was not stored. The link was unreachable, the file is not a JPEG, PNG, WebP, AVIF or GIF, or it is over 16 MB. |
 | `Set a password before turning authentication on.` | Authentication needs a password to exist first. |
 | `Nothing to import, the file matches your current config.` | The imported file is identical to what is already stored. |
 | `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Migrating](/docs/import-export/migrating/). |

@@ -28,7 +28,7 @@ The API has no runtime dependencies. The frontend is vanilla JavaScript with no 
 
 ## Try it first
 
-A public read-only demo runs at [stackyard-demo.onrender.com](https://stackyard-demo.onrender.com).
+A public read-only demo runs at [demo.sandobserver.com](https://demo.sandobserver.com).
 
 :::note
 The first visit can take up to a minute. The demo runs on a free tier that sleeps when idle.

@@ -17,7 +17,7 @@ That is the whole interface. Widgets across the top, apps and folders below, a d
 - Widgets are small visuals, not readouts.
 - Anything can be a badge. Point Stackyard at an API, pick a value from the response, and it appears on the tile. See [Badges](/docs/badges/).
 - Everything is configured in the web UI. There are no configuration files to edit.
-- Six languages, right to left included. Contrast and screen-reader labels are covered by tests.
+- Six languages, right to left included, and built to WCAG 2.2 level AA. See [Accessibility](/docs/accessibility/).
 - It installs to a phone home screen and opens in its own window.
 
 ## How it is built

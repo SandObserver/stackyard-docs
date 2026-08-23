@@ -27,3 +27,6 @@ pnpm-debug.log*
 # ~/stackyard-notes/docs-site/
 internal/
 design-work/
+
+# wrangler local state
+.wrangler/

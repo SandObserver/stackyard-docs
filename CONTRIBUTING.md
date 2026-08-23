@@ -28,6 +28,47 @@ npm run check
 local asset references, house style, and that the placeholder domain never
 ships.
 
+## Pull requests
+
+One branch per change, off `main`. `main` is protected: it takes no direct push,
+and the `build` check has to pass before a merge.
+
+Branch names are `type/short-kebab-description`. Lowercase, hyphens, no
+underscores, no ticket numbers, under about 50 characters. The types in use are
+`docs` for content, `fix` for a broken page or build, `feat` for a new page or
+component, and `chore` for maintenance.
+
+Pull request titles are `Type: short description`, lowercase after the colon,
+matching the branch type. The title becomes the squash commit, so it has to
+describe the change on its own.
+
+Write the title and body for someone reading the repository later. Describe the
+diff, not how it was arrived at. No references to a conversation, a screenshot,
+a previous attempt or a review comment.
+
+`.github/PULL_REQUEST_TEMPLATE.md` fills in when the pull request opens.
+Complete every section and set the checklist boxes.
+
+Pick one label, the most specific that fits. Add a second only when the change
+genuinely crosses two categories.
+
+| Label | For |
+| --- | --- |
+| `documentation` | Documentation pages and their structure |
+| `content` | Wording, structure, new pages |
+| `widget-preview` | Widget previews and their stub data |
+| `ui/ux` | Layout, styling and accessibility |
+| `accessibility` | A barrier affecting people with disabilities |
+| `bug` | Something on the site is broken |
+| `security` | A security fix |
+| `dependencies` | A dependency update |
+| `github_actions` | Workflow and CI changes |
+| `javascript` | Build scripts and page logic |
+| `refractor` | Cleanup with no behaviour change |
+
+This repository has no `CHANGELOG.md`. The site publishes on merge, and the
+Changelog page it serves belongs to the application. Nothing here is versioned.
+
 ## Where things live
 
 | Path | Holds |

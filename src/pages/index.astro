@@ -1,4 +1,8 @@
 ---
+import { readAppVersion } from '../lib/repo';
+
+const version = readAppVersion();
+
 const title = 'Stackyard: a homelab dashboard you\'ll actually use';
 const description =
   'A calm, customizable dashboard for your services, designed to be useful without becoming another wall of data.';
@@ -317,7 +321,9 @@ const schema = {
       </div>
     </div>
     <div class="foot-r">
-      <div class="verbadge"><span>release</span><b>v1.7.1</b></div>
+      {version && (
+        <div class="verbadge" data-version={version}><span>release</span><b>v{version}</b></div>
+      )}
       <div class="license">Apache License 2.0 · © 2026 SandObserver</div>
     </div>
   </div>

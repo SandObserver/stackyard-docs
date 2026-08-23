@@ -97,6 +97,7 @@ export default defineConfig({
           ],
         },
         { label: 'Security', link: '/docs/security/' },
+        { label: 'Accessibility', link: '/docs/accessibility/' },
         { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
         { label: 'Support', link: '/docs/support/' },
         { label: 'Development', link: '/docs/development/' },

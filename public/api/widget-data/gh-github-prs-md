@@ -1,7 +1,7 @@
 {
   "view": "prs",
   "totalCount": 4,
-  "label": "created",
+  "filters": ["created"],
   "allUrl": "https://github.com/pulls",
   "items": [
     {

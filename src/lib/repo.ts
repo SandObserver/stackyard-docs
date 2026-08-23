@@ -20,3 +20,17 @@ export function absolutiseLinks(markdown: string): string {
   const base = 'https://github.com/SandObserver/stackyard/blob/main/';
   return markdown.replace(/\]\((?!https?:|#|\/)([^)]+)\)/g, `](${base}$1)`);
 }
+
+/* Returns null when the app repo is absent or its manifest is unreadable.
+   scripts/check-dist.mjs fails the build when the badge is missing, so a null
+   here cannot ship as a blank footer. */
+export function readAppVersion(): string | null {
+  const raw = readRepoFile('api/package.json');
+  if (!raw) return null;
+  try {
+    const version = JSON.parse(raw)?.version;
+    return typeof version === 'string' && version ? version : null;
+  } catch {
+    return null;
+  }
+}

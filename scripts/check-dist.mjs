@@ -112,6 +112,17 @@ report(
     .map(([f, src]) => `${f} fell back: ${src} was not read. Set STACKYARD_REPO.`),
 );
 
+/* The landing page release badge is read from the application repository's
+   api/package.json at build time. Without that checkout it renders nothing, and
+   a footer missing its version passes every check above. */
+const landing = 'dist/index.html';
+report(
+  'verbadge',
+  existsSync(landing) && !/class="verbadge" data-version="\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?"/.test(read(landing))
+    ? [`${landing}: no release badge. api/package.json was not read. Set STACKYARD_REPO.`]
+    : [],
+);
+
 /* The placeholder domain must never ship. */
 report('domain', html.filter((f) => read(f).includes('stackyard.example')).map((f) => relative(DIST, f)));
 

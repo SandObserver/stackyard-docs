@@ -54,12 +54,11 @@ Leave **Collection ID** blank for a random photo from all of Unsplash. Set it to
 
 The ID is the number in the collection's own URL:
 
-```
-https://unsplash.com/collections/2203755/mountains
-                                 ^^^^^^^
+```txt "1234567"
+https://unsplash.com/collections/1234567/collection-name
 ```
 
-That collection's ID is `2203755`. Paste only the number.
+Paste only the highlighted number, not the whole URL.
 
 ## Language
 

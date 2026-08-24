@@ -19,10 +19,25 @@ export default defineConfig({
       title: 'Stackyard',
       description:
         'A calm, customizable dashboard for your services, designed to be useful without becoming another wall of data.',
-      logo: { src: './public/img/stackyard-mark.svg', alt: 'Stackyard' },
+      logo: {
+        light: './public/img/stackyard-wordmark-light.svg',
+        dark: './public/img/stackyard-wordmark-dark.svg',
+        alt: 'Stackyard',
+        replacesTitle: true,
+      },
       favicon: '/favicon.svg',
-      customCss: ['./src/styles/docs.css'],
+      customCss: ['./src/styles/fonts.css', './src/styles/docs.css'],
       head: [
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'preload',
+            as: 'font',
+            type: 'font/woff2',
+            href: '/fonts/inter-latin.woff2',
+            crossorigin: true,
+          },
+        },
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0d1117' } },
         { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og.jpg` } },

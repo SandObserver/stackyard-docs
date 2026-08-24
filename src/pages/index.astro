@@ -1,5 +1,6 @@
 ---
 import { readAppVersion } from '../lib/repo';
+import '../styles/fonts.css';
 
 const version = readAppVersion();
 
@@ -54,11 +55,12 @@ const schema = {
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&display=swap"
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-latin.woff2"
+      crossorigin
     />
   </head>
   <body>
@@ -67,8 +69,7 @@ const schema = {
 <div class="wrap">
   <nav class="nav">
     <div class="brand">
-      <img src="/img/stackyard-mark.svg" alt="">
-      <span>Stackyard</span>
+      <img src="/img/stackyard-wordmark-dark.svg" alt="Stackyard" width="125" height="28">
     </div>
     <div class="nav-right">
       <a class="pill pill-solid" href="/docs/installation/docker/">Install</a>
@@ -308,8 +309,7 @@ const schema = {
   <div class="wrap foot-in">
     <div class="foot-l">
       <div class="brand">
-        <img src="/img/stackyard-mark.svg" alt="">
-        <span>Stackyard</span>
+        <img src="/img/stackyard-wordmark-dark.svg" alt="Stackyard" width="125" height="28">
       </div>
       <div class="foot-links">
         <a href="https://github.com/SandObserver/stackyard">GitHub</a><span>·</span>
@@ -366,8 +366,8 @@ if (!reduced) {
       --success:#30D158;
       --radius-lg:14px;
       --radius-md:10px;
-      --font-ui:-apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-      --font-display:'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-ui:'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-display:var(--font-ui);
       /* Keep the near-black ink. White on --accent measures 1.86:1 and fails WCAG AA. */
       --on-accent-ink:#06181B;
       --spring:cubic-bezier(.34,1.56,.64,1);
@@ -380,9 +380,8 @@ if (!reduced) {
     .wrap{width:100%;max-width:1160px;margin:0 auto;padding:0 40px}
 
     .nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0}
-    .brand{display:flex;align-items:center;gap:10px}
-    .brand img{width:28px;height:28px;display:block}
-    .brand span{font-family:var(--font-display);font-size:19px;font-weight:700;color:var(--label-primary);letter-spacing:-0.015em}
+    .brand{display:flex;align-items:center}
+    .brand img{width:125px;height:28px;display:block}
     .nav-right{display:flex;align-items:center;gap:8px}
     .pill{height:40px;padding:0 20px;border-radius:20px;display:inline-flex;align-items:center;justify-content:center;position:relative;
       font-size:14px;font-weight:600;letter-spacing:-0.005em}

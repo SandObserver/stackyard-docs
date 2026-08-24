@@ -29,8 +29,8 @@
   --sy-radius-lg: 14px;
   --sy-radius-md: 10px;
 
-  --sy-font: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --sy-font-display: 'Instrument Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --sy-font: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --sy-font-display: var(--sy-font);
 
   --sl-font: var(--sy-font);
   --sl-font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -124,8 +124,7 @@
 .sl-markdown-content h1,
 .sl-markdown-content h2,
 .sl-markdown-content h3,
-.sl-markdown-content h4,
-.site-title {
+.sl-markdown-content h4 {
   font-family: var(--sy-font-display);
   letter-spacing: -0.022em;
   color: var(--sl-color-white);

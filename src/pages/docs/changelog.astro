@@ -1,7 +1,8 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { marked } from 'marked';
-import { readRepoFile, stripTitle, absolutiseLinks } from '../../lib/repo';
+import { readRepoFile, stripTitle, absolutiseLinks, slugify } from '../../lib/repo';
+import type { Heading } from '../../lib/repo';
 
 const REPO = 'https://github.com/SandObserver/stackyard';
 const raw = readRepoFile('CHANGELOG.md');
@@ -12,6 +13,7 @@ type Section = {
   meta: string;
   body: string;
   unreleased: boolean;
+  slug: string;
 };
 
 let intro = '';
@@ -35,6 +37,7 @@ if (raw) {
       meta: dash ? dash[2] : '',
       body,
       unreleased: /unreleased/i.test(heading),
+      slug: `release-${slugify((dash ? dash[1] : heading).replace(/^\[|\]$/g, ''))}`,
     });
   }
 } else {
@@ -45,14 +48,23 @@ const unreleased = sections.find((s) => s.unreleased) ?? null;
 const released = sections.filter((s) => !s.unreleased);
 const latest = released[0] ?? null;
 const earlier = released.slice(1);
+
+const headings: Heading[] = failed
+  ? []
+  : [
+      ...(latest ? [{ depth: 2, slug: latest.slug, text: `${latest.label} (latest)` }] : []),
+      ...(unreleased ? [{ depth: 2, slug: 'unreleased', text: 'Unreleased' }] : []),
+      ...(earlier.length ? [{ depth: 2, slug: 'earlier-releases', text: 'Earlier releases' }] : []),
+      ...earlier.map((s) => ({ depth: 3, slug: s.slug, text: s.label })),
+    ];
 ---
 
 <StarlightPage
   frontmatter={{
     title: 'Changelog',
     description: 'Notable changes to Stackyard, taken from the repository at build time.',
-    tableOfContents: false,
   }}
+  headings={headings}
 >
   {failed ? (
     <p>
@@ -68,7 +80,7 @@ const earlier = released.slice(1);
 
       {latest && (
         <section class="cl-latest">
-          <h2 class="cl-h">
+          <h2 class="cl-h" id={latest.slug}>
             {latest.label}
             <span class="cl-badge">Latest release</span>
             {latest.meta && <span class="cl-date">{latest.meta}</span>}
@@ -78,7 +90,7 @@ const earlier = released.slice(1);
       )}
 
       {unreleased && (
-        <details class="cl-item">
+        <details class="cl-item" id="unreleased">
           <summary>
             <span class="cl-name">Unreleased</span>
             <span class="cl-note">Not in a published version yet</span>
@@ -89,9 +101,9 @@ const earlier = released.slice(1);
 
       {earlier.length > 0 && (
         <>
-          <h2 class="cl-h cl-earlier">Earlier releases</h2>
+          <h2 class="cl-h cl-earlier" id="earlier-releases">Earlier releases</h2>
           {earlier.map((s) => (
-            <details class="cl-item">
+            <details class="cl-item" id={s.slug}>
               <summary>
                 <span class="cl-name">{s.label}</span>
                 {s.meta && <span class="cl-note">{s.meta}</span>}
@@ -106,3 +118,19 @@ const earlier = released.slice(1);
     </>
   )}
 </StarlightPage>
+
+<script>
+  /* A release linked from the table of contents sits inside a collapsed
+     <details>, which the browser will not scroll to while it is closed. */
+  const openTarget = () => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el instanceof HTMLDetailsElement && !el.open) {
+      el.open = true;
+      el.scrollIntoView();
+    }
+  };
+  openTarget();
+  addEventListener('hashchange', openTarget);
+</script>

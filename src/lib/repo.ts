@@ -34,3 +34,35 @@ export function readAppVersion(): string | null {
     return null;
   }
 }
+
+export type Heading = { depth: number; slug: string; text: string };
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/<[^>]+>/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/* marked emits headings with no id, so nothing on a generated page is
+   linkable and Starlight's table of contents renders empty. */
+export function withHeadingIds(html: string, depths = [2, 3]): { html: string; headings: Heading[] } {
+  const headings: Heading[] = [];
+  const seen = new Map<string, number>();
+  const out = html.replace(
+    /<h([1-6])([^>]*)>([\s\S]*?)<\/h\1>/g,
+    (match, level: string, attrs: string, inner: string) => {
+      const depth = Number(level);
+      if (!depths.includes(depth) || /\bid=/.test(attrs)) return match;
+      const text = inner.replace(/<[^>]+>/g, '').trim();
+      const base = slugify(text) || `section-${headings.length + 1}`;
+      const n = seen.get(base) ?? 0;
+      seen.set(base, n + 1);
+      const slug = n ? `${base}-${n}` : base;
+      headings.push({ depth, slug, text });
+      return `<h${depth} id="${slug}"${attrs}>${inner}</h${depth}>`;
+    },
+  );
+  return { html: out, headings };
+}

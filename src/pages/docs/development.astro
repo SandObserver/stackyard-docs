@@ -1,16 +1,20 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { marked } from 'marked';
-import { readRepoFile, stripTitle, absolutiseLinks } from '../../lib/repo';
+import { readRepoFile, stripTitle, absolutiseLinks, withHeadingIds } from '../../lib/repo';
 
 const REPO = 'https://github.com/SandObserver/stackyard';
 const raw = readRepoFile('CONTRIBUTING.md');
 
-const html = raw
-  ? await marked.parse(absolutiseLinks(stripTitle(raw)))
-  : `<p>The contributing guide is read from the Stackyard repository at build time, and that
-     checkout was not available for this build. Read it on
-     <a href="${REPO}/blob/main/CONTRIBUTING.md">GitHub</a>.</p>`;
+const parsed = raw
+  ? withHeadingIds(String(await marked.parse(absolutiseLinks(stripTitle(raw)))))
+  : {
+      html: `<p>The contributing guide is read from the Stackyard repository at build time, and that
+       checkout was not available for this build. Read it on
+       <a href="${REPO}/blob/main/CONTRIBUTING.md">GitHub</a>.</p>`,
+      headings: [],
+    };
+const { html, headings } = parsed;
 
 const reference = [
   ['architecture.md', 'Architecture', 'How a request is served, and where config lives.'],
@@ -25,6 +29,7 @@ const reference = [
     title: 'Development',
     description: 'How to work on Stackyard, taken from the repository at build time.',
   }}
+  headings={[...headings, { depth: 2, slug: 'reference', text: 'Reference' }]}
 >
   <p>
     This page is generated from <code>CONTRIBUTING.md</code> in the Stackyard repository, so it

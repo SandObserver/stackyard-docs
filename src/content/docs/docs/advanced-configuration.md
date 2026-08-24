@@ -15,7 +15,7 @@ Every variable is optional. The defaults are what the container ships with.
 | `SOCKET_PROXY_URL` | unset | A Docker socket proxy, for container health monitoring. |
 | `TRUST_PROXY` | unset | Believe `X-Forwarded-Proto`, so a request through a TLS-terminating proxy gets a `Secure` cookie. |
 | `TRUSTED_PROXY` | unset | Where a front proxy sits, so nginx can resolve the real client for rate limiting. |
-| `SESSION_MAX_AGE_DAYS` | `12h` | Idle session lifetime before re-login. Accepts a fraction. A session in use is extended. |
+| `SESSION_MAX_AGE_DAYS` | `0.5` | Idle session lifetime in days before re-login, so 12 hours by default. Accepts a fraction. A session in use is extended. |
 | `PASSWORD_HASH_MEMORY` | `16mib` | Memory per password hash. One of `8mib`, `16mib`, `32mib`, `64mib`, `128mib`. |
 | `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error`. `warn` and `error` behave the same. The General settings page also sets this, and that wins once the config has loaded. |
 | `DEMO_MODE` | unset | Run as a read-only public showcase. |

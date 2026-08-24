@@ -19,6 +19,12 @@ At the top, before any group:
 | Description | Free text shown alongside the title. |
 | Host IP | Your server's own address. Setting it lets badges and widgets reach services on that IP, which the SSRF guard would otherwise block. See [Security](/docs/security/). |
 
+### Language
+
+| Setting | What it does |
+| --- | --- |
+| Language | The interface language. English, Persian, Simplified Chinese, Spanish, German or French. Persian flips the whole layout to right to left. See [Customization](/docs/customization/#language). |
+
 ### Monitoring
 
 | Setting | What it does |

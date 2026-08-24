@@ -1,16 +1,20 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { marked } from 'marked';
-import { readRepoFile, stripTitle, absolutiseLinks } from '../../lib/repo';
+import { readRepoFile, stripTitle, absolutiseLinks, withHeadingIds } from '../../lib/repo';
 
 const REPO = 'https://github.com/SandObserver/stackyard';
 const raw = readRepoFile('ACCESSIBILITY.md');
 
-const html = raw
-  ? await marked.parse(absolutiseLinks(stripTitle(raw)))
-  : `<p>The accessibility statement is read from the Stackyard repository at build time, and that
-     checkout was not available for this build. Read it on
-     <a href="${REPO}/blob/main/ACCESSIBILITY.md">GitHub</a>.</p>`;
+const parsed = raw
+  ? withHeadingIds(String(await marked.parse(absolutiseLinks(stripTitle(raw)))))
+  : {
+      html: `<p>The accessibility statement is read from the Stackyard repository at build time, and
+       that checkout was not available for this build. Read it on
+       <a href="${REPO}/blob/main/ACCESSIBILITY.md">GitHub</a>.</p>`,
+      headings: [],
+    };
+const { html, headings } = parsed;
 ---
 
 <StarlightPage
@@ -19,6 +23,7 @@ const html = raw
     description:
       'How Stackyard conforms to WCAG 2.2 level AA, what is supported, and what is not yet.',
   }}
+  headings={headings}
 >
   <p>
     This page is generated from <code>ACCESSIBILITY.md</code> in the Stackyard repository, so it

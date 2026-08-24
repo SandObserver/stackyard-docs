@@ -19,8 +19,8 @@ The password is a gate between local users, not an authentication layer. See [Se
 
 | Section | What it covers |
 | --- | --- |
-| **General** | Server identity and behaviour: title, host IP, logging, password, Docker health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
-| **Appearance** | How the dashboard looks: wallpaper, labels, theme, language. See [Customization](/docs/customization/). |
+| **General** | Server identity and behaviour: title, host IP, language, logging, password, Docker health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
+| **Appearance** | How the dashboard looks: wallpaper, labels, and theme. See [Customization](/docs/customization/). |
 | **Dashboard** | What is on the dashboard: apps, widgets, folders, and their order. See [Adding services](/docs/adding-services/). |
 | **About** | Version, update notice, and links to the project. |
 

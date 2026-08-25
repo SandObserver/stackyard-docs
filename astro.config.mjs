@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 
 import starlight from '@astrojs/starlight';
 import rehypeExternalLinks from 'rehype-external-links';
+import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
 import mdx from '@astrojs/mdx';
 
 const SITE = 'https://stackyard.sandobserver.com';
@@ -12,6 +13,7 @@ export default defineConfig({
   markdown: {
     rehypePlugins: [
       [rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] }],
+      rehypeTableScroll,
     ],
   },
   integrations: [
@@ -46,6 +48,17 @@ export default defineConfig({
         { tag: 'meta', attrs: { property: 'og:site_name', content: 'Stackyard' } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
         { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og.jpg` } },
+        {
+          tag: 'script',
+          content:
+            "addEventListener('DOMContentLoaded',function(){" +
+            "var boxes=document.querySelectorAll('.sy-tscroll');" +
+            "function sync(){boxes.forEach(function(b){" +
+            "if(b.scrollWidth>b.clientWidth+1){b.tabIndex=0;b.setAttribute('role','group');" +
+            "b.setAttribute('aria-label','Scrollable table');}" +
+            "else{b.removeAttribute('tabindex');b.removeAttribute('role');b.removeAttribute('aria-label');}});}" +
+            "sync();addEventListener('resize',sync);});",
+        },
       ],
 
       expressiveCode: {

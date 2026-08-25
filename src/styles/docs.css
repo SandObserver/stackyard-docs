@@ -610,6 +610,32 @@ button.sy-iconbtn:focus-visible {
   overflow-wrap: anywhere;
 }
 
+.sy-tscroll {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.sy-tscroll:focus-visible {
+  outline: 2px solid var(--sy-teal);
+  outline-offset: 3px;
+  border-radius: var(--sy-radius-md);
+}
+@media (max-width: 768px) {
+  /* Two columns fit a phone. Three do not, and squeezing them drops the last
+     column's text out of the row. */
+  .sl-markdown-content .sy-tscroll table:has(thead th:nth-child(3)) {
+    min-width: 36rem;
+  }
+  /* A long path in a value column otherwise sets the column's width and
+     squeezes the description into a tall, near-empty ribbon. The first column
+     holds the row's name, so it keeps whole words. */
+  .sl-markdown-content .sy-tscroll table td:not(:first-child) code {
+    overflow-wrap: anywhere;
+  }
+  .sy-table-wide table {
+    table-layout: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
 }
 

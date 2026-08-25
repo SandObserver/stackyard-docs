@@ -612,26 +612,26 @@ if (!reduced) {
        screen: four columns, a small widget over a 2x2 block. Sizes derive from
        a 393px reference width, as in the app. */
     @media (max-width:768px){
-      /* The app's mobile home screen: four columns, a small widget over a 2x2
-         block, sizes derived from a 393px reference width. */
       .screen-inner{--sc:.9;--sm:calc(18px * var(--sc));--gap:calc(9px * var(--sc));
         --lbl:max(9px, calc(9px * var(--sc)));
         padding:var(--sm) var(--sm) 0;height:auto}
-      .dgrid{grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;
+      /* Every rule below is scoped to the demo. The badge and label classes are
+         used elsewhere on the page, where --sc is not defined. */
+      .screen-inner .dgrid{grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;
         column-gap:var(--gap);row-gap:var(--gap);justify-content:stretch}
-      .cell{width:auto;height:auto;aspect-ratio:1;gap:calc(3px * var(--sc))}
-      .itile,.folder{width:74%;height:auto;aspect-ratio:1;border-radius:22.5%}
-      .itile img{width:64%;height:64%}
-      .folder{gap:4%;padding:13%}
-      .ilabel{width:100%;font-size:var(--lbl)}
-      .badge{top:calc(-5px * var(--sc));right:calc(-5px * var(--sc));
+      .screen-inner .cell{width:auto;height:auto;aspect-ratio:1;gap:calc(3px * var(--sc))}
+      .screen-inner .itile,.screen-inner .folder{width:74%;height:auto;aspect-ratio:1;border-radius:22.5%}
+      .screen-inner .itile img{width:64%;height:64%}
+      .screen-inner .folder{gap:4%;padding:13%}
+      .screen-inner .ilabel{width:100%;font-size:var(--lbl)}
+      .screen-inner .badge{top:calc(-5px * var(--sc));right:calc(-5px * var(--sc));
         min-width:calc(15px * var(--sc));height:calc(15px * var(--sc));
         border-radius:calc(7.5px * var(--sc));padding:0 calc(4px * var(--sc));
         font-size:calc(9px * var(--sc))}
-      .wcell,.np{grid-column:span 2;grid-row:span 2;
+      .screen-inner .wcell,.screen-inner .np{grid-column:span 2;grid-row:span 2;
         width:100%;height:auto;aspect-ratio:1;border-radius:18%;transform:none}
       /* Set by the page script from the measured card. */
-      .wframe,.np-frame{transform:scale(var(--ws,.9))}
+      .screen-inner .wframe,.screen-inner .np-frame{transform:scale(var(--ws,.9))}
     }
     @media (max-width:600px){
       .wrap{padding:0 20px}

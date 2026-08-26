@@ -342,6 +342,7 @@ function fitDemoWidgets() {
   if (!phoneDemo.matches) {
     demoScreen.style.removeProperty('--sc');
     demoScreen.style.removeProperty('--ws');
+    demoScreen.style.removeProperty('--nps');
     return;
   }
   const screenW = demoScreen.clientWidth;
@@ -349,6 +350,10 @@ function fitDemoWidgets() {
   const card = demoScreen.querySelector('.wcell');
   const w = card ? card.getBoundingClientRect().width : 0;
   if (w) demoScreen.style.setProperty('--ws', String(w / 170));
+  const glass = demoScreen.querySelector('.np');
+  if (glass && glass.clientWidth) {
+    demoScreen.style.setProperty('--nps', String(glass.clientWidth / 170));
+  }
 }
 fitDemoWidgets();
 addEventListener('resize', fitDemoWidgets);
@@ -630,8 +635,10 @@ if (!reduced) {
         font-size:calc(9px * var(--sc))}
       .screen-inner .wcell,.screen-inner .np{grid-column:span 2;grid-row:span 2;
         width:100%;height:auto;aspect-ratio:1;border-radius:18%;transform:none}
-      /* Set by the page script from the measured card. */
-      .screen-inner .wframe,.screen-inner .np-frame{transform:scale(var(--ws,.9))}
+      /* Set by the page script from the measured card. The bordered card
+         measures its own inside, so the frame stays within the border. */
+      .screen-inner .wframe{transform:scale(var(--ws,.9))}
+      .screen-inner .np-frame{transform:scale(var(--nps,var(--ws,.9)))}
     }
     @media (max-width:600px){
       .wrap{padding:0 20px}

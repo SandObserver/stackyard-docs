@@ -56,27 +56,70 @@ Text you type once, capped at 10 characters. Pick a colour from the swatches or 
 
 ## Live activity
 
-A number read from a service's own API.
+Numbers read from a service's own API.
 
-Enter the API URL and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard reads the response and lists every number it found, including array lengths and counts of matching items, so you pick one. No custom widget, no code.
+Enter the API URL and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard reads the response and lists every number it found, including array lengths and counts of matching items, so you pick from a menu rather than writing a path. No custom widget, no code.
 
 <div class="sy-table-wide">
 
 | Field | What it does | Example |
 | --- | --- | --- |
 | API URL | The endpoint to poll. | `https://requests.example.com/api/v1/request/count` |
-| Value | Which number from the response to show. | `pending` |
 | Authentication | A header or parameter to send. Tick Secret to keep the value out of the browser. | Header `X-Api-Key`, Secret ticked |
-| Unit | A short suffix after the number. | `requests` |
-| Show From | The count below which the badge stays hidden. | `1` |
 | Poll | How often to re-read the endpoint. | `300` seconds |
-| Color | The badge fill. | `#ffcc00` |
 
 </div>
 
-That example badges a request manager with its pending count. Pointing the same fields at Sonarr's queue instead badges episodes still downloading.
+### Labels
 
-Show From sets a floor, so a queue that is never quite empty stays quiet until it matters. Leave it blank to badge any count above zero. A count above 99 shows as `99+`.
+One poll can feed several labels. Each names one number from the response and carries its own text, colour, unit and threshold.
+
+<figure class="sy-shot">
+  <img class="sy-shot__light" src="/img/admin/app-edit-labels.png" alt="Two label cards in an app's edit form, each with Value, Label Text, Color, Unit and Show From, above the Add Label button" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark.png" alt="Two label cards in an app's edit form, each with Value, Label Text, Color, Unit and Show From, above the Add Label button" loading="lazy">
+  <figcaption>Press Add Label for another. Drag a card by its handle to reorder it, or use the arrows.</figcaption>
+</figure>
+
+<div class="sy-table-wide">
+
+| Field | What it does | Example |
+| --- | --- | --- |
+| Value | Which number from the response this label reads. | `pending` |
+| Label Text | The name shown in the list. Optional. | `pending` |
+| Color | The badge fill. Optional. | `#ffcc00` |
+| Unit | A short suffix after the number. Optional. | `pending` |
+| Show From | The count below which this label stays quiet. Optional. | `5` |
+
+</div>
+
+A label is quiet until its number reaches Show From. Leave Show From blank to report any count above zero. A count above 99 shows as `99+`, with the full number in the list.
+
+An app can have five labels. Only the first one that has something to report is drawn on the tile, so a queue that is never quite empty stays out of the way until it matters.
+
+### Reading more than one
+
+When a second badge is reporting, a matching pill appears behind the first in that badge's colour. It means there is more to see.
+
+<figure class="sy-shot">
+  <img src="/img/dashboard/badge-labels.png" alt="Three app tiles: two badges show a second pill behind them, one does not" loading="lazy">
+  <figcaption>Requests and Sonarr each have more behind the badge. Plex has one label, so nothing is stacked.</figcaption>
+</figure>
+
+Hover the badge, tap it on a phone, or move focus to the tile with a keyboard. Everything the tile is reporting opens in a list, with the full numbers and no truncation. Press Escape or tap elsewhere to close it. Tapping the badge opens the list without following the link.
+
+<figure class="sy-shot">
+  <img src="/img/dashboard/badge-list.png" alt="An app tile with its badge list open, showing pending and approved with their values" loading="lazy">
+  <figcaption>The list carries whatever the badge has no room for, in the same order.</figcaption>
+</figure>
+
+The list only appears when there is a second badge. One badge is already fully shown on the tile.
+
+### One total instead
+
+Turn on Show as a Single Badge to add every label's value together and show the sum as one number, in the first label's colour and unit. This is how Live Activity behaved before labels, and dashboards that used it keep it.
+
+### Folders
+
+A folder shows the badge of the app inside it that is reporting, rather than a total. Opening its list names each row by the app it came from.
 
 ## Which badge wins
 
@@ -91,7 +134,7 @@ An app can have several configured. The first of these that applies is the one d
   <div class="sy-order__step">
     <span class="sy-order__rank">2</span>
     <span class="sy-order__demo"><span class="sy-badge sy-badge--inline" style="background:#0091ff">7</span></span>
-    <span class="sy-order__text">Live activity<small>Only at or above Show From.</small></span>
+    <span class="sy-order__text">Live activity<small>The first label at or above its Show From.</small></span>
   </div>
   <div class="sy-order__step">
     <span class="sy-order__rank">3</span>
@@ -109,6 +152,8 @@ An app can have several configured. The first of these that applies is the one d
     <span class="sy-order__text">Nothing</span>
   </div>
 </div>
+
+Whatever is not drawn is still reachable: two or more badges on one tile open the list described above.
 
 ## Stale values
 
@@ -131,4 +176,6 @@ If a poll fails, the last known badge stays on the tile and is marked stale. A f
 
 ## Accessibility
 
-Every badge carries a text description for screen readers, so meaning is never carried by colour alone. Dark text is used where it beats white for contrast.
+Every badge carries a text description for screen readers, so meaning is never carried by colour alone, and so does the list behind it. Badge text is white wherever white is readable against the fill, and dark only where white would fail the contrast requirement.
+
+The list opens on keyboard focus as well as on hover and tap, and label order can be changed with the arrow buttons as well as by dragging.

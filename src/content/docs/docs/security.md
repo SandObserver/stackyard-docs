@@ -75,7 +75,16 @@ cosign verify ghcr.io/sandobserver/stackyard:1.5.0 \
 
 Both flags matter. Without them cosign accepts a signature from any identity, which proves only that something signed the image.
 
-Each release build also scans the image with Trivy and fails on a HIGH or CRITICAL finding that has a fix, so a flagged image never reaches a registry. An SPDX SBOM is attached to the build.
+Each release build also scans the image with Trivy and fails on a HIGH or CRITICAL finding that has a fix, so a flagged image never reaches a registry. A scheduled job rescans the published `latest` image every week, on both platforms, which covers a vulnerability disclosed after a release.
+
+The build produces an SPDX SBOM listing what is inside the image. It is attached to the run as an artifact, and attested to the registry beside the signature, so it stays available after the artifact expires:
+
+```sh
+cosign verify-attestation ghcr.io/sandobserver/stackyard:1.5.0 \
+  --type spdxjson \
+  --certificate-identity-regexp '^https://github.com/SandObserver/stackyard/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
 
 ## Reporting a problem
 

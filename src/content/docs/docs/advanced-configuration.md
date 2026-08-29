@@ -22,7 +22,9 @@ Every variable is optional. The defaults are what the container ships with.
 | `CONFIG_PATH` | `/data/apps.json` | Where the config file lives. |
 | `ICONS_PATH` | `/icons` | Where uploaded icons are written. |
 | `WIDGETS_PATH` | `/usr/share/nginx/html/widgets` | Where widget folders are read from. A wrong path loads an empty registry and every widget reports as unknown. |
-| `PORT` | `3000` | The port the API listens on. Nginx proxies to it, so changing it means changing the nginx config too. |
+| `PORT` | `80` | Only for a hosting platform that reads `PORT` to decide where to route. It must be `80`, the port the container serves on. It does not move anything inside the container. To reach the dashboard on another port, change the published port instead. |
+
+If `CONFIG_PATH` or `ICONS_PATH` points at a folder that does not exist, the container logs a warning at startup. Writes to that path fail until the folder exists.
 
 The repo's [`docker-compose.yml`](https://github.com/SandObserver/stackyard/blob/main/docker-compose.yml) carries each of these as a commented line.
 

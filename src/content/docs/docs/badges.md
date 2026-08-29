@@ -86,12 +86,14 @@ One poll can feed several labels. Each names one number from the response and ca
 | Value | Which number from the response this label reads. | `pending` |
 | Label Text | The name shown in the list. Optional. | `pending` |
 | Color | The badge fill. Optional. | `#ffcc00` |
-| Unit | A short suffix after the number. Optional. | `pending` |
+| Unit | A short suffix for the number, shown in the list and read out by a screen reader. Optional. | `pending` |
 | Show From | The count below which this label stays quiet. Optional. | `5` |
 
 </div>
 
 A label is quiet until its number reaches Show From. Leave Show From blank to report any count above zero. A count above 99 shows as `99+`, with the full number in the list.
+
+The pill carries the number alone, so a unit can never make it wider than the icon it marks. The unit appears in the list beside the number.
 
 An app can have five labels. Only the first one that has something to report is drawn on the tile, so a queue that is never quite empty stays out of the way until it matters.
 
@@ -115,7 +117,7 @@ The list only appears when there is a second badge. One badge is already fully s
 
 ### One total instead
 
-Turn on Show as a Single Badge to add every label's value together and show the sum as one number, in the first label's colour and unit. This is how Live Activity behaved before labels, and dashboards that used it keep it.
+Turn on Show as a Single Badge to add every label's value together and show the sum as one number, in the first label's colour. This is how Live Activity behaved before labels, and dashboards that used it keep it.
 
 ### Folders
 

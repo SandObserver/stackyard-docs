@@ -94,7 +94,8 @@ Environment variables are all optional. See [Advanced configuration](/docs/advan
 The repo ships a longer [`docker-compose.yml`](https://github.com/SandObserver/stackyard/blob/main/docker-compose.yml) with hardening:
 
 - All Linux capabilities dropped, then only the needed ones added back.
-- `no-new-privileges`, plus memory, process count and log size limits.
+- `no-new-privileges`, plus CPU, memory, process count and log size limits.
+- An init process, so orphaned processes are reaped.
 - A container health check.
 - `extra_hosts` for reaching services on the host by IP.
 - Environment variables for a reverse proxy, Docker health checks, and the SSRF guard, each as a commented line.

@@ -221,6 +221,13 @@ const schema = {
               <span class="bsrc">A number from the service API</span>
             </div>
           </div>
+          <div class="bdemo-item">
+            <div class="banchor" style="background:#3F4A6B"><span class="badge badge-peek" style="background:#30D158"></span><span class="badge" style="background:#ffcc00;color:#1c1c1e">4</span></div>
+            <div class="bmeta">
+              <span class="bcap">Several values</span>
+              <span class="bsrc">One poll, each label named in a list</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -503,7 +510,10 @@ if (!reduced) {
     .ftext p{margin:0;font-size:17px;line-height:1.55;color:var(--a11y-dim);text-wrap:pretty}
     .fvis{flex:0 0 440px;display:flex;align-items:center;min-width:0}
 
-    .bdemo{display:flex;gap:16px;width:100%}
+    .bdemo{display:grid;grid-template-columns:repeat(2,136px);gap:26px 16px;justify-content:center;width:100%}
+    /* The second pill sits behind and to the side, the way the tile draws it
+       when a badge has more to report. */
+    .badge-peek{z-index:2;right:calc(-14px * var(--gs))}
     .bdemo-item{display:flex;flex-direction:column;align-items:center;gap:12px;width:136px;text-align:center}
     .banchor{position:relative;width:60px;height:60px;border-radius:13.4px;isolation:isolate;flex-shrink:0}
     .banchor::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;
@@ -660,7 +670,7 @@ if (!reduced) {
       .ftext h2{font-size:22px}
       .ftext p{font-size:15.5px}
       .fvis{max-width:100%}
-      .bdemo{flex-direction:column;gap:16px}
+      .bdemo{grid-template-columns:1fr;gap:16px}
       .bdemo-item{flex-direction:row;align-items:center;gap:14px;width:100%;text-align:left}
       .bmeta{align-items:flex-start;text-align:left}
       .banchor{width:54px;height:54px;border-radius:12px}

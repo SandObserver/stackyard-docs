@@ -102,14 +102,14 @@ An app can have five labels. Only the first one that has something to report is 
 When a second badge is reporting, a matching pill appears behind the first in that badge's colour. It means there is more to see.
 
 <figure class="sy-shot">
-  <img src="/img/dashboard/badge-labels.png" alt="Three app tiles: two badges show a second pill behind them, one does not" loading="lazy">
+  <img src="/img/dashboard/badge-labels-c9fda069.png" alt="Three app tiles: two badges show a second pill behind them, one does not" loading="lazy">
   <figcaption>Jellyfin and Seerr each have more behind the badge. SABnzbd has one label, so nothing is stacked.</figcaption>
 </figure>
 
 Hover the badge, tap it on a phone, or move focus to the tile with a keyboard. Everything the tile is reporting opens in a list, with the full numbers and no truncation. Press Escape or tap elsewhere to close it. Tapping the badge opens the list without following the link.
 
 <figure class="sy-shot">
-  <img src="/img/dashboard/badge-list.png" alt="An app tile with its badge list open, showing pending and approved with their values" loading="lazy">
+  <img src="/img/dashboard/badge-list-a6444739.png" alt="An app tile with its badge list open, showing pending and approved with their values" loading="lazy">
   <figcaption>The list carries whatever the badge has no room for, in the same order.</figcaption>
 </figure>
 

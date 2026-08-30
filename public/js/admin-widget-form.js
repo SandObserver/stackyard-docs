@@ -1,16 +1,10 @@
 import { state } from '/js/admin-state.js?v=c23e6346';
-import { PE_SVG, CHEV_SVG, initInlineEdit } from '/js/admin-shared.js?v=e9afcefb';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=a68e6a57';
+import { PE_SVG, CHEV_SVG, initInlineEdit } from '/js/admin-shared.js?v=1d330931';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=77017460';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import {
-  sizesForView,
-  widgetConfigMode,
-  rejectionLines,
-  refusedNoticeKey,
-  carriesTypedValues,
-} from '/js/admin-logic.js?v=ddfc6f80';
-import { t } from '/js/i18n.js?v=d056c9c5';
-import { q, qi, qa } from '/js/utils.js?v=26566e09';
+import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=d17394da';
+import { t } from '/js/i18n.js?v=83239bf4';
+import { q, qi, qa } from '/js/utils.js?v=8ca7ce3c';
 
 const SIZE_ICONS = {
   small:
@@ -66,7 +60,7 @@ function _renderWidgetForm(body) {
     shell,
     html`
     <div class="row ie-row" id="ie-wname"><span class="rl">${t('widgetCfg.name')}</span><span class="rv${state._wlabel ? '' : ' is-ph'}">${state._wlabel ? state._wlabel : t('widgetCfg.namePh')}</span><input id="f-wlabel" type="text" value="${state._wlabel}" style="display:none"><button class="pe" type="button" aria-label="${t('widgetCfg.editName')}">${raw(PE_SVG)}</button></div>
-    <div class="row"><span class="rl">${t('widgetCfg.type')}</span><div class="sel-wrap"><select id="f-wtype" class="row-sel" aria-label="Widget type">${typeOpts}</select>${raw(CHEV_SVG)}</div></div>`,
+    <div class="row"><span class="rl">${t('widgetCfg.type')}</span><div class="sel-wrap"><select id="f-wtype" class="row-sel" aria-label="${t('widgetCfg.type')}">${typeOpts}</select>${raw(CHEV_SVG)}</div></div>`,
   );
   body.appendChild(shell);
   initInlineEdit('ie-wname', 'f-wlabel', {
@@ -86,7 +80,7 @@ function _renderWidgetForm(body) {
   if (refused.length) {
     const note = document.createElement('p');
     note.className = 'grp-tip';
-    note.textContent = t(refusedNoticeKey(refused.length), { n: refused.length });
+    note.textContent = t('widgetCfg.refused', { count: refused.length });
     body.appendChild(note);
     appendRejectionReasons(body, refused);
   }
@@ -176,7 +170,7 @@ function _renderCustomConfig(body) {
   body.appendChild(card);
   setHtml(
     card,
-    html`<div class="row ie-row" id="cust-url-row"><span class="rl">Iframe URL <span class="req">*</span></span><span class="rv${state._customUrl ? '' : ' is-ph'}">${state._customUrl ? state._customUrl : 'https://app.example.com/widget.html'}</span><input id="f-url" type="url" value="${state._customUrl || ''}" style="display:none"><button class="pe" type="button" aria-label="Edit iframe URL">${raw(PE_SVG)}</button></div>`,
+    html`<div class="row ie-row" id="cust-url-row"><span class="rl">${t('widgetCfg.iframeUrl')} <span class="req">*</span></span><span class="rv${state._customUrl ? '' : ' is-ph'}">${state._customUrl ? state._customUrl : 'https://app.example.com/widget.html'}</span><input id="f-url" type="url" value="${state._customUrl || ''}" style="display:none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
   );
   const tip = document.createElement('p');
   tip.className = 'grp-tip';
@@ -211,10 +205,10 @@ function _renderCustomConfig(body) {
   setHtml(
     adv,
     html`
-    <div class="row"><span class="rl">Referrer Policy</span><div class="sel-wrap"><select class="row-sel" id="if-referrer" aria-label="Referrer policy">${refOpts}</select>${raw(CHEV_SVG)}</div></div>
-    <div class="row ie-row" id="if-allow-row"><span class="rl">Allow (feature policy)</span><span class="rv${o.allow ? '' : ' is-ph'}">${o.allow ? o.allow : 'autoplay; fullscreen'}</span><input id="if-allow" type="text" value="${o.allow || ''}" style="display:none"><button class="pe" type="button" aria-label="Edit allow">${raw(PE_SVG)}</button></div>
-    <div class="row"><span class="rl">Allow Fullscreen</span><label class="tog"><input type="checkbox" id="if-fs" ${o.allowFullscreen !== false ? 'checked' : ''}><div class="tr"></div></label></div>
-    <div class="row ie-row" id="if-refresh-row"><span class="rl">Refresh Interval <span class="opt-span">(ms)</span></span><span class="rv${o.refreshInterval ? '' : ' is-ph'}">${o.refreshInterval ? o.refreshInterval : 'e.g. 2000'}</span><input id="if-refresh" type="number" min="250" step="250" value="${o.refreshInterval || ''}" style="display:none"><button class="pe" type="button" aria-label="Edit refresh interval">${raw(PE_SVG)}</button></div>`,
+    <div class="row"><span class="rl">${t('widgetCfg.referrerPolicy')}</span><div class="sel-wrap"><select class="row-sel" id="if-referrer" aria-label="${t('widgetCfg.referrerPolicy')}">${refOpts}</select>${raw(CHEV_SVG)}</div></div>
+    <div class="row ie-row" id="if-allow-row"><span class="rl">${t('widgetCfg.allowFeaturePolicy')}</span><span class="rv${o.allow ? '' : ' is-ph'}">${o.allow ? o.allow : 'autoplay; fullscreen'}</span><input id="if-allow" type="text" value="${o.allow || ''}" style="display:none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>
+    <div class="row"><span class="rl">${t('widgetCfg.allowFullscreen')}</span><label class="tog"><input type="checkbox" id="if-fs" ${o.allowFullscreen !== false ? 'checked' : ''}><div class="tr"></div></label></div>
+    <div class="row ie-row" id="if-refresh-row"><span class="rl">${t('widgetCfg.refreshInterval')} <span class="opt-span">(ms)</span></span><span class="rv${o.refreshInterval ? '' : ' is-ph'}">${o.refreshInterval ? o.refreshInterval : 'e.g. 2000'}</span><input id="if-refresh" type="number" min="250" step="250" value="${o.refreshInterval || ''}" style="display:none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
   );
   const sync = () => {
     state._iframeOpts.referrerPolicy = qi('#if-referrer', adv).value || undefined;

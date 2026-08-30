@@ -5,13 +5,14 @@ import {
   clr,
   mkWrap as _mkWrap,
   mountScaledWidget,
+  pageDir,
   teardownWidgets,
   el,
   q,
   qa,
   setUserText,
-} from '/js/utils.js?v=26566e09';
-import { t, currentLang } from '/js/i18n.js?v=d056c9c5';
+} from '/js/utils.js?v=8ca7ce3c';
+import { t, currentLang } from '/js/i18n.js?v=83239bf4';
 import { trapFocus } from '/js/dialog.js?v=05935547';
 import { toneForColor } from '/js/label-contrast.js?v=38adb276';
 import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=424d5d41';
@@ -139,6 +140,7 @@ export function mkFolder(item) {
   if (showLabel) {
     const l = mk('div');
     l.className = 'ilabel';
+    l.dir = 'auto';
     l.style.width = iw + 12 + 'px';
     setUserText(l, item.label || t('type.folder'));
     a.appendChild(l);
@@ -188,6 +190,7 @@ export function openFolderDesktop(folder) {
     if (showLabel) {
       const l = mk('div');
       l.className = 'ilabel';
+      l.dir = 'auto';
       l.style.width = iw + 12 + 'px';
       setUserText(l, child.label || child.id);
       a.appendChild(l);
@@ -316,6 +319,7 @@ function mFolder(item, cw, rh, isz, ir, im, sc) {
   if (showLabel) {
     const l = mk('div');
     l.className = 'dyn-fold-label';
+    l.dir = 'auto';
     css(l, { '--lfs': Math.max(9, Math.round(9 * sc)) + 'px', '--lw': cw - 4 + 'px' });
     setUserText(l, item.label || t('type.folder'));
     a.appendChild(l);
@@ -418,7 +422,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
   let dotEls = [];
   function gotoPage(n) {
     curPage = Math.max(0, Math.min(pages.length - 1, n));
-    strip.style.transform = strip.style.webkitTransform = `translateX(-${curPage * pageW}px)`;
+    strip.style.transform = strip.style.webkitTransform = `translateX(${-pageDir() * curPage * pageW}px)`;
     dotEls.forEach((d, j) => d.classList.toggle('on', j === curPage));
     /* A page that has scrolled off stays focusable, so Tab would leave the
        visible page for tiles nobody can see. */
@@ -452,6 +456,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
         if (showLabel) {
           const l = mk('div');
           l.className = 'dyn-fold-inner-label';
+          l.dir = 'auto';
           css(l, { '--lfs': Math.max(11, Math.round(11 * ptScale)) + 'px', '--fiw': folderIconW + 'px' });
           setUserText(l, child.label || child.id);
           a.appendChild(l);
@@ -520,7 +525,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
       if (!swiping) return;
       swiping = false;
       const dx = e.changedTouches[0].clientX - tx0;
-      if (Math.abs(dx) > Math.round(30 * ptScale)) gotoPage(curPage + (dx < 0 ? 1 : -1));
+      if (Math.abs(dx) > Math.round(30 * ptScale)) gotoPage(curPage + (dx < 0 ? 1 : -1) * pageDir());
     },
     { passive: false },
   );
@@ -695,6 +700,7 @@ export function buildMobile() {
     if (showLabel) {
       const l = mk('div');
       l.className = 'dyn-mob-label';
+      l.dir = 'auto';
       css(l, { '--lfs': Math.max(9, Math.round(9 * sc)) + 'px', '--lw': '100%' });
       setUserText(l, item.label || item.id);
       a.appendChild(l);
@@ -839,7 +845,7 @@ export function buildMobile() {
     clearMobWidgets(); /* tap on the home background dismisses any active sled */
     if (txOpenedWithFolder || folderOverlayMob) return;
     const dx = e.changedTouches[0].clientX - tx;
-    if (Math.abs(dx) > 40) goTo(st().pg + (dx < 0 ? 1 : -1));
+    if (Math.abs(dx) > 40) goTo(st().pg + (dx < 0 ? 1 : -1) * pageDir());
   };
   document.addEventListener('touchstart', st()._mobTsCleanup, { passive: true });
   document.addEventListener('touchend', st()._mobTeCleanup, { passive: true });

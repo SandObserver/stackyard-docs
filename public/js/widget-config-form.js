@@ -2,10 +2,10 @@
    back. Each builder returns { el, get, control, liveValue }. See
    docs/widgets.md. */
 
-import { t } from '/js/i18n.js?v=d056c9c5';
+import { t } from '/js/i18n.js?v=83239bf4';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { wireChecklist } from '/js/admin-shared.js?v=e9afcefb';
-import { renderColorControl } from '/js/admin-color-control.js?v=32111fda';
+import { wireChecklist } from '/js/admin-shared.js?v=1d330931';
+import { renderColorControl } from '/js/admin-color-control.js?v=bfd0955a';
 import {
   seedCarried,
   applyOptionSet,
@@ -13,9 +13,9 @@ import {
   requiredFieldMissing,
   groupBounds,
   visibleFieldFlags,
-} from '/js/admin-logic.js?v=ddfc6f80';
+} from '/js/admin-logic.js?v=d17394da';
 import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=10f3cdb1';
-import { qi } from '/js/utils.js?v=26566e09';
+import { qi } from '/js/utils.js?v=8ca7ce3c';
 
 const PE =
   '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M18.4 2.6a1.85 1.85 0 0 1 2.6 2.6l-9.1 9.1-3.4 1 1-3.4z"/></svg>';
@@ -33,7 +33,7 @@ function _ieRow(field, value, inputType) {
   row.className = 'row ie-row';
   setHtml(
     row,
-    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv${has ? '' : ' is-ph'}">${has ? value : ph}</span><input class="row-inp" type="${inputType}" autocomplete="off" value="${has ? value : field.default != null ? field.default : ''}" style="display:none"><button class="pe" type="button" aria-label="Edit ${field.label}">${raw(PE)}</button>`,
+    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv${has ? '' : ' is-ph'}">${has ? value : ph}</span><input class="row-inp" type="${inputType}" autocomplete="off" value="${has ? value : field.default != null ? field.default : ''}" style="display:none"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE)}</button>`,
   );
   const rv = row.querySelector('.rv'),
     inp = qi('.row-inp', row),
@@ -94,7 +94,7 @@ function _secret(field, isSet) {
   const display = isSet ? t('common.configured') : t('common.notSet');
   setHtml(
     row,
-    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv is-ph">${display}</span><input class="row-inp" type="password" autocomplete="new-password" placeholder="${isSet ? t('widgetCfg.replaceSecret') : field.placeholder || ''}" style="display:none"><button class="pe" type="button" aria-label="Edit ${field.label}">${raw(PE)}</button>`,
+    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv is-ph">${display}</span><input class="row-inp" type="password" autocomplete="new-password" placeholder="${isSet ? t('widgetCfg.replaceSecret') : field.placeholder || ''}" style="display:none"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE)}</button>`,
   );
   const rv = row.querySelector('.rv'),
     inp = qi('.row-inp', row),
@@ -265,9 +265,7 @@ function _picklist(field, value, ctx, size) {
       try {
         opts = await _fetchOptions(field, ctx);
         paint();
-        status.textContent = opts.length
-          ? t(opts.length === 1 ? 'widgetCfg.loaded' : 'widgetCfg.loadedPlural', { n: opts.length })
-          : t('widgetCfg.noOptions');
+        status.textContent = opts.length ? t('widgetCfg.loaded', { count: opts.length }) : t('widgetCfg.noOptions');
         status.className = 'row-status ok';
       } catch (e) {
         const advice = optionsErrorAdvice(e);
@@ -350,9 +348,7 @@ function _select(field, value, ctx, config = {}) {
         chosen = sel.value || chosen;
         paint();
         syncCarried();
-        status.textContent = opts.length
-          ? t(opts.length === 1 ? 'widgetCfg.loaded' : 'widgetCfg.loadedPlural', { n: opts.length })
-          : t('widgetCfg.noOptions');
+        status.textContent = opts.length ? t('widgetCfg.loaded', { count: opts.length }) : t('widgetCfg.noOptions');
         status.className = 'row-status ok';
       } catch (e) {
         const advice = optionsErrorAdvice(e);

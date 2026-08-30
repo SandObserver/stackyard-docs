@@ -1,9 +1,9 @@
-import { clr as rc, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=26566e09';
+import { clr as rc, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=8ca7ce3c';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { loadLocalIcons, resolveIcon, iconChain, cdnIconName } from '/js/icons.js?v=69c2b9bd';
 import { state } from '/js/admin-state.js?v=c23e6346';
-import { isDockBlocked, DOCK_MAX, clearsStoredSecret } from '/js/admin-logic.js?v=ddfc6f80';
-import { t } from '/js/i18n.js?v=d056c9c5';
+import { isDockBlocked, DOCK_MAX, clearsStoredSecret } from '/js/admin-logic.js?v=d17394da';
+import { t } from '/js/i18n.js?v=83239bf4';
 import {
   toast,
   ag,
@@ -13,9 +13,9 @@ import {
   initInlineEdit,
   setTogDisabled,
   wireChecklist,
-} from '/js/admin-shared.js?v=e9afcefb';
-import { MAX_LABELS } from '/js/badge-logic.js?v=c6430afc';
-import { renderColorControl, BADGE_SWATCHES, BADGE_DEFAULT } from '/js/admin-color-control.js?v=32111fda';
+} from '/js/admin-shared.js?v=1d330931';
+import { MAX_LABELS } from '/js/badge-logic.js?v=41a929ac';
+import { renderColorControl, BADGE_SWATCHES, BADGE_DEFAULT } from '/js/admin-color-control.js?v=bfd0955a';
 import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=10f3cdb1';
 
 export function buildFolderForm(body, item) {
@@ -43,7 +43,7 @@ export function buildFolderForm(body, item) {
         <span class="rl">${t('folder.name')}</span>
         <span class="rv${item?.label ? '' : ' is-ph'}">${item?.label || t('folder.namePh')}</span>
         <input id="f-fname" type="text" value="${item?.label || ''}" style="display:none">
-        <button class="pe" type="button" aria-label="Edit folder name">${raw(PE_SVG)}</button>
+        <button class="pe" type="button">${raw(PE_SVG)}</button>
       </div>
       <div class="row">
         <span class="rl">${t('folder.addApps')}</span>
@@ -52,7 +52,7 @@ export function buildFolderForm(body, item) {
             <span id="folder-apps-label">${t('folder.selectApps')}</span>
             ${raw(CHEV_SVG)}
           </button>
-          <ul class="row-dd-list checklist" id="folder-apps-list" role="listbox" aria-multiselectable="true" aria-label="Apps in this folder" hidden>${opts}</ul>
+          <ul class="row-dd-list checklist" id="folder-apps-list" role="listbox" aria-multiselectable="true" aria-label="${t('folder.appsInFolder')}" hidden>${opts}</ul>
         </div>
       </div>
     </div>
@@ -165,7 +165,7 @@ export function buildAppForm(body, item) {
         <div id="auth-row-wrap">
           <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', !!(act.params || act.headers), t('app.authentication'))}</div>
           <div id="auth-sub" ${act.params?.length || act.headers?.length ? '' : 'hidden'}>
-            <div class="row kv-hdr"><span class="rl">Add to URL <span class="rl-sub">(query params)</span></span></div>
+            <div class="row kv-hdr"><span class="rl">${t('app.addToUrl')} <span class="rl-sub">(query params)</span></span></div>
             <div id="bpar-rows" class="kv-rows"></div>
             <div class="row kv-hdr"><span class="rl">${t('app.addToHeader')}</span></div>
             <div id="bhdr-rows" class="kv-rows"></div>
@@ -178,7 +178,7 @@ export function buildAppForm(body, item) {
       <div id="act-labels"></div>
       <p class="grp-tip" id="act-label-order">${t('app.labelOrderTip')}</p>
       <div class="albl-add-wrap"><button type="button" class="albl-add" id="act-add-label">${t('app.addLabel')}</button></div>
-      <p class="grp-tip" id="act-label-max" hidden>${t('app.labelMax', { n: MAX_LABELS })}</p>
+      <p class="grp-tip" id="act-label-max" hidden>${t('app.labelMax', { count: MAX_LABELS })}</p>
       <div id="act-combine-row" class="bprow-hidden">
         <div class="grp"><div class="row"><span class="rl">${t('app.combineValues')}</span>${tog('act-combine', !!act.combine || !!state.slegacySum, t('app.combineValues'))}</div></div>
         <p class="grp-tip" id="act-combine-tip">${t('app.combineTip')}</p>
@@ -256,9 +256,7 @@ export function buildAppForm(body, item) {
   el('act-add-label')?.addEventListener('click', addActLabel);
   const savedStatus = el('bst');
   if (savedStatus && state.spaths.length)
-    savedStatus.textContent = t(state.spaths.length === 1 ? 'app.labelsSaved' : 'app.labelsSavedPlural', {
-      n: state.spaths.length,
-    });
+    savedStatus.textContent = t('app.labelsSaved', { count: state.spaths.length });
   syncActMode();
 }
 
@@ -388,10 +386,10 @@ function renderActLabels(host) {
     setHtml(
       card,
       html`${_valueSelect(i, path)}
-      ${_ieRow(`ie-albl-name-${i}`, _optRow(t('app.labelText')), `albl-name-${i}`, l.name, t('app.labelPh'), 'text', t('app.labelText'))}
+      ${_ieRow(`ie-albl-name-${i}`, _optRow(t('app.labelText')), `albl-name-${i}`, l.name, t('app.labelPh'))}
       <div id="albl-col-slot-${i}"></div>
-      ${_ieRow(`ie-albl-unit-${i}`, _optRow(t('app.unit')), `albl-unit-${i}`, l.unit, t('app.unitPh'), 'text', t('app.unit'))}
-      ${_ieRow(`ie-albl-min-${i}`, _optRow(t('app.badgeMin')), `albl-min-${i}`, l.min, t('app.badgeMinPh'), 'number', t('app.badgeMin'))}`,
+      ${_ieRow(`ie-albl-unit-${i}`, _optRow(t('app.unit')), `albl-unit-${i}`, l.unit, t('app.unitPh'))}
+      ${_ieRow(`ie-albl-min-${i}`, _optRow(t('app.badgeMin')), `albl-min-${i}`, l.min, t('app.badgeMinPh'), 'number')}`,
     );
     host.appendChild(card);
     initInlineEdit(`ie-albl-name-${i}`, `albl-name-${i}`, { placeholder: t('app.labelPh') });
@@ -430,7 +428,7 @@ const GRIP_SVG =
 function addActLabel() {
   captureActLabels();
   if (state.spaths.length >= MAX_LABELS) {
-    toast(t('app.labelMax', { n: MAX_LABELS }), 'err');
+    toast(t('app.labelMax', { count: MAX_LABELS }), 'err');
     return;
   }
   const free = actValueOptions().find(o => !state.spaths.includes(o.path));
@@ -490,12 +488,11 @@ function wireActLabelDrag(host) {
   }
 }
 
-/** The inline-edit row markup. `label` may carry markup, so the button's
-    accessible name comes from `aria`: an attribute cannot hold an element. */
-function _ieRow(rowId, label, inpId, val, ph, type = 'text', aria) {
+/** The inline-edit row markup. The pencil's accessible name is set by
+    initInlineEdit, from the row's own label. */
+function _ieRow(rowId, label, inpId, val, ph, type = 'text') {
   const has = val != null && val !== '';
-  const name = aria == null ? String(label) : aria;
-  return html`<div class="row ie-row" id="${rowId}"><span class="rl">${label}</span><span class="rv${has ? '' : ' is-ph'}">${has ? val : ph}</span><input id="${inpId}" type="${type}" value="${val || ''}" style="display:none"><button class="pe" type="button" aria-label="Edit ${name}">${raw(PE_SVG)}</button></div>`;
+  return html`<div class="row ie-row" id="${rowId}"><span class="rl">${label}</span><span class="rv${has ? '' : ' is-ph'}">${has ? val : ph}</span><input id="${inpId}" type="${type}" value="${val || ''}" style="display:none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`;
 }
 
 function wireIcon() {
@@ -752,10 +749,10 @@ function kvRowEl(host, rows, row, ph) {
   setHtml(
     el,
     html`
-    <input class="kv-k" type="text" placeholder="Key" value="${row.key}" aria-label="Header key">
-    <input class="kv-v" type="${row.secret ? 'password' : 'text'}" placeholder="${valPh}" value="${row.value}" autocomplete="off" aria-label="Header value">
-    <label class="kv-cred" title="Store this value as a credential: hidden after saving and never exported. Unticking clears the stored value."><input type="checkbox" ${row.secret ? 'checked' : ''} aria-label="${t('app.secret')}"><span class="kv-box"></span><span class="kv-cred-lbl">${t('app.secret')}</span></label>
-    <button class="kv-del" type="button" aria-label="Remove">✕</button>`,
+    <input class="kv-k" type="text" placeholder="${t('app.headerKeyPh')}" value="${row.key}" aria-label="${t('app.headerKey')}">
+    <input class="kv-v" type="${row.secret ? 'password' : 'text'}" placeholder="${valPh}" value="${row.value}" autocomplete="off" aria-label="${t('app.headerValue')}">
+    <label class="kv-cred" title="${t('app.secretTip')}"><input type="checkbox" ${row.secret ? 'checked' : ''} aria-label="${t('app.secret')}"><span class="kv-box"></span><span class="kv-cred-lbl">${t('app.secret')}</span></label>
+    <button class="kv-del" type="button" aria-label="${t('widgetCfg.remove')}">✕</button>`,
   );
   const kEl = qi('.kv-k', el),
     vEl = qi('.kv-v', el),

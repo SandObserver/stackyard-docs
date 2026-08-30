@@ -1,7 +1,7 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
-import { nextActiveIndex, recoversSession, toastHoldMs } from '/js/admin-logic.js?v=ddfc6f80';
-import { el, qa, q } from '/js/utils.js?v=26566e09';
-import { t } from '/js/i18n.js?v=d056c9c5';
+import { nextActiveIndex, recoversSession, toastHoldMs } from '/js/admin-logic.js?v=d17394da';
+import { el, qa, q } from '/js/utils.js?v=8ca7ce3c';
+import { t } from '/js/i18n.js?v=83239bf4';
 
 export const API = '';
 
@@ -155,6 +155,10 @@ export function initInlineEdit(rowId, inputId, { type = 'text', placeholder = ''
   if (labelEl) {
     if (!labelEl.id) labelEl.id = `${rowId}-rl`;
     inp.setAttribute('aria-labelledby', labelEl.id);
+    /* The pencil opens this row, so it is named after this row. Taking the name
+       from the label keeps the two in one language, and in step when either
+       changes. */
+    pen.setAttribute('aria-label', t('common.editNamed', { name: labelEl.textContent.trim() }));
   }
   row.insertBefore(inp, pen);
 

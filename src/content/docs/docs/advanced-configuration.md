@@ -22,6 +22,7 @@ Every variable is optional. The defaults are what the container ships with.
 | `CONFIG_PATH` | `/data/apps.json` | Where the config file lives. |
 | `ICONS_PATH` | `/icons` | Where uploaded icons are written. |
 | `WIDGETS_PATH` | `/usr/share/nginx/html/widgets` | Where widget folders are read from. A wrong path loads an empty registry and every widget reports as unknown. |
+| `NODE_OPTIONS` | `--max-old-space-size=192` | The heap ceiling for the API. Node sizes its heap from the host's memory, not from the container's limit, so without this the API is killed instead of collecting. Keep it near half of the container's memory limit, and raise both together. |
 | `PORT` | `80` | Only for a hosting platform that reads `PORT` to decide where to route. It must be `80`, the port the container serves on. It does not move anything inside the container. To reach the dashboard on another port, change the published port instead. |
 
 If `CONFIG_PATH` or `ICONS_PATH` points at a folder that does not exist, the container logs a warning at startup. Writes to that path fail until the folder exists.

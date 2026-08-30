@@ -1,7 +1,7 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=aa32f5ed';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=2191f31e';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=1d7010c3';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=d1c7d163';
 import { applyDrop, canJoinFolder, folderRowZone } from '/js/admin-drag-logic.js?v=ebe3e806';
-import { reorderItems, resolveAdminSection } from '/js/admin-logic.js?v=ddfc6f80';
+import { reorderItems, resolveAdminSection } from '/js/admin-logic.js?v=d17394da';
 import {
   buildAppItem,
   claimFolderChildren,
@@ -10,12 +10,12 @@ import {
   snapshotItems,
   upsertItem,
 } from '/js/admin-save-logic.js?v=48a9e055';
-import { loadSettings, showBgFields, showBgFit, showWallpaperFile } from '/js/admin-settings.js?v=455deefb';
-import { ag, ap, initInlineEdit, setReauthHandler, toast } from '/js/admin-shared.js?v=e9afcefb';
+import { loadSettings, showBgFields, showBgFit, showWallpaperFile } from '/js/admin-settings.js?v=f5343e07';
+import { ag, ap, initInlineEdit, setReauthHandler, toast } from '/js/admin-shared.js?v=1d330931';
 import { state } from '/js/admin-state.js?v=c23e6346';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=5a2dc8e8';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=c549d05d';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=d056c9c5';
+import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=83239bf4';
 import { iconChain, loadLocalIcons, resolveIcon } from '/js/icons.js?v=69c2b9bd';
 import {
   clearSkipTls,
@@ -29,10 +29,10 @@ import {
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=28416a75';
 import { confirmModal, openModal as openDialog, promptModal } from '/js/modal.js?v=ff76dc56';
 import { readMode, watchSystemTheme, writeMode } from '/js/theme.js?v=db4192cd';
-import { el, inp, q, qa, clr as rc, sanitizeCssUrl, setUserText, tgt } from '/js/utils.js?v=26566e09';
+import { el, inp, q, qa, clr as rc, sanitizeCssUrl, setUserText, tgt } from '/js/utils.js?v=8ca7ce3c';
 import { widgetGlyph } from '/js/widget-glyphs.js?v=b5036986';
-import { normalizeColorInput } from '/js/admin-color-control.js?v=32111fda';
-import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=cceca788';
+import { normalizeColorInput } from '/js/admin-color-control.js?v=bfd0955a';
+import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=1907cce7';
 
 /* A class rather than a bare media query. Some phones report a wider CSS
    viewport than they have. The rule lives in layout.js, shared with the
@@ -53,6 +53,7 @@ async function load() {
   state.items = c.items || [];
   state._settings = c.settings || {};
   await initI18n(c.settings?.language || 'en');
+  document.title = t('nav.pageTitle');
   initVersion();
   syncThemeLabel();
   try {
@@ -1459,7 +1460,7 @@ el('imp').onchange = async e => {
     }
     const lead = document.createElement('p');
     lead.className = 'dlg-lead';
-    lead.textContent = t('import.confirm', { n: d.items.length, added, updated, deleted });
+    lead.textContent = t('import.confirm', { count: d.items.length, added, updated, deleted });
     const ok = await confirmModal({
       title: t('import.confirmTitle'),
       body: lead,

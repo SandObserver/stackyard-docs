@@ -37,6 +37,10 @@ export { esc } from '/js/html.js?v=c71f8903';
    alignment as well as bidi, so a Latin name on the block dragged its whole row
    to the other edge: a title and its subtitle ended up on opposite sides.
 
+   A centred label sets `dir` on the block as well, because alignment cannot move
+   centred text. Without it the block's direction decides which end is cut, and
+   WebKit ignores unicode-bidi:plaintext for that.
+
    @param {HTMLElement} node @param {string} text @returns {HTMLElement} */
 export const setUserText = (node, text) => {
   node.textContent = '';
@@ -45,6 +49,15 @@ export const setUserText = (node, text) => {
   node.appendChild(bdi);
   return node;
 };
+
+/* A page strip is laid out in the page's direction, so the next page sits to the
+   left in one direction and to the right in the other. translateX has no logical
+   form, and a strip moved the wrong way leaves the screen: 1 where a page
+   advances leftwards, -1 where it advances rightwards.
+
+   The same number mirrors the inputs. A leftward drag and the right arrow ask
+   for the next page in one direction and the previous page in the other. */
+export const pageDir = () => (getComputedStyle(document.documentElement).direction === 'rtl' ? -1 : 1);
 
 /* A tile label is one line and ellipsises. The full name is on the anchor's
    accessible name either way, so this is for a pointer: a tooltip only where the

@@ -103,7 +103,7 @@ When a second badge is reporting, a matching pill appears behind the first in th
 
 <figure class="sy-shot">
   <img src="/img/dashboard/badge-labels.png" alt="Three app tiles: two badges show a second pill behind them, one does not" loading="lazy">
-  <figcaption>Seerr and Jellyfin each have more behind the badge. SABnzbd has one label, so nothing is stacked.</figcaption>
+  <figcaption>Jellyfin and Seerr each have more behind the badge. SABnzbd has one label, so nothing is stacked.</figcaption>
 </figure>
 
 Hover the badge, tap it on a phone, or move focus to the tile with a keyboard. Everything the tile is reporting opens in a list, with the full numbers and no truncation. Press Escape or tap elsewhere to close it. Tapping the badge opens the list without following the link.

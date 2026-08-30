@@ -512,8 +512,10 @@ if (!reduced) {
 
     .bdemo{display:grid;grid-template-columns:repeat(2,136px);gap:26px 16px;justify-content:center;width:100%}
     /* The second pill sits behind and to the side, the way the tile draws it
-       when a badge has more to report. */
-    .badge-peek{z-index:2;right:calc(-14px * var(--gs))}
+       when a badge has more to report. The stack keeps its outer edge where a
+       single badge sits, so the front pill shifts inward instead. */
+    .badge-peek{z-index:2;box-shadow:0 0 0 1.5px rgba(0,0,0,.55)}
+    .badge-peek + .badge{right:0}
     .bdemo-item{display:flex;flex-direction:column;align-items:center;gap:12px;width:136px;text-align:center}
     .banchor{position:relative;width:60px;height:60px;border-radius:13.4px;isolation:isolate;flex-shrink:0}
     .banchor::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;

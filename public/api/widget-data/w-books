@@ -1,10 +1,42 @@
 {
   "provider": "audiobookshelf",
-  "source": "list",
-  "books": [
-    { "title": "Dune", "author": "Frank Herbert", "progress": 0.42, "finished": false, "color": "#A8622A", "kind": "book" },
-    { "title": "Project Hail Mary", "author": "Andy Weir", "progress": 0.77, "finished": false, "color": "#1D4E6B", "kind": "book" },
-    { "title": "The Hobbit", "author": "J. R. R. Tolkien", "progress": 1, "finished": true, "color": "#2F5D3A", "kind": "book" },
-    { "title": "Neuromancer", "author": "William Gibson", "progress": null, "finished": false, "color": "#6E2B4F", "kind": "book" }
+  "shelves": [
+    {
+      "source": "list",
+      "books": [
+        {
+          "title": "Dune",
+          "author": "Frank Herbert",
+          "progress": 0.42,
+          "finished": false,
+          "color": "#A8622A",
+          "kind": "book"
+        },
+        {
+          "title": "Project Hail Mary",
+          "author": "Andy Weir",
+          "progress": 0.77,
+          "finished": false,
+          "color": "#1D4E6B",
+          "kind": "book"
+        },
+        {
+          "title": "The Hobbit",
+          "author": "J. R. R. Tolkien",
+          "progress": 1,
+          "finished": true,
+          "color": "#2F5D3A",
+          "kind": "book"
+        },
+        {
+          "title": "Neuromancer",
+          "author": "William Gibson",
+          "progress": null,
+          "finished": false,
+          "color": "#6E2B4F",
+          "kind": "book"
+        }
+      ]
+    }
   ]
 }

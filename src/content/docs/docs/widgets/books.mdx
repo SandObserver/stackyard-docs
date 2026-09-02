@@ -7,7 +7,10 @@ import WidgetGroup from '../../../../components/WidgetGroup.astro';
 
 Shows what you are reading and how far through you are.
 
-Sizes: Small.
+Sizes: Small, Medium, Large.
+
+Small and medium hold one shelf. Large holds three, and each shelf shows its
+own view of the same library.
 
 <WidgetGroup caption="Two libraries. Small reads an Audiobookshelf list, medium a Komga library."
   items={[
@@ -30,7 +33,13 @@ Sizes: Small.
 | Service | Which library to read. | Yes |
 | URL | The service address. Audiobookshelf defaults to port 13378, Komga to 25600, Kavita to 5000. | Yes |
 | API key | The credential for that service. Stored as a secret. | Yes |
+| Click URL | Where clicking the widget opens. | No |
+
+Each shelf is configured on its own. Small and medium show one Shelf section,
+large shows three.
+
+| Shelf field | What it does | Required |
+| --- | --- | --- |
 | Show | Recently Added, Unread and On-deck, or a Custom List. | Yes |
 | List | Which collection or reading list to show. Enter the URL and key first, then Fetch to load the options. | Custom List only |
-| Click URL | Where clicking the widget opens. | No |
 

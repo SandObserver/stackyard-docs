@@ -1,16 +1,90 @@
 {
   "provider": "komga",
-  "source": "recently",
-  "books": [
-    { "title": "Saga", "author": "Brian K. Vaughan", "progress": 0.31, "finished": false, "color": "#9B2F2F", "kind": "series" },
-    { "title": "Watchmen", "author": "Alan Moore", "progress": 0.64, "finished": false, "color": "#C8A21C", "kind": "series" },
-    { "title": "Berserk", "author": "Kentaro Miura", "progress": 1, "finished": true, "color": "#33363B", "kind": "series" },
-    { "title": "Monstress", "author": "Marjorie Liu", "progress": null, "finished": false, "color": "#4A3A7A", "kind": "series" },
-    { "title": "Akira", "author": "Katsuhiro Otomo", "progress": 0.18, "finished": false, "color": "#1F6F6B", "kind": "series" },
-    { "title": "Vinland Saga", "author": "Makoto Yukimura", "progress": 0.52, "finished": false, "color": "#7A4A1F", "kind": "series" },
-    { "title": "Blacksad", "author": "Juan Diaz Canales", "progress": 0.87, "finished": false, "color": "#264F7A", "kind": "series" },
-    { "title": "Sandman", "author": "Neil Gaiman", "progress": 1, "finished": true, "color": "#5C2C6E", "kind": "series" },
-    { "title": "Pluto", "author": "Naoki Urasawa", "progress": 0.05, "finished": false, "color": "#A34E1C", "kind": "series" },
-    { "title": "Nausicaa", "author": "Hayao Miyazaki", "progress": null, "finished": false, "color": "#3F6B32", "kind": "series" }
+  "shelves": [
+    {
+      "source": "recently",
+      "books": [
+        {
+          "title": "Saga",
+          "author": "Brian K. Vaughan",
+          "progress": 0.31,
+          "finished": false,
+          "color": "#9B2F2F",
+          "kind": "series"
+        },
+        {
+          "title": "Watchmen",
+          "author": "Alan Moore",
+          "progress": 0.64,
+          "finished": false,
+          "color": "#C8A21C",
+          "kind": "series"
+        },
+        {
+          "title": "Berserk",
+          "author": "Kentaro Miura",
+          "progress": 1,
+          "finished": true,
+          "color": "#33363B",
+          "kind": "series"
+        },
+        {
+          "title": "Monstress",
+          "author": "Marjorie Liu",
+          "progress": null,
+          "finished": false,
+          "color": "#4A3A7A",
+          "kind": "series"
+        },
+        {
+          "title": "Akira",
+          "author": "Katsuhiro Otomo",
+          "progress": 0.18,
+          "finished": false,
+          "color": "#1F6F6B",
+          "kind": "series"
+        },
+        {
+          "title": "Vinland Saga",
+          "author": "Makoto Yukimura",
+          "progress": 0.52,
+          "finished": false,
+          "color": "#7A4A1F",
+          "kind": "series"
+        },
+        {
+          "title": "Blacksad",
+          "author": "Juan Diaz Canales",
+          "progress": 0.87,
+          "finished": false,
+          "color": "#264F7A",
+          "kind": "series"
+        },
+        {
+          "title": "Sandman",
+          "author": "Neil Gaiman",
+          "progress": 1,
+          "finished": true,
+          "color": "#5C2C6E",
+          "kind": "series"
+        },
+        {
+          "title": "Pluto",
+          "author": "Naoki Urasawa",
+          "progress": 0.05,
+          "finished": false,
+          "color": "#A34E1C",
+          "kind": "series"
+        },
+        {
+          "title": "Nausicaa",
+          "author": "Hayao Miyazaki",
+          "progress": null,
+          "finished": false,
+          "color": "#3F6B32",
+          "kind": "series"
+        }
+      ]
+    }
   ]
 }

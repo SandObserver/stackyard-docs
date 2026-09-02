@@ -1,8 +1,9 @@
-import { toast, ag, ap } from '/js/admin-shared.js?v=1d330931';
+import { toast, ag, ap } from '/js/admin-shared.js?v=132c869f';
 import { pwStrength } from '/js/password-strength.js?v=42f45ac7';
-import { t } from '/js/i18n.js?v=83239bf4';
-import { shouldWritePassword, settingsSaveBlocker, clearsStoredPassword, BLOCK } from '/js/admin-logic.js?v=d17394da';
-import { el, inp, q, qa, setUserText } from '/js/utils.js?v=8ca7ce3c';
+import { t } from '/js/i18n.js?v=e644a5c5';
+import { shouldWritePassword, settingsSaveBlocker, clearsStoredPassword, BLOCK } from '/js/admin-logic.js?v=dcf7c37d';
+import { confirmText } from '/js/modal.js?v=11fa1eff';
+import { el, inp, q, qa, setUserText } from '/js/utils.js?v=d949e985';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
@@ -23,7 +24,7 @@ function syncSessionRows() {
   const canRevoke = on && _passwordSet;
   el('sec-revoke-row')?.classList.toggle('d-none', !canRevoke);
   const revokeTip = el('revoke-tip');
-  if (revokeTip) revokeTip.style.display = canRevoke ? '' : 'none';
+  if (revokeTip) revokeTip.classList.toggle('d-none', !canRevoke);
 }
 
 export function loadSettings(c) {
@@ -184,7 +185,7 @@ export function loadSettings(c) {
       const socketRow = el('ie-socket');
       if (socketRow) socketRow.classList.toggle('d-none', !v);
       const socketHint = el('socket-hint');
-      if (socketHint) socketHint.style.display = v ? '' : 'none';
+      if (socketHint) socketHint.classList.toggle('d-none', !v);
     };
     applyDocker(dockerEnEl.checked);
     dockerEnEl.addEventListener('change', () => applyDocker(dockerEnEl.checked));
@@ -201,7 +202,14 @@ export function loadSettings(c) {
     location.reload();
   });
   secRevoke?.addEventListener('click', async () => {
-    if (!confirm(t('confirm.revokeSessions'))) return;
+    const ok = await confirmText({
+      title: t('general.signOutEverywhere'),
+      text: t('confirm.revokeSessions'),
+      confirmLabel: t('general.signOutEverywhereBtn'),
+      cancelLabel: t('common.cancel'),
+      destructive: true,
+    });
+    if (!ok) return;
     secRevoke.disabled = true;
     try {
       await ap('/api/auth/revoke-sessions', {});
@@ -233,7 +241,7 @@ async function syncAuthFromServer() {
     const pwRow = el('ie-pw');
     const pwHint = el('pw-hint-static');
     if (pwRow) pwRow.classList.toggle('d-none', !d.enabled);
-    if (pwHint) pwHint.style.display = d.enabled ? '' : 'none';
+    if (pwHint) pwHint.classList.toggle('d-none', !d.enabled);
   }
   const pwValEl = el('ie-pw-v');
   if (pwValEl) pwValEl.textContent = d.passwordSet ? t('common.configured') : t('common.notSet');
@@ -380,12 +388,18 @@ async function saveServer() {
 
   /* Switching protection off deletes the stored password. Ask before anything
      is written. */
-  if (
-    clearsStoredPassword({ enabled, wasEnabled: _authEnabled, passwordSet: _passwordSet }) &&
-    !confirm(t('confirm.clearPassword'))
-  ) {
-    await syncAuthFromServer();
-    return;
+  if (clearsStoredPassword({ enabled, wasEnabled: _authEnabled, passwordSet: _passwordSet })) {
+    const ok = await confirmText({
+      title: t('general.passwordProtection'),
+      text: t('confirm.clearPassword'),
+      confirmLabel: t('common.delete'),
+      cancelLabel: t('common.cancel'),
+      destructive: true,
+    });
+    if (!ok) {
+      await syncAuthFromServer();
+      return;
+    }
   }
 
   try {

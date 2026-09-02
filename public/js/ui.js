@@ -1,5 +1,5 @@
 import { iconChain } from '/js/icons.js?v=69c2b9bd';
-import { widgetSrc, cardPreset, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=6a5e1619';
+import { widgetSrc, cardPreset, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=a1b61636';
 import {
   mk,
   clr,
@@ -11,11 +11,10 @@ import {
   q,
   qa,
   setUserText,
-} from '/js/utils.js?v=8ca7ce3c';
-import { t, currentLang } from '/js/i18n.js?v=83239bf4';
-import { trapFocus } from '/js/dialog.js?v=05935547';
-import { toneForColor } from '/js/label-contrast.js?v=38adb276';
-import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=424d5d41';
+} from '/js/utils.js?v=d949e985';
+import { t, currentLang } from '/js/i18n.js?v=e644a5c5';
+import { toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
+import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=7be08bb0';
 
 let _state = null;
 export function initUI(state) {
@@ -33,6 +32,8 @@ const CB = () => _state.CB;
 const st = () => _state;
 const widgetReg = () => _state?.widgetReg || Object.create(null);
 const mkWrap = (item, sz, r, isz, cls) => _mkWrap(item, sz, r, isz, cls, breg);
+
+const folderName = f => (f.label ? t('type.folderNamed', { name: f.label }) : t('type.folder'));
 
 /* A tap outside a widget lands in the parent document. Widgets expose
    window.__clearActive. */
@@ -101,16 +102,13 @@ function mkMiniIcon(child, pointerEvents) {
 export function mkFolder(item) {
   const showLabel = S().showLabels?.desktop !== false;
   const iw = showLabel ? 72 : 78;
-  const a = mk('a');
+  const a = mk('button');
+  a.type = 'button';
   a.className = 'icon';
-  a.style.cursor = 'pointer';
-  a.href = '#';
-  a.setAttribute('role', 'button');
-  a.setAttribute('aria-label', (item.label || t('type.folder')) + ' folder');
-  a.dataset.tileName = (item.label || t('type.folder')) + ' folder';
+  a.setAttribute('aria-label', folderName(item));
+  a.dataset.tileName = folderName(item);
   if (!showLabel) a.title = item.label || t('type.folder');
-  a.onclick = e => {
-    e.preventDefault();
+  a.onclick = () => {
     openFolderDesktop(item);
   };
   const box = mk('div');
@@ -157,14 +155,10 @@ export function openFolderDesktop(folder) {
   }
   const children = (folder.children || []).map(id => items().find(i => i.id === id)).filter(Boolean);
   const showLabel = S().showLabels?.desktop !== false;
-  const ov = mk('div');
+  const ov = /** @type {HTMLDialogElement} */ (mk('dialog'));
   ov.className = 'folder-overlay';
-  ov.setAttribute('role', 'dialog');
-  ov.setAttribute('aria-modal', 'true');
-  ov.setAttribute('aria-label', (folder.label || t('type.folder')) + ' folder');
+  ov.setAttribute('aria-label', folderName(folder));
   ov.tabIndex = -1;
-  const _prevFocus = /** @type {HTMLElement} */ (document.activeElement);
-  let releaseDeskTrap = null;
   const outer = mk('div');
   outer.className = 'folder-outer';
   const title = mk('div');
@@ -202,33 +196,28 @@ export function openFolderDesktop(folder) {
   children.forEach(c => bupd(c.id));
   qa('.badge', grid).forEach(el => registeredBadges.push(el));
   function closeDesk() {
+    ov.close();
+  }
+  /* Escape and the tile's own toggle arrive here alike, and a badge registered
+     to an element that has gone keeps the dashboard repainting it. */
+  ov.addEventListener('close', () => {
     registeredBadges.forEach(el => BEL().forEach((_, id) => bunreg(id, el)));
-    document.removeEventListener('keydown', escDesk);
-    if (releaseDeskTrap) {
-      releaseDeskTrap();
-      releaseDeskTrap = null;
-    }
     ov.remove();
     folderOverlay = null;
-    if (_prevFocus && _prevFocus.focus) _prevFocus.focus();
-  }
+  });
+  /* The overlay is the scrim, so a click reported against it is a click
+     outside the folder. */
   ov.onclick = e => {
     if (e.target === ov) closeDesk();
   };
-  const escDesk = e => {
-    if (e.key === 'Escape') {
-      closeDesk();
-      document.removeEventListener('keydown', escDesk);
-    }
-  };
-  document.addEventListener('keydown', escDesk);
   outer.append(title, box);
   ov.appendChild(outer);
   document.body.appendChild(ov);
   folderOverlay = ov;
-  /* The dashboard behind stays focusable while covered, so the overlay needs a
-     Tab trap. Attach it after the overlay is in the document. */
-  releaseDeskTrap = trapFocus(ov, { closeOnEscape: false, onClose: closeDesk, initialFocus: ov });
+  /* Not show(): only showModal makes the dashboard behind it inert, and the
+     tiles under the scrim were reachable by Tab and by a screen reader. */
+  ov.showModal();
+  ov.focus();
 }
 
 function mFolder(item, cw, rh, isz, ir, im, sc) {
@@ -237,8 +226,8 @@ function mFolder(item, cw, rh, isz, ir, im, sc) {
   const a = document.createElement('button');
   a.type = 'button';
   a.className = 'dyn-mob-btn';
-  a.setAttribute('aria-label', (item.label || t('type.folder')) + ' folder');
-  a.dataset.tileName = (item.label || t('type.folder')) + ' folder';
+  a.setAttribute('aria-label', folderName(item));
+  a.dataset.tileName = folderName(item);
   css(a, { '--rh': rh + 'px' });
   let _opening = false;
   function _openFolder() {
@@ -340,23 +329,21 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
   let curPage = 0;
   const vw = innerWidth,
     vh = innerHeight;
-  const ov = mk('div');
+  const ov = /** @type {HTMLDialogElement} */ (mk('dialog'));
   ov.className = 'folder-overlay-mobile';
-  ov.setAttribute('role', 'dialog');
-  ov.setAttribute('aria-modal', 'true');
-  ov.setAttribute('aria-label', (folder.label || t('type.folder')) + ' folder');
+  ov.setAttribute('aria-label', folderName(folder));
   ov.tabIndex = -1;
 
-  let releaseMobTrap = null;
   function closeMob() {
+    ov.close();
+  }
+  /* A badge registered to an element that has gone keeps the dashboard
+     repainting it. */
+  ov.addEventListener('close', () => {
     qa('.badge', ov).forEach(el => BEL().forEach((_, id) => bunreg(id, el)));
-    if (releaseMobTrap) {
-      releaseMobTrap();
-      releaseMobTrap = null;
-    }
     ov.remove();
     folderOverlayMob = null;
-  }
+  });
 
   const ptScale = vw / 393;
   const margin = Math.round(34 * ptScale),
@@ -546,7 +533,8 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
   );
   document.body.appendChild(ov);
   folderOverlayMob = ov;
-  releaseMobTrap = trapFocus(ov, { onClose: closeMob, initialFocus: ov });
+  ov.showModal();
+  ov.focus();
 }
 
 /* Cells per widget size on the 4x6 home grid. */
@@ -574,7 +562,7 @@ export function buildMobile() {
      xlarge 4×6. A footprint is a physical size, so it does not change with the
      column count: a wider box gets more columns, not larger widgets. */
   const strip = el('pages');
-  strip.innerHTML = '';
+  strip.replaceChildren();
 
   function mkPage() {
     const p = mk('div');
@@ -758,7 +746,7 @@ export function buildMobile() {
 
   const dw = el('dots');
   dw.style.cssText = 'display:none';
-  dw.innerHTML = '';
+  dw.replaceChildren();
 
   const dk = el('dock');
   dk.className = 'mdock';
@@ -775,8 +763,8 @@ export function buildMobile() {
     ? dock.length * dockIconSz + (dock.length - 1) * Math.round(22 * sc) + dockPad * 2
     : maxDockW;
   const dockW = Math.min(maxDockW, dockContentW);
-  dk.style.cssText = `position:fixed;left:50%;bottom:${dockGap}px;-webkit-transform:translateX(-50%);transform:translateX(-50%);width:${dockW}px;height:${dh}px;padding:0 ${dockPad}px;border-radius:${Math.round(44 * sc)}px;z-index:400;`;
-  dk.innerHTML = '';
+  dk.style.cssText = `position:fixed;left:50%;bottom:${dockGap}px;transform:translateX(-50%);width:${dockW}px;height:${dh}px;padding:0 ${dockPad}px;border-radius:${Math.round(44 * sc)}px;z-index:400;`;
+  dk.replaceChildren();
   dock.forEach(item => {
     const a = mk('a', { href: item.href, target: '_blank', rel: 'noreferrer noopener' });
     a.className = 'dyn-dock-icon';
@@ -794,11 +782,11 @@ export function buildMobile() {
     _pdotPad = Math.round(14 * sc);
   const pillDotsW = pages.length * (_pdotSz + _pdotGap) - _pdotGap + _pdotPad * 2;
   const pill = el('mob-search-pill');
-  pill.style.cssText = `position:fixed;left:50%;bottom:${dockGap + dh + pillGap}px;-webkit-transform:translateX(-50%);transform:translateX(-50%);width:${pillSearchW}px;height:${pillH}px;display:-webkit-flex;display:flex;z-index:500;`;
+  pill.style.cssText = `position:fixed;left:50%;bottom:${dockGap + dh + pillGap}px;transform:translateX(-50%);width:${pillSearchW}px;height:${pillH}px;display:flex;z-index:500;`;
 
   const pillNew = /** @type {HTMLElement} */ (pill.cloneNode(true));
   const pillNewDots = q('.msp-dots', pillNew);
-  pillNewDots.innerHTML = '';
+  pillNewDots.replaceChildren();
   const pillDotEls = pages.map((_, i) => {
     const d = document.createElement('div');
     d.className = 'msp-dot' + (i === 0 ? ' on' : '');

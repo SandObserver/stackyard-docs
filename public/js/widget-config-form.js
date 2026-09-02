@@ -2,10 +2,10 @@
    back. Each builder returns { el, get, control, liveValue }. See
    docs/widgets.md. */
 
-import { t } from '/js/i18n.js?v=83239bf4';
+import { t } from '/js/i18n.js?v=e644a5c5';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { wireChecklist } from '/js/admin-shared.js?v=1d330931';
-import { renderColorControl } from '/js/admin-color-control.js?v=bfd0955a';
+import { wireChecklist } from '/js/admin-shared.js?v=132c869f';
+import { renderColorControl } from '/js/admin-color-control.js?v=3a61c02f';
 import {
   seedCarried,
   applyOptionSet,
@@ -13,17 +13,24 @@ import {
   requiredFieldMissing,
   groupBounds,
   visibleFieldFlags,
-} from '/js/admin-logic.js?v=d17394da';
+} from '/js/admin-logic.js?v=dcf7c37d';
 import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=10f3cdb1';
-import { qi } from '/js/utils.js?v=8ca7ce3c';
+import { qi } from '/js/utils.js?v=d949e985';
 
 const PE =
   '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M18.4 2.6a1.85 1.85 0 0 1 2.6 2.6l-9.1 9.1-3.4 1 1-3.4z"/></svg>';
 const CHEV =
   '<svg class="dd-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10.5 12 6.5 16 10.5"/><path d="M8 13.5 12 17.5 16 13.5"/></svg>';
 
+/* A counter, not randomness. Six base-36 characters collide plausibly over a
+   long session, and an id that changes per run cannot be asserted on. */
+let _seq = 0;
+const uniqueId = prefix => `${prefix}-${++_seq}`;
+
 function _tag(field) {
-  return field.optional ? html` <span class="opt-span">(optional)</span>` : html` <span class="req">*</span>`;
+  return field.optional
+    ? html` <span class="opt-span">(${t('app.optional')})</span>`
+    : html` <span class="req">*</span>`;
 }
 
 function _ieRow(field, value, inputType) {
@@ -33,7 +40,7 @@ function _ieRow(field, value, inputType) {
   row.className = 'row ie-row';
   setHtml(
     row,
-    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv${has ? '' : ' is-ph'}">${has ? value : ph}</span><input class="row-inp" type="${inputType}" autocomplete="off" value="${has ? value : field.default != null ? field.default : ''}" style="display:none"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE)}</button>`,
+    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv${has ? '' : ' is-ph'}">${has ? value : ph}</span><input class="row-inp d-none" type="${inputType}" autocomplete="off" value="${has ? value : field.default != null ? field.default : ''}"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE)}</button>`,
   );
   const rv = row.querySelector('.rv'),
     inp = qi('.row-inp', row),
@@ -94,7 +101,7 @@ function _secret(field, isSet) {
   const display = isSet ? t('common.configured') : t('common.notSet');
   setHtml(
     row,
-    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv is-ph">${display}</span><input class="row-inp" type="password" autocomplete="new-password" placeholder="${isSet ? t('widgetCfg.replaceSecret') : field.placeholder || ''}" style="display:none"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE)}</button>`,
+    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv is-ph">${display}</span><input class="row-inp d-none" type="password" autocomplete="new-password" placeholder="${isSet ? t('widgetCfg.replaceSecret') : field.placeholder || ''}"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE)}</button>`,
   );
   const rv = row.querySelector('.rv'),
     inp = qi('.row-inp', row),
@@ -310,8 +317,8 @@ function _select(field, value, ctx, config = {}) {
     );
     if (chosen && !opts.some(o => String(o.value) === chosen))
       items.unshift(html`<option value="${chosen}" selected>${chosen}</option>`);
-    if (field.optional) items.unshift(html`<option value="">None</option>`);
-    setHtml(sel, items.length ? html`${items}` : html`<option value="">None</option>`);
+    if (field.optional) items.unshift(html`<option value="">${t('widgetCfg.none')}</option>`);
+    setHtml(sel, items.length ? html`${items}` : html`<option value="">${t('widgetCfg.none')}</option>`);
   }
   paint();
 
@@ -375,7 +382,7 @@ function _pills(field, value) {
   row.className = 'row';
   const opts = Array.isArray(field.options) ? field.options : [];
   let sel = value != null ? value : field.default != null ? field.default : opts[0] ? opts[0].value : '';
-  const name = 'wcf-' + field.key + '-' + Math.random().toString(36).slice(2, 7);
+  const name = uniqueId('wcf-' + field.key);
   setHtml(
     row,
     html`<span class="rl">${field.label}</span><div class="segr" role="group" aria-label="${field.label}">${opts.map(o => html`<label class="segr-opt"><input type="radio" name="${name}" value="${o.value}"${String(o.value) === String(sel) ? ' checked' : ''}><span class="segr-dot"></span><span>${o.label}</span></label>`)}</div>`,
@@ -409,7 +416,8 @@ function _multiselect(field, value) {
   const cur = new Set(
     Array.isArray(value) ? value.map(String) : Array.isArray(field.default) ? field.default.map(String) : [],
   );
-  const summary = () => (cur.size === 0 ? 'None selected' : cur.size + ' selected');
+  const summary = () =>
+    cur.size === 0 ? t('widgetCfg.noneSelected') : t('widgetCfg.selectedCount', { count: cur.size });
   setHtml(
     row,
     html`<span class="rl">${field.label}</span><div class="row-dd"><button class="row-dd-btn" type="button" aria-haspopup="listbox" aria-expanded="false"><span class="ms-sum">${summary()}</span>${raw(CHEV)}</button><ul class="row-dd-list checklist" role="listbox" aria-multiselectable="true" hidden>${opts.map(o => html`<li role="option" data-val="${o.value}" aria-selected="${String(cur.has(String(o.value)))}">${o.label}</li>`)}</ul></div>`,
@@ -442,8 +450,7 @@ function _multiselect(field, value) {
    rows. */
 function _color(field, value) {
   const wrap = document.createElement('div');
-  const idPrefix =
-    'wcf-' + String(field.key).replace(/[^a-zA-Z0-9_-]/g, '') + '-' + Math.random().toString(36).slice(2, 7);
+  const idPrefix = uniqueId('wcf-' + String(field.key).replace(/[^a-zA-Z0-9_-]/g, ''));
   const initial =
     value != null && value !== '' ? String(value) : field.default != null ? String(field.default) : '#0289ff';
   const ctl = renderColorControl(wrap, {
@@ -557,7 +564,7 @@ function _group(field, rows, size, ctx) {
   const addBtn = document.createElement('button');
   addBtn.type = 'button';
   addBtn.className = 'wcf-add-row';
-  setHtml(addBtn, html`<span class="rl" style="color:var(--ac2)">+ Add ${field.label}</span>`);
+  setHtml(addBtn, html`<span class="rl wcf-add-label">${t('common.addNamed', { name: field.label })}</span>`);
   addWrap.appendChild(addBtn);
   wrap.appendChild(addWrap);
   const fixed = min === max;
@@ -572,7 +579,7 @@ function _group(field, rows, size, ctx) {
   let rowBuilt = [];
 
   function render() {
-    rowsHost.innerHTML = '';
+    rowsHost.replaceChildren();
     rowBuilt = [];
     data.forEach((rowData, idx) => {
       const hdr = document.createElement('p');
@@ -661,7 +668,7 @@ function _buildSimple(field, config, ctx) {
 }
 
 export function renderWidgetConfigForm(container, fields, config = {}, opts = {}) {
-  container.innerHTML = '';
+  container.replaceChildren();
   const built = [];
   const ctx = {
     widgetId: (opts && opts.widgetId) || null,

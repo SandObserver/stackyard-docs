@@ -215,6 +215,9 @@ Messages shown in the admin, and what each one means.
 | `Settings unavailable` | The widget's definition could not be loaded. The stored config is kept. |
 | `N widgets could not be loaded, so they are not listed below.` | Those definitions were refused at startup. The reason is in the container log. |
 | `Container not found` | The socket proxy answered, but no container matched that name. |
+| `This address has no API path. Enter the service's full API URL.` | The Live Activity address names a host only. Badges read a value from an API response, so the address needs the service's API path. |
+| `Connected, but this address has no API path. Enter the service's full API URL.` | The address answered, but nothing numeric was found in the response. Same cause as above. |
+| `The address answered with a redirect (HTTP <status>). Enter the address it points to.` | Redirects are not followed. Use the final address, which is often a login page when the API path is missing. |
 | `Ping failed` / `Ping returned <status>` | The URL was reached but did not answer as expected. |
 | `That image is too large for the server to accept.` | Over the 2 MB upload limit. |
 | `That is not a color. Use #rrggbb or a CSS color name.` | The wallpaper colour field rejects anything else. |

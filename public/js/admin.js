@@ -1,7 +1,7 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=1d7010c3';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=d1c7d163';
-import { applyDrop, canJoinFolder, folderRowZone } from '/js/admin-drag-logic.js?v=ebe3e806';
-import { reorderItems, resolveAdminSection } from '/js/admin-logic.js?v=d17394da';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=5702feef';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=9fc96f28';
+import { initList, render, syncFilterUI } from '/js/admin-list.js?v=cea8d7ce';
+import { resolveAdminSection } from '/js/admin-logic.js?v=dcf7c37d';
 import {
   buildAppItem,
   claimFolderChildren,
@@ -10,13 +10,13 @@ import {
   snapshotItems,
   upsertItem,
 } from '/js/admin-save-logic.js?v=48a9e055';
-import { loadSettings, showBgFields, showBgFit, showWallpaperFile } from '/js/admin-settings.js?v=f5343e07';
-import { ag, ap, initInlineEdit, setReauthHandler, toast } from '/js/admin-shared.js?v=1d330931';
-import { state } from '/js/admin-state.js?v=c23e6346';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=c549d05d';
+import { loadSettings, showBgFields, showBgFit, showWallpaperFile } from '/js/admin-settings.js?v=f019211c';
+import { ag, ap, initInlineEdit, paintIcon, setReauthHandler, toast } from '/js/admin-shared.js?v=132c869f';
+import { collapsedFolders, filter, state } from '/js/admin-state.js?v=7d68e98e';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=db272c65';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=83239bf4';
-import { iconChain, loadLocalIcons, resolveIcon } from '/js/icons.js?v=69c2b9bd';
+import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=e644a5c5';
+import { loadLocalIcons } from '/js/icons.js?v=69c2b9bd';
 import {
   clearSkipTls,
   convert,
@@ -26,13 +26,13 @@ import {
   parseErrorsAsSkipped,
   SKIP,
 } from '/js/import-foreign.js?v=ef4f3d44';
-import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=28416a75';
-import { confirmModal, openModal as openDialog, promptModal } from '/js/modal.js?v=ff76dc56';
-import { readMode, watchSystemTheme, writeMode } from '/js/theme.js?v=db4192cd';
-import { el, inp, q, qa, clr as rc, sanitizeCssUrl, setUserText, tgt } from '/js/utils.js?v=8ca7ce3c';
-import { widgetGlyph } from '/js/widget-glyphs.js?v=b5036986';
-import { normalizeColorInput } from '/js/admin-color-control.js?v=bfd0955a';
+import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=9de1cb7d';
+import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=11fa1eff';
+import { readMode, watchSystemTheme, writeMode } from '/js/theme.js?v=00c011c9';
+import { el, inp, q, qa, clr as rc, sanitizeCssUrl, setUserText, tgt } from '/js/utils.js?v=d949e985';
+import { normalizeColorInput } from '/js/admin-color-control.js?v=3a61c02f';
 import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=1907cce7';
+import { loadWallpaper, saveWallpaper } from '/js/wallpaper-cache.js?v=c5f8a3e6';
 
 /* A class rather than a bare media query. Some phones report a wider CSS
    viewport than they have. The rule lives in layout.js, shared with the
@@ -43,9 +43,6 @@ function _syncMobile(mobile) {
 const _mobileAtLoad = isMobileLayout();
 _syncMobile(_mobileAtLoad);
 onLayoutChange(_syncMobile, _mobileAtLoad);
-
-const collapsedFolders = new Set(); /* tracks which folder ids are collapsed */
-let _flt = { q: '', type: 'all' };
 
 async function load() {
   await loadLocalIcons();
@@ -89,17 +86,23 @@ async function applyBg() {
       root.style.setProperty('--bg-brightness', String(bg.brightness ?? 0.62));
       root.style.setProperty('--bg-size', bg.fit === 'fit' ? 'contain' : 'cover');
     } else if (bg.type === 'unsplash') {
-      const r = await fetch('/api/wallpaper', { cache: 'no-store' });
-      const d = await r.json();
-      if (d.url) {
+      let url = loadWallpaper(bg);
+      if (!url) {
+        const r = await fetch('/api/wallpaper', { cache: 'no-store' });
+        const d = await r.json();
+        url = d.url || null;
+        if (url) saveWallpaper(url, bg);
+      }
+      if (url) {
+        const shown = url;
         const img = new Image();
         img.onload = () => {
-          root.style.setProperty('--bg-image', `url('${sanitizeCssUrl(d.url)}')`);
+          root.style.setProperty('--bg-image', `url('${sanitizeCssUrl(shown)}')`);
           root.style.setProperty('--bg-color', '#0d1117');
           root.style.setProperty('--bg-brightness', String(bg.brightness ?? 0.62));
           root.style.setProperty('--bg-size', 'cover');
         };
-        img.src = d.url;
+        img.src = shown;
       }
     }
   } catch {}
@@ -113,10 +116,10 @@ async function save() {
     const full = await ag('/api/config');
     full.items = state.items;
     await ap('/api/config', full);
-    toast('Saved');
+    toast(t('toast.saved'));
     ok = true;
   } catch (e) {
-    toast('Save failed: ' + e.message, 'err');
+    toast(t('toast.saveFailed', { err: e.message }), 'err');
   }
   state.saving = false;
   render();
@@ -163,454 +166,13 @@ async function saveOrRevert(before) {
   }
 }
 
-function moveRow(item, dir, opts = {}) {
-  const before = snapshotItems(state.items);
-  if (reorderItems(state.items, item, dir, opts)) saveOrRevert(before);
-}
-
-/* Constant markup only. No user data reaches these. */
-const FOLDER_ICON =
-  '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.7"></rect><circle cx="9.7" cy="9.7" r="1.25" fill="currentColor"></circle><circle cx="14.3" cy="9.7" r="1.25" fill="currentColor"></circle><circle cx="9.7" cy="14.3" r="1.25" fill="currentColor"></circle><circle cx="14.3" cy="14.3" r="1.25" fill="currentColor"></circle></svg>';
-const SIZE_ICONS = {
-  small:
-    '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"></rect><circle cx="9.7" cy="9.7" r="1" fill="currentColor"></circle><line x1="9" y1="13.4" x2="13" y2="13.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></line></svg>',
-  medium:
-    '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"></rect><circle cx="7.6" cy="11.4" r="1.1" fill="currentColor"></circle><line x1="10.2" y1="11.4" x2="16.5" y2="11.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line><line x1="7" y1="14.3" x2="16.5" y2="14.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line></svg>',
-  large:
-    '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5.5" width="12" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"></rect><circle cx="9" cy="9" r="1.2" fill="currentColor"></circle><line x1="8" y1="12.6" x2="16" y2="12.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line><line x1="8" y1="14.8" x2="16" y2="14.8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line><line x1="8" y1="17" x2="13" y2="17" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line></svg>',
-  xlarge:
-    '<svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3.5" width="10" height="17" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"></rect><circle cx="9.7" cy="7" r="1.1" fill="currentColor"></circle><line x1="9" y1="10.5" x2="15" y2="10.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line><line x1="9" y1="12.7" x2="15" y2="12.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line><line x1="9" y1="14.9" x2="15" y2="14.9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line><line x1="9" y1="17.1" x2="13" y2="17.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"></line></svg>',
-};
-function svgNode(markup) {
-  const t = document.createElement('template');
-  setHtml(t, raw(markup));
-  return t.content.firstElementChild;
-}
-
-/* dataTransfer is not readable during dragover. */
-let _dragType = null;
-
-function clearDragClasses(target) {
-  const rows = target ? [target] : qa('.row');
-  rows.forEach(r => {
-    r.classList.remove('drag-above', 'drag-below', 'drag-into', 'drag-over');
-  });
-}
-
-function mkRow(item, idx, { indent = false, childIdx = null, folderId = null } = {}) {
-  const row = document.createElement('div');
-  row.className = 'row drow';
-  if (indent)
-    row.style.cssText =
-      'padding-left:28px;background:rgba(255,255,255,.02);border-left:2px solid var(--bd);margin-left:8px;border-radius:0 var(--rs) var(--rs) 0;';
-  const _filtering = !!(_flt.q || _flt.type !== 'all');
-  row.draggable = !_filtering;
-  row.dataset.itemId = item.id;
-  if (item.type === 'folder') row.dataset.isFolder = '1';
-  if (indent) {
-    row.dataset.indent = '1';
-    row.dataset.folderId = folderId;
-    row.dataset.childIdx = String(childIdx);
-  }
-  let canUp = false,
-    canDown = false;
-  if (folderId != null) {
-    const cf = state.items.find(i => i.id === folderId);
-    const n = (cf?.children || []).length;
-    canUp = childIdx > 0;
-    canDown = childIdx < n - 1;
-  } else {
-    const inF = new Set(state.items.filter(i => i.type === 'folder').flatMap(ff => ff.children || []));
-    const top = state.items.filter(it => it.type === 'folder' || !inF.has(it.id));
-    const p = top.indexOf(item);
-    canUp = p > 0;
-    canDown = p < top.length - 1;
-  }
-  const handle = document.createElement('div');
-  handle.className = 'rord';
-  handle.textContent = '⠿';
-  handle.setAttribute('aria-hidden', 'true');
-  if (_filtering) handle.style.visibility = 'hidden';
-  const ico = document.createElement('div');
-  ico.className = 'rico';
-  ico.style.background = rc(item.color);
-  if (item.type === 'folder') {
-    ico.appendChild(svgNode(FOLDER_ICON));
-  } else if (item.type === 'widget') {
-    /* The type when the widget declares one, the size otherwise. */
-    const glyph = widgetGlyph(state._widgetReg?.[item.widgetType]?.glyph);
-    ico.appendChild(svgNode(glyph || SIZE_ICONS[item.widgetSize] || SIZE_ICONS.medium));
-  } else if (item.iconUrl) {
-    const img = document.createElement('img');
-    img.alt = item.label || '';
-    img.style.cssText = 'width:28px;height:28px;object-fit:contain;';
-    const fbs = iconChain(item.iconUrl);
-    if (fbs.length) {
-      let s = 0;
-      img.onerror = () => {
-        s++;
-        if (s < fbs.length) img.src = fbs[s];
-        else {
-          ico.textContent = (item.label || '?')[0].toUpperCase();
-        }
-      };
-      img.src = fbs[0];
-      ico.appendChild(img);
-    } else {
-      ico.textContent = (item.label || '?')[0].toUpperCase();
-    }
-  } else ico.textContent = (item.label || item.id || '?')[0].toUpperCase();
-  const inf = document.createElement('div');
-  inf.className = 'rinf';
-  const nm = document.createElement('div');
-  nm.className = 'rnm';
-  if (item.type === 'folder') {
-    const collapsed = collapsedFolders.has(item.id);
-    nm.style.cssText = 'display:flex;align-items:center;gap:6px;cursor:pointer;';
-    nm.setAttribute('role', 'button');
-    nm.setAttribute('tabindex', '0');
-    nm.setAttribute('aria-expanded', String(!collapsed));
-    nm.setAttribute('aria-label', t(collapsed ? 'folder.expandAria' : 'folder.collapseAria', { name: item.label }));
-    const chevron = document.createElement('span');
-    chevron.style.cssText = 'font-size:10px;color:var(--dm);transition:transform .15s;flex-shrink:0;';
-    chevron.textContent = '▼';
-    chevron.style.transform = collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
-    chevron.id = 'chev-' + item.id;
-    nm.append(chevron, document.createTextNode(item.label));
-    nm.onclick = e => {
-      e.stopPropagation();
-      if (collapsedFolders.has(item.id)) {
-        collapsedFolders.delete(item.id);
-      } else {
-        collapsedFolders.add(item.id);
-      }
-      render();
-    };
-    nm.onkeydown = e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        nm.onclick(/** @type {any} */ (e));
-      }
-    };
-  } else {
-    setUserText(nm, item.label || item.id);
-  }
-  const mt = document.createElement('div');
-  mt.className = 'rmt';
-  if (item.type === 'widget') {
-    const wt = item.widgetType || 'custom';
-    const wtLabel = state._widgetReg?.[wt]?.label || 'Custom';
-    mt.textContent = `${wtLabel} widget · ${item.widgetSize || 'medium'}`;
-  } else if (item.type === 'folder') mt.textContent = `${(item.children || []).length} apps`;
-  else if (item.system === 'settings') mt.textContent = t('home.opensSettings');
-  else mt.textContent = item.href || '';
-  inf.append(nm, mt);
-  const pb = document.createElement('div');
-  pb.className = 'rpills';
-  const pills = [];
-  if (item.dock) pills.push(html`<span class="pill p-dk">${t('app.dockPill')}</span>`);
-  if (item.type === 'widget') pills.push(html`<span class="pill p-wg">${t('type.widget')}</span>`);
-  if (item.type === 'folder') pills.push(html`<span class="pill p-fl">${t('type.folder')}</span>`);
-  if (item.monitoring?.healthcheck?.enabled || item.container)
-    pills.push(html`<span class="pill p-hl">${t('app.healthPill')}</span>`);
-  if (item.monitoring?.activity?.enabled || item.badge?.enabled)
-    pills.push(html`<span class="pill p-bg">${t('app.badgePill')}</span>`);
-  if (item.system === 'settings') pills.push(html`<span class="pill p-sy">System</span>`);
-  if (item.hidden) pills.push(html`<span class="pill p-hd">Hidden</span>`);
-  setHtml(pb, html`${pills}`);
-  const ac = document.createElement('div');
-  ac.className = 'ract';
-  const mkMove = (dir, can) => {
-    const b = document.createElement('button');
-    b.className = 'btn bg sm ic';
-    const lbl = t(dir < 0 ? 'common.moveUp' : 'common.moveDown');
-    b.title = lbl;
-    b.setAttribute('aria-label', lbl + ': ' + (item.label || item.id || 'item'));
-    b.textContent = dir < 0 ? '↑' : '↓';
-    b.disabled = !can;
-    b.onclick = () => moveRow(item, dir, { folderId, childIdx });
-    return b;
-  };
-  if (!_filtering) ac.append(mkMove(-1, canUp), mkMove(1, canDown));
-  if (item.system === 'settings') {
-    const hb = document.createElement('button');
-    hb.className = 'btn bg sm';
-    hb.textContent = t(item.hidden ? 'common.show' : 'common.hide');
-    const lbl = t(item.hidden ? 'general.showSettingsAria' : 'general.hideSettingsAria');
-    hb.title = lbl;
-    hb.setAttribute('aria-label', lbl);
-    hb.onclick = () => {
-      const before = snapshotItems(state.items);
-      item.hidden = !item.hidden;
-      saveOrRevert(before);
-    };
-    ac.append(hb);
-  } else {
-    const ed = document.createElement('button');
-    ed.className = 'btn bg sm';
-    ed.textContent = t('common.edit');
-    ed.onclick = () => openModal(idx);
-    ac.append(ed);
-  }
-  row.append(handle, ico, inf, pb, ac);
-  const dragData = indent ? 'child:' + folderId + ':' + item.id : 'top:' + item.id;
-
-  row.addEventListener('dragstart', e => {
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', dragData);
-    _dragType = item.type;
-    requestAnimationFrame(() => row.classList.add('dragging'));
-  });
-  row.addEventListener('dragend', () => {
-    row.classList.remove('dragging');
-    _dragType = null;
-    clearDragClasses();
-  });
-  row.addEventListener('dragover', e => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    clearDragClasses();
-    const rect = row.getBoundingClientRect();
-    if (row.dataset.isFolder && canJoinFolder(_dragType)) {
-      const zone = folderRowZone(e.clientY, rect);
-      row.classList.add(zone === 'into' ? 'drag-into' : zone === 'above' ? 'drag-above' : 'drag-below');
-    } else {
-      row.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drag-above' : 'drag-below');
-    }
-  });
-  row.addEventListener('dragleave', e => {
-    if (!e.relatedTarget || !row.contains(/** @type {Node} */ (e.relatedTarget))) clearDragClasses(row);
-  });
-
-  row.addEventListener('drop', e => {
-    e.preventDefault();
-    const dropAbove = row.classList.contains('drag-above');
-    const dropInto = row.classList.contains('drag-into');
-    clearDragClasses();
-    const raw = e.dataTransfer.getData('text/plain');
-    if (!raw) return;
-    const drop = parseDragData(raw);
-    if (!drop) return;
-    const before = snapshotItems(state.items);
-    if (
-      applyDrop(state.items, {
-        ...drop,
-        targetId: item.id,
-        targetFolderId: folderId,
-        targetIsFolder: item.type === 'folder' && dropInto,
-        indent,
-        childIdx,
-        dropAbove,
-      })
-    )
-      saveOrRevert(before);
-  });
-
-  wireTouchDrag(row, handle, { indent, folderId });
-  return row;
-}
-
-/* Drag data formats: "top:itemId" or "child:folderId:itemId". */
-function parseDragData(raw) {
-  if (raw.startsWith('child:')) {
-    const [, sfId, sItemId] = raw.split(':');
-    return { srcId: sItemId, srcFolderId: sfId };
-  }
-  if (raw.startsWith('top:')) return { srcId: raw.slice(4), srcFolderId: null };
-  return null;
-}
-
-/* Native HTML5 drag does not fire from touch on mobile WebKit. The handle needs
-   touch-action:none (see admin.css) or starting on it scrolls the list. */
-function wireTouchDrag(row, handle, { indent, folderId }) {
-  handle.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse') return;
-    if (row.draggable === false) return; /* hidden while filtering */
-    e.preventDefault();
-    const srcId = row.dataset.itemId;
-    const startRect = row.getBoundingClientRect();
-    const ghost = row.cloneNode(true);
-    ghost.className = 'row drow drag-ghost';
-    ghost.style.width = startRect.width + 'px';
-    ghost.style.left = startRect.left + 'px';
-    ghost.style.top = startRect.top + 'px';
-    document.body.appendChild(ghost);
-    row.classList.add('dragging');
-    handle.setPointerCapture(e.pointerId);
-    const offY = e.clientY - startRect.top;
-    let hovered = null,
-      dropAbove = false,
-      dropInto = false,
-      scrollTimer = null;
-    const scroller = scrollParent(row);
-
-    const place = (x, y) => {
-      ghost.style.top = y - offY + 'px';
-      ghost.style.left = startRect.left + 'px';
-      clearDragClasses();
-      hovered = null;
-      const under = /** @type {HTMLElement} */ (document.elementFromPoint(x, y));
-      const tr = /** @type {HTMLElement} */ (under && under.closest('.drow'));
-      if (!tr || tr === row || tr === ghost) return;
-      hovered = tr;
-      const r = tr.getBoundingClientRect();
-      if (tr.dataset.isFolder && canJoinFolder(itemType(srcId))) {
-        const zone = folderRowZone(y, r);
-        dropInto = zone === 'into';
-        dropAbove = zone === 'above';
-        tr.classList.add(dropInto ? 'drag-into' : dropAbove ? 'drag-above' : 'drag-below');
-      } else {
-        dropInto = false;
-        dropAbove = y < r.top + r.height / 2;
-        tr.classList.add(dropAbove ? 'drag-above' : 'drag-below');
-      }
-    };
-    const autoscroll = y => {
-      if (scrollTimer) {
-        clearInterval(scrollTimer);
-        scrollTimer = null;
-      }
-      const rect =
-        scroller === document.scrollingElement
-          ? { top: 0, bottom: window.innerHeight }
-          : scroller.getBoundingClientRect();
-      const M = 52;
-      const up = y < rect.top + M,
-        dn = y > rect.bottom - M;
-      if (!up && !dn) return;
-      scrollTimer = setInterval(() => {
-        scrollByPx(scroller, up ? -12 : 12);
-      }, 16);
-    };
-    const move = ev => {
-      place(ev.clientX, ev.clientY);
-      autoscroll(ev.clientY);
-    };
-    const end = () => {
-      handle.removeEventListener('pointermove', move);
-      handle.removeEventListener('pointerup', up);
-      handle.removeEventListener('pointercancel', cancel);
-      if (scrollTimer) clearInterval(scrollTimer);
-      ghost.remove();
-      row.classList.remove('dragging');
-      clearDragClasses();
-    };
-    const up = () => {
-      const tr = hovered;
-      end();
-      if (!tr) return;
-      const into = !!tr.dataset.isFolder && canJoinFolder(itemType(srcId)) && dropInto;
-      const before = snapshotItems(state.items);
-      const drop = applyDrop(state.items, {
-        srcId,
-        srcFolderId: indent ? folderId : null,
-        targetId: tr.dataset.itemId,
-        targetFolderId: tr.dataset.folderId || null,
-        targetIsFolder: into,
-        indent: !!tr.dataset.indent,
-        childIdx: tr.dataset.childIdx != null ? Number(tr.dataset.childIdx) : null,
-        dropAbove: into ? false : dropAbove,
-      });
-      if (drop) saveOrRevert(before);
-    };
-    const cancel = () => end();
-    handle.addEventListener('pointermove', move);
-    handle.addEventListener('pointerup', up);
-    handle.addEventListener('pointercancel', cancel);
-  });
-}
-
-function itemType(id) {
-  return state.items.find(i => i.id === id)?.type || null;
-}
-
-function scrollParent(el) {
-  for (let p = el.parentElement; p; p = p.parentElement) {
-    const oy = getComputedStyle(p).overflowY;
-    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight) return p;
-  }
-  return document.scrollingElement || document.documentElement;
-}
-function scrollByPx(scroller, dy) {
-  if (scroller === document.scrollingElement) window.scrollBy(0, dy);
-  else scroller.scrollTop += dy;
-}
-
-function render() {
-  const l = el('al');
-  const bar = el('al-filter');
-  const grp = el('al-grp');
-  if (bar) {
-    if (state.items.length >= 6) bar.style.display = '';
-    else {
-      bar.style.display = 'none';
-      if (_flt.q || _flt.type !== 'all') {
-        _flt = { q: '', type: 'all' };
-        _syncFilterUI();
-      }
-    }
-  }
-  if (grp) grp.style.display = state.items.length ? '' : 'none';
-  if (!state.items.length) {
-    setHtml(l, html`<div class="empty"><p class="empty-msg">${t('list.empty')}</p></div>`);
-    return;
-  }
-  l.innerHTML = '';
-  if (_flt.q || _flt.type !== 'all') {
-    const q = _flt.q.toLowerCase();
-    const matches = state.items.filter(it => {
-      if (_flt.type !== 'all' && it.type !== _flt.type) return false;
-      if (q) {
-        const hay = ((it.label || '') + ' ' + (it.href || '') + ' ' + (it.widgetType || '')).toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
-      return true;
-    });
-    if (!matches.length) {
-      setHtml(l, html`<div class="empty"><p class="empty-msg">${t('list.noMatches')}</p></div>`);
-      return;
-    }
-    matches.forEach(item => l.appendChild(mkRow(item, state.items.indexOf(item))));
-    return;
-  }
-  const inFolder = new Set(state.items.filter(i => i.type === 'folder').flatMap(f => f.children || []));
-  state.items.forEach((item, idx) => {
-    if (item.type !== 'folder' && inFolder.has(item.id)) return;
-    l.appendChild(mkRow(item, idx));
-    if (item.type === 'folder' && !collapsedFolders.has(item.id)) {
-      (item.children || []).forEach((childId, ci) => {
-        const childItem = state.items.find(i => i.id === childId);
-        if (!childItem) return;
-        l.appendChild(
-          mkRow(childItem, state.items.indexOf(childItem), { indent: true, childIdx: ci, folderId: item.id }),
-        );
-      });
-      const addRow = document.createElement('button');
-      addRow.type = 'button';
-      addRow.className = 'fp-add';
-      setHtml(addRow, html`<span>+</span> ${t('folder.addAppToFolder')}`);
-      addRow.onclick = () => openFolderPicker(null, item.id);
-      l.appendChild(addRow);
-    }
-  });
-}
-function _syncFilterUI() {
-  const s = inp('al-search');
-  if (s) s.value = _flt.q;
-  qa('#al-filter .chip').forEach(c => {
-    const on = c.dataset.flt === _flt.type;
-    c.classList.toggle('on', on);
-    c.setAttribute('aria-pressed', String(on));
-  });
-}
-
 function showListView() {
-  el('dash-list-view').style.display = '';
-  el('dash-edit-view').style.display = 'none';
+  el('dash-list-view').classList.remove('d-none');
+  el('dash-edit-view').classList.add('d-none');
 }
 function showEditView() {
-  el('dash-list-view').style.display = 'none';
-  el('dash-edit-view').style.display = '';
+  el('dash-list-view').classList.add('d-none');
+  el('dash-edit-view').classList.remove('d-none');
   el('cp')?.scrollTo?.(0, 0);
   q('.cp')?.scrollTo?.(0, 0);
 }
@@ -661,7 +223,7 @@ function buildAddNewCard() {
 /* Prepended after the builder runs, so the builder's reset cannot wipe it. */
 function _renderEditBody() {
   const body = el('ev-body');
-  body.innerHTML = '';
+  body.replaceChildren();
   if (state.ctype === 'widget') buildWidgetForm(body, state._evItem);
   else if (state.ctype === 'folder') buildFolderForm(body, state._evItem);
   else buildAppForm(body, state._evItem);
@@ -735,11 +297,17 @@ function openModal(idx) {
 
 async function _evDelete(item, idx) {
   if (!item) return;
-  if (item.type === 'folder') {
-    if (!confirm(t('confirm.deleteFolder', { name: item.label }))) return;
-  } else {
-    if (!confirm(t('confirm.remove', { name: item.label || item.id }))) return;
-  }
+  const isFolder = item.type === 'folder';
+  const ok = await confirmText({
+    title: t('common.delete'),
+    text: isFolder
+      ? t('confirm.deleteFolder', { name: item.label })
+      : t('confirm.remove', { name: item.label || item.id }),
+    confirmLabel: t('common.delete'),
+    cancelLabel: t('common.cancel'),
+    destructive: true,
+  });
+  if (!ok) return;
   const before = snapshotItems(state.items);
   state.items.forEach(f => {
     if (f.type === 'folder') f.children = (f.children || []).filter(id => id !== item.id);
@@ -751,13 +319,13 @@ async function _evDelete(item, idx) {
   const s = inp('al-search');
   if (s)
     s.addEventListener('input', () => {
-      _flt.q = s.value.trim();
+      filter.q = s.value.trim();
       render();
     });
   qa('#al-filter .chip').forEach(c => {
     c.addEventListener('click', () => {
-      _flt.type = c.dataset.flt;
-      _syncFilterUI();
+      filter.type = c.dataset.flt;
+      syncFilterUI();
       render();
     });
   });
@@ -819,12 +387,7 @@ function openFolderPicker(appId, targetFolderId = null) {
       const ri = document.createElement('span');
       ri.className = 'fp-ic';
       ri.style.background = rc(app.color);
-      if (app.iconUrl) {
-        const img = document.createElement('img');
-        img.alt = '';
-        img.src = resolveIcon(app.iconUrl);
-        ri.appendChild(img);
-      } else ri.textContent = (app.label || '?')[0];
+      paintIcon(ri, app.iconUrl, (app.label || '?')[0]);
       const nm = document.createElement('span');
       nm.className = 'fp-nm';
       setUserText(nm, app.label || app.id);
@@ -914,7 +477,7 @@ async function doSave(orig) {
       if (state._autoForm && state._autoFormType === state._wtype && state._widgetReg[state._wtype]) {
         const missing = state._autoForm.validate();
         if (missing.length) {
-          toast(missing[0] + ' is required', 'err');
+          toast(t('toast.fieldRequired', { field: missing[0] }), 'err');
           return;
         }
         item = {
@@ -934,7 +497,7 @@ async function doSave(orig) {
       } else if (state._wtype === 'custom') {
         const url = inp('f-url')?.value?.trim();
         if (!url) {
-          toast('URL required', 'err');
+          toast(t('toast.urlRequired'), 'err');
           return;
         }
         const ifo = {};
@@ -961,7 +524,7 @@ async function doSave(orig) {
     } else if (state.ctype === 'folder') {
       const label = inp('f-fname')?.value?.trim();
       if (!label) {
-        toast('Name required', 'err');
+        toast(t('toast.nameRequired'), 'err');
         return;
       }
       /* An app belongs to one folder, or the dashboard renders it twice. */
@@ -1024,9 +587,9 @@ async function doSave(orig) {
     /* The editor stays open on a failed write, with the form intact. */
     if (!(await saveOrRevert(before))) return;
     closeModal();
-    toast(replaced ? 'Updated' : 'Added');
+    toast(t(replaced ? 'toast.updated' : 'toast.added'));
   } catch (e) {
-    toast('Error: ' + e.message, 'err');
+    toast(t('toast.error', { err: e.message }), 'err');
   }
 }
 
@@ -1071,8 +634,8 @@ function initAllInlineEdits() {
     onCommit() {
       const bars = el('sec-pw-bars');
       const hint = el('sec-pw-hint');
-      if (bars) bars.style.display = 'none';
-      if (hint) hint.style.display = 'none';
+      if (bars) bars.classList.add('d-none');
+      if (hint) hint.classList.add('d-none');
     },
   });
   const pwInp = el('sec-pw');
@@ -1082,12 +645,8 @@ function initAllInlineEdits() {
       () => {
         const bars = el('sec-pw-bars');
         const hint = el('sec-pw-hint');
-        if (bars) {
-          bars.style.display = 'flex';
-        }
-        if (hint) {
-          hint.style.display = 'block';
-        }
+        bars?.classList.remove('d-none');
+        hint?.classList.remove('d-none');
         wirePasswordStrength('sec-pw', 'sec-pw-bars', 'sec-pw-hint');
       },
       { once: true },
@@ -1142,7 +701,7 @@ async function initVersion() {
       if (aEl) aEl.textContent = t('about.version', { v });
       if (d.updateAvailable) {
         const dot = el('about-update-dot');
-        if (dot) dot.style.display = 'flex';
+        dot?.classList.remove('d-none');
         if (aEl && d.latest) {
           const lv = String(d.latest).replace(/^v/i, '');
           setHtml(
@@ -1169,7 +728,7 @@ function initSecToggle() {
   if (!en) return;
   function apply(on) {
     if (pwRow) pwRow.classList.toggle('d-none', !on);
-    if (pwHint) pwHint.style.display = on ? '' : 'none';
+    if (pwHint) pwHint.classList.toggle('d-none', !on);
   }
   apply(en.checked);
   en.addEventListener('change', () => apply(en.checked));
@@ -1658,6 +1217,7 @@ el('imp-foreign').onchange = async e => {
 
 el('btn-add').onclick = () => openModal(null);
 
+initList({ openModal, openFolderPicker, save: saveOrRevert });
 initNav();
 initAllInlineEdits();
 initSecToggle();
@@ -1674,13 +1234,13 @@ setReauthHandler(requireLogin);
 checkAuth(load).then(ok => {
   if (!ok) return;
   load().catch(e => {
-    toast('Could not load config. Is the API container running? (' + e.message + ')', 'err');
+    toast(t('toast.configLoadFailed', { err: e.message }), 'err');
     const al = el('al');
     if (al) {
       /* An inline onclick is blocked by the CSP. */
       setHtml(
         al,
-        html`<div style="padding:32px;text-align:center;color:rgba(255,255,255,.4);font-size:14px">Failed to load dashboard config.<br><br><button class="retry-btn" type="button" style="padding:8px 20px;border-radius:16px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;cursor:pointer;font-size:14px;font-family:inherit;">Retry</button></div>`,
+        html`<div class="dash-load-fail">${t('home.loadFailed')}<br><br><button class="retry-btn" type="button">${t('home.retry')}</button></div>`,
       );
       q('.retry-btn', al)?.addEventListener('click', () => location.reload());
     }

@@ -7,12 +7,11 @@ import WidgetGroup from '../../../../components/WidgetGroup.astro';
 
 Shows how many DNS queries were blocked, with a breakdown of allowed, cached, and blocked.
 
-Sizes: Small, Medium.
+Sizes: Small.
 
-<WidgetGroup caption="Two different resolvers. Small gives the headline figure, medium adds the breakdown."
+<WidgetGroup caption="The headline figure, with the breakdown below it."
   items={[
     { type: 'dns', file: 'index.html', id: 'w-dns',    card: 'translucent', title: 'DNS widget, small',  label: 'Small' },
-    { type: 'dns', file: 'index.html', id: 'w-dns-md', size: 'medium', card: 'translucent', title: 'DNS widget, medium', label: 'Medium' },
   ]} />
 
 ## Providers

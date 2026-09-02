@@ -1,6 +1,5 @@
-import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=8ca7ce3c';
-import { wrapTab } from '/js/dialog.js?v=05935547';
-import { t } from '/js/i18n.js?v=83239bf4';
+import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=d949e985';
+import { t } from '/js/i18n.js?v=e644a5c5';
 
 /* Attached to the window so a re-open can undo the previous one. */
 const _w = /** @type {any} */ (window);
@@ -9,14 +8,13 @@ const _w = /** @type {any} */ (window);
    this module is loaded. */
 export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDesktop, openFolderMobile }) {
   const MOB = () => isMob();
-  const ov = el('spot');
+  const ov = /** @type {HTMLDialogElement} */ (el('spot'));
   const inp = inpById('sin');
   const res = el('sres');
   const cancelBtn = el('spot-cancel');
   const live = el('sres-live');
   let si = 0,
     cur = [];
-  let lastFocused = null;
 
   inp.setAttribute('role', 'combobox');
   inp.setAttribute('aria-autocomplete', 'list');
@@ -26,7 +24,7 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
   res.setAttribute('aria-label', t('home.searchResults'));
 
   const render = q => {
-    res.innerHTML = '';
+    res.replaceChildren();
     const apps = getItems().filter(i => i.type === 'app' || i.type === 'folder');
     const qq = q.toLowerCase().trim();
     cur = qq ? apps.filter(a => (a.label || a.id).toLowerCase().includes(qq)) : apps;
@@ -99,7 +97,7 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
           step++;
           if (step < srcs.length) img.src = srcs[step];
           else {
-            ic.innerHTML = '';
+            ic.replaceChildren();
             ic.textContent = (app.label || app.id)[0].toUpperCase();
             ic.style.color = '#fff';
             ic.style.fontWeight = '600';
@@ -148,15 +146,9 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
       }
     });
 
-  const barEl = q('.spot-bar', ov);
-  if (MOB() && barEl) {
-    barEl.style.cssText =
-      'display:flex;align-items:center;gap:12px;padding:16px 18px;border-radius:18px;border:none;background:rgba(118,118,128,.30);box-sizing:border-box;';
-    inp.style.cssText =
-      'flex:1;background:transparent;border:0;outline:none;font-size:17px;color:rgba(255,255,255,.92);font-family:inherit;caret-color:#007aff;-webkit-appearance:none;min-height:26px;padding:0;margin:0;';
-  }
-  if (barEl)
-    barEl.addEventListener(
+  const fieldEl = q('.spot-field', ov);
+  if (fieldEl)
+    fieldEl.addEventListener(
       'touchend',
       e => {
         e.preventDefault();
@@ -166,20 +158,23 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
       { passive: false },
     );
 
+  /* Set both edges. iOS scrolls a smaller visual viewport over an unchanged
+     page, so the height alone leaves the overlay off the screen. */
   function _applyKbLayout() {
     if (!MOB()) return;
-    const vvH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    ov.style.bottom = Math.max(0, window.innerHeight - vvH) + 'px';
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const top = Math.max(0, vv.offsetTop);
+    const bottom = Math.max(0, window.innerHeight - vv.height - top);
+    ov.style.top = top + 'px';
+    ov.style.bottom = bottom + 'px';
+    ov.classList.toggle('kb', bottom > 120);
   }
 
-  const trap = e => {
-    wrapTab(e, ov);
-  };
   function open(ch) {
-    lastFocused = document.activeElement;
+    if (ov.open) return;
+    ov.showModal();
     ov.classList.add('on');
-    ov.setAttribute('aria-hidden', 'false');
-    ov.addEventListener('keydown', trap);
     inp.value = ch || '';
     render(inp.value);
     if (MOB() && window.visualViewport) {
@@ -206,28 +201,36 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
     );
   }
 
+  /* Escape would close the dialog outright and skip the fade, so it is refused
+     and routed through close() like every other dismissal. */
+  ov.addEventListener('cancel', e => {
+    e.preventDefault();
+    close();
+  });
+
+  /* The dialog stays open for the length of the fade, so the page behind it
+     is inert until the overlay has actually gone. The browser returns focus
+     when it closes. */
+  ov.addEventListener('close', () => {
+    ov.classList.remove('on');
+    inp.value = '';
+    res.replaceChildren();
+  });
+
   function close() {
+    if (!ov.open) return;
     ov.classList.remove('vis');
-    ov.removeEventListener('keydown', trap);
-    ov.setAttribute('aria-hidden', 'true');
     inp.setAttribute('aria-expanded', 'false');
     inp.setAttribute('aria-activedescendant', '');
-    if (lastFocused && lastFocused.focus) {
-      try {
-        lastFocused.focus();
-      } catch {}
-      lastFocused = null;
-    }
     if (_w._spotVpCleanup) {
       _w._spotVpCleanup();
       _w._spotVpCleanup = null;
     }
+    ov.style.top = '';
     ov.style.bottom = '';
+    ov.classList.remove('kb');
     setTimeout(() => {
-      if (!ov.classList.contains('vis')) ov.classList.remove('on');
-      inp.value = '';
-      res.innerHTML = '';
-      inp.blur();
+      if (!ov.classList.contains('vis')) ov.close();
     }, 220);
   }
 
@@ -251,18 +254,7 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
       'touchend',
       e => {
         e.preventDefault();
-        close();
-      },
-      { passive: false },
-    );
-  }
-  const mobCancelBtn = el('spot-cancel-mob-btn');
-  if (mobCancelBtn) {
-    mobCancelBtn.onclick = close;
-    mobCancelBtn.addEventListener(
-      'touchend',
-      e => {
-        e.preventDefault();
+        e.stopPropagation();
         close();
       },
       { passive: false },

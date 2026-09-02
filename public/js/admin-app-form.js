@@ -1,9 +1,15 @@
-import { clr as rc, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=8ca7ce3c';
+import { clr as rc, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=d949e985';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { loadLocalIcons, resolveIcon, iconChain, cdnIconName } from '/js/icons.js?v=69c2b9bd';
-import { state } from '/js/admin-state.js?v=c23e6346';
-import { isDockBlocked, DOCK_MAX, clearsStoredSecret } from '/js/admin-logic.js?v=d17394da';
-import { t } from '/js/i18n.js?v=83239bf4';
+import { state } from '/js/admin-state.js?v=7d68e98e';
+import {
+  isDockBlocked,
+  DOCK_MAX,
+  clearsStoredSecret,
+  isBareHostUrl,
+  failureIsMissingApiPath,
+} from '/js/admin-logic.js?v=dcf7c37d';
+import { t } from '/js/i18n.js?v=e644a5c5';
 import {
   toast,
   ag,
@@ -13,9 +19,9 @@ import {
   initInlineEdit,
   setTogDisabled,
   wireChecklist,
-} from '/js/admin-shared.js?v=1d330931';
-import { MAX_LABELS } from '/js/badge-logic.js?v=41a929ac';
-import { renderColorControl, BADGE_SWATCHES, BADGE_DEFAULT } from '/js/admin-color-control.js?v=bfd0955a';
+} from '/js/admin-shared.js?v=132c869f';
+import { MAX_LABELS } from '/js/badge-logic.js?v=b3c8b6c2';
+import { renderColorControl, BADGE_SWATCHES, BADGE_DEFAULT } from '/js/admin-color-control.js?v=3a61c02f';
 import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=10f3cdb1';
 
 export function buildFolderForm(body, item) {
@@ -42,7 +48,7 @@ export function buildFolderForm(body, item) {
       <div class="row ie-row" id="ie-fname">
         <span class="rl">${t('folder.name')}</span>
         <span class="rv${item?.label ? '' : ' is-ph'}">${item?.label || t('folder.namePh')}</span>
-        <input id="f-fname" type="text" value="${item?.label || ''}" style="display:none">
+        <input id="f-fname" type="text" value="${item?.label || ''}" class="d-none">
         <button class="pe" type="button">${raw(PE_SVG)}</button>
       </div>
       <div class="row">
@@ -72,7 +78,11 @@ function _wireFolderApps() {
   const sync = () => {
     const sel = qa('li[aria-selected="true"]', list);
     label.textContent =
-      sel.length === 0 ? t('folder.selectApps') : sel.length === 1 ? sel[0].textContent : sel.length + ' selected';
+      sel.length === 0
+        ? t('folder.selectApps')
+        : sel.length === 1
+          ? sel[0].textContent
+          : t('widgetCfg.selectedCount', { count: sel.length });
   };
   wireChecklist(dd, btn, list, li => {
     li.setAttribute('aria-selected', li.getAttribute('aria-selected') === 'true' ? 'false' : 'true');
@@ -118,10 +128,10 @@ export function buildAppForm(body, item) {
     <p class="grp-hdr">${t('app.icon')}</p>
     <div class="grp" id="ipw">
       <div class="row icon-src-row">
-        <span class="icon-prev" id="ipv" style="background:${rc(state.scol)}">${state.siurl ? html`<img src="${resolveIcon(state.siurl)}" alt="" id="ipv-img">` : html`<span>${(item?.label || '?')[0]?.toUpperCase() || '?'}</span>`}</span>
+        <span class="icon-prev" id="ipv">${state.siurl ? html`<img src="${resolveIcon(state.siurl)}" alt="" id="ipv-img">` : html`<span>${(item?.label || '?')[0]?.toUpperCase() || '?'}</span>`}</span>
         <input class="icon-srch" id="ip-in" type="text" autocomplete="off" placeholder="${t('app.iconPh')}" value="${state.siurl}">
         <button type="button" class="row-btn" id="ip-upload-lbl">${t('app.upload')}</button>
-        <input type="file" id="ip-upload" aria-label="${t('app.upload')}" accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon" style="position:absolute;width:1px;height:1px;opacity:0">
+        <input type="file" id="ip-upload" class="file-hidden" aria-label="${t('app.upload')}" accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon">
       </div>
       <div class="iprs" id="iprs"></div>
       <div id="icon-color-slot"></div>
@@ -203,6 +213,9 @@ export function buildAppForm(body, item) {
   initInlineEdit('ie-static-label', 'f-static-label', { placeholder: t('app.labelPh') });
   initInlineEdit('ie-burl', 'f-burl', { placeholder: t('app.apiUrlPh') });
 
+  /* The markup carries no style attribute, so the preview is painted here. */
+  const pv0 = el('ipv');
+  if (pv0) pv0.style.background = rc(state.scol);
   renderColorControl(el('icon-color-slot'), {
     value: state.scol || 'dark',
     idPrefix: 'icon-col',
@@ -307,7 +320,7 @@ function syncActMode() {
   const host = el('act-labels');
   if (!host) return;
   if (!ready) {
-    host.innerHTML = '';
+    host.replaceChildren();
     return;
   }
   renderActLabels(host);
@@ -347,7 +360,7 @@ function _valueSelect(idx, path) {
 }
 
 function renderActLabels(host) {
-  host.innerHTML = '';
+  host.replaceChildren();
   state.spaths.forEach((path, i) => {
     const l = actLabel(path);
     const hdr = document.createElement('p');
@@ -492,7 +505,7 @@ function wireActLabelDrag(host) {
     initInlineEdit, from the row's own label. */
 function _ieRow(rowId, label, inpId, val, ph, type = 'text') {
   const has = val != null && val !== '';
-  return html`<div class="row ie-row" id="${rowId}"><span class="rl">${label}</span><span class="rv${has ? '' : ' is-ph'}">${has ? val : ph}</span><input id="${inpId}" type="${type}" value="${val || ''}" style="display:none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`;
+  return html`<div class="row ie-row" id="${rowId}"><span class="rl">${label}</span><span class="rv${has ? '' : ' is-ph'}">${has ? val : ph}</span><input id="${inpId}" type="${type}" value="${val || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`;
 }
 
 function wireIcon() {
@@ -546,21 +559,21 @@ function wireIcon() {
       const file = upInput.files[0];
       if (!file) return;
       const origText = upBtn.textContent;
-      upBtn.textContent = '↑ Uploading…';
+      upBtn.textContent = '↑ ' + t('appearance.uploading');
       try {
         const form = new FormData();
         form.append('icon', file, file.name);
         const r = await fetch('/api/icons/upload', { method: 'POST', body: form });
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Upload failed');
+        if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
         await loadLocalIcons();
         state.siurl = d.filename;
         const ipIn = inpById('ip-in');
         if (ipIn) ipIn.value = d.filename;
         updPrev();
-        toast(`Uploaded ${d.filename}`);
+        toast(t('toast.uploaded', { name: d.filename }));
       } catch (e) {
-        toast('Upload failed: ' + e.message, 'err');
+        toast(t('toast.uploadFailed', { err: e.message }), 'err');
       } finally {
         upBtn.textContent = origText;
         upInput.value = '';
@@ -575,7 +588,7 @@ function wireIcon() {
 function showIPRes(list, rawInput) {
   const rs = el('iprs');
   if (!rs) return;
-  rs.innerHTML = '';
+  rs.replaceChildren();
   list.forEach(ic => {
     const r = document.createElement('button');
     r.type = 'button';
@@ -689,7 +702,9 @@ async function testPing() {
   const skipTls = inpById('f-skip-tls')?.checked || false;
   try {
     const r = await ap('/api/ping', { url, skipTls });
-    st.textContent = r.ok ? `✓ Reachable (${r.status})` : `✗ HTTP ${r.status}`;
+    st.textContent = r.ok
+      ? '✓ ' + t('app.reachable', { status: r.status })
+      : '✗ ' + t('app.httpError', { status: r.status });
   } catch (e) {
     st.textContent = '✗ ' + e.message;
   }
@@ -732,7 +747,7 @@ function renderKvRows(host, rows, ph) {
   const add = document.createElement('button');
   add.type = 'button';
   add.className = 'kv-add';
-  setHtml(add, html`<span>+ Add</span>`);
+  setHtml(add, html`<span>${t('common.add')}</span>`);
   add.onclick = () => {
     rows.push({ key: '', value: '', secret: false, valueSet: false });
     renderKvRows(host, rows, ph);
@@ -813,8 +828,11 @@ async function fetchBadge() {
     state.fnums = r.numbers || [];
     if (st) {
       st.style.cssText = 'margin-top:4px;color:#34c759';
-      if (!state.fnums.length) st.textContent = '✓ Connected, no numeric values found';
-      else st.textContent = `✓ Found ${state.fnums.length} value${state.fnums.length !== 1 ? 's' : ''}`;
+      if (!state.fnums.length) {
+        const bare = isBareHostUrl(url);
+        if (bare) st.style.cssText = 'margin-top:4px;color:var(--warning)';
+        st.textContent = bare ? t('app.needsApiPath') : '✓ ' + t('app.connectedNoValues');
+      } else st.textContent = '✓ ' + t('app.foundValues', { count: state.fnums.length });
     }
     el('auth-row-wrap')?.classList.remove('bprow-hidden');
     if (state.fnums.length && !state.spaths.length) addActLabel();
@@ -822,11 +840,14 @@ async function fetchBadge() {
   } catch (e) {
     /* Branch on the error's `kind`, never on words inside its message. */
     const advice = badgeErrorAdvice(e);
+    const missingPath = failureIsMissingApiPath(url, advice);
     if (st) {
-      st.style.cssText = 'margin-top:4px;color:' + (advice.tone === TONE.WARN ? 'var(--warning)' : 'var(--danger)');
-      st.textContent = advice.tone === TONE.WARN ? advice.message : '✗ ' + advice.message;
+      const tone = missingPath || advice.tone === TONE.WARN ? 'var(--warning)' : 'var(--danger)';
+      st.style.cssText = 'margin-top:4px;color:' + tone;
+      if (missingPath) st.textContent = t('app.needsApiPathError');
+      else st.textContent = advice.tone === TONE.WARN ? advice.message : '✗ ' + advice.message;
     }
-    if (advice.openAuth) {
+    if (advice.openAuth && !missingPath) {
       const authCb = inpById('auth-en');
       const authSub = el('auth-sub');
       if (authCb && !authCb.checked) {

@@ -8,7 +8,7 @@ import {
   widgetSrc,
   cardPreset,
   uniqueTitle,
-} from '/js/widget-types.js?v=6a5e1619';
+} from '/js/widget-types.js?v=a1b61636';
 import {
   el,
   mk,
@@ -22,28 +22,22 @@ import {
   setUserText,
   teardownWidgets,
   titleWhenTruncated,
-} from '/js/utils.js?v=8ca7ce3c';
-import { initSpotlight } from '/js/spotlight.js?v=fe9e1b53';
+} from '/js/utils.js?v=d949e985';
+import { initSpotlight } from '/js/spotlight.js?v=687fae26';
 import { html, setHtml, raw } from '/js/html.js?v=c71f8903';
-import { initI18n, t, currentLang } from '/js/i18n.js?v=83239bf4';
+import { initI18n, t, currentLang } from '/js/i18n.js?v=e644a5c5';
 import { pwStrength, passwordMismatch } from '/js/password-strength.js?v=42f45ac7';
 import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
-import { initUI, mkFolder, openFolderDesktop, openFolderMobile, buildMobile } from '/js/ui.js?v=88773f11';
-import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=41a929ac';
-import { formatNumber } from '/js/format-number.js?v=e2165e12';
-import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=08aae50f';
-import {
-  configChanged,
-  landingAfterSetup,
-  readWallpaperCache,
-  writeWallpaperCache,
-  restorePage,
-} from '/js/dashboard-logic.js?v=a0604f3b';
-import { trapFocus } from '/js/dialog.js?v=05935547';
-import { jitter } from '/js/jitter.js?v=4edf48f2';
-import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=28416a75';
+import { initUI, mkFolder, openFolderDesktop, openFolderMobile, buildMobile } from '/js/ui.js?v=82e0bf6b';
+import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=b3c8b6c2';
+import { formatNumber } from '/js/format-number.js?v=4a5ccef4';
+import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=aa52b1a3';
+import { configChanged, landingAfterSetup, restorePage } from '/js/dashboard-logic.js?v=74ffcb7e';
+import { loadWallpaper, saveWallpaper } from '/js/wallpaper-cache.js?v=c5f8a3e6';
+import { jitter } from '/js/jitter.js?v=4eeef4c9';
+import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=9de1cb7d';
 import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
-import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=38adb276';
+import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
 
 /* Recomputed, never stored: the window can cross the breakpoint after load. */
 let MOB = isMobileLayout();
@@ -105,8 +99,7 @@ let _lastTouch = 0;
    the boot veil up forever. Generous: this only has to beat a hang. */
 const BOOT_TIMEOUT_MS = 15000;
 
-const PAGE_STORE = 'dash_page',
-  WALLPAPER_STORE = 'dash_wallpaper';
+const PAGE_STORE = 'dash_page';
 
 /** @param {string} key @returns {string|null} */
 function storeGet(key) {
@@ -168,7 +161,7 @@ function bupd(id) {
 
   const act = item?.monitoring?.activity || {};
   const isFolder = item?.type === 'folder';
-  const { cls, txt, num, unit, bg, aria, color, title, more, nextColor, rows } = computeBadgeVisual({
+  const { cls, txt, num, unit, bg, aria, color, nextColor, popover, rows } = computeBadgeVisual({
     health: s.health,
     activity: s.activity,
     activityStale: !!s.activityStale,
@@ -185,7 +178,7 @@ function bupd(id) {
     format: formatNumber,
   });
 
-  const sig = badgeSignature({ cls, txt, unit, bg, aria, color, title, nextColor, rows });
+  const sig = badgeSignature({ cls, txt, unit, bg, aria, color, nextColor, rows });
 
   els.forEach(el => {
     if (BSIG.get(el) === sig) return;
@@ -210,7 +203,7 @@ function bupd(id) {
     el.setAttribute('aria-hidden', 'true');
     el.removeAttribute('role');
     el.removeAttribute('aria-label');
-    const tile = /** @type {HTMLElement|null} */ (el.closest('a, [role="button"]'));
+    const tile = /** @type {HTMLElement|null} */ (el.closest('a, button, [role="button"]'));
     const tileName = tile?.dataset.tileName;
     if (tile && tileName) tile.setAttribute('aria-label', aria ? `${tileName}, ${aria}` : tileName);
     /* Never the `background` shorthand. It resets background-clip, and the
@@ -220,11 +213,11 @@ function bupd(id) {
     el.style.color = color;
     if (nextColor) el.style.setProperty('--badge-next', nextColor);
     else el.style.removeProperty('--badge-next');
-    wireBadgePopover(el, more ? rows : null);
-    /* Assigned, never interpolated. An upstream error string must not become
-       markup. */
-    if (title) el.title = title;
-    else el.removeAttribute('title');
+    /* No title attribute. The popover carries the reason, and a badge that can
+       be hovered would otherwise draw the browser's own tooltip beside it.
+       Removed rather than skipped: one set by an earlier paint would persist. */
+    el.removeAttribute('title');
+    wireBadgePopover(el, popover ? rows : null);
   });
 }
 
@@ -389,7 +382,7 @@ function buildDesktop() {
   const pages = paginate();
   totalPages = pages.length;
   const strip = el('pages');
-  strip.innerHTML = '';
+  strip.replaceChildren();
   pages.forEach(pageItems => {
     const p = mk('div');
     p.className = 'page';
@@ -400,10 +393,10 @@ function buildDesktop() {
     strip.appendChild(p);
   });
   const dots = el('dots');
-  dots.innerHTML = '';
+  dots.replaceChildren();
   pages.forEach((_, i) => dots.appendChild(mkDot(i, pages.length, 0, goTo)));
   const dk = el('dock');
-  dk.innerHTML = '';
+  dk.replaceChildren();
   dock.forEach(item => dk.appendChild(mkDock(item)));
 }
 
@@ -492,7 +485,7 @@ function syncMobPages() {
   if (domCount <= totalPages) return; /* no overflow pages, nothing to fix */
   totalPages = domCount;
   const dots = el('dots');
-  dots.innerHTML = '';
+  dots.replaceChildren();
   for (let i = 0; i < domCount; i++) dots.appendChild(mkDot(i, domCount, pg, goTo));
   const pillDots = q('.msp-dots');
   if (pillDots) {
@@ -576,12 +569,12 @@ async function applyBg() {
       root.style.setProperty('--bg-size', fit === 'fit' ? 'contain' : 'cover');
       sampleWallpaper(url, brightness, fit);
     } else if (bg.type === 'unsplash') {
-      let url = readWallpaperCache(storeGet(WALLPAPER_STORE), bg, Date.now());
+      let url = loadWallpaper(bg);
       if (!url) {
         const r = await fetch('/api/wallpaper', { cache: 'no-store' });
         const d = await r.json();
         url = d.url || null;
-        if (url) storeSet(WALLPAPER_STORE, writeWallpaperCache(url, bg, Date.now()));
+        if (url) saveWallpaper(url, bg);
       }
       if (url) {
         const shown = url;
@@ -653,14 +646,13 @@ const EYE =
 
 function showSetupPrompt() {
   return new Promise(resolve => {
-    const ov = document.createElement('div');
+    const ov = /** @type {HTMLDialogElement} */ (document.createElement('dialog'));
     ov.className = 'setup-prompt';
+    ov.setAttribute('aria-labelledby', 'setup-title');
     setHtml(
       ov,
-      html`<div class="setup-card" role="dialog" aria-modal="true" aria-labelledby="setup-title"><p id="setup-title" class="setup-title">${t('setup.title')}</p><p class="setup-sub">${t('setup.sub')}</p><div class="setup-field"><input id="setup-pw" type="password" placeholder="${t('setup.newPassword')}" aria-label="${t('setup.newPassword')}" autocomplete="new-password" class="setup-pw"><button id="setup-reveal" type="button" class="setup-reveal" aria-pressed="false" aria-label="${t('common.showPassword')}" title="${t('common.showPassword')}">${raw(EYE)}</button></div><input id="setup-pw2" type="password" placeholder="${t('setup.confirmPassword')}" aria-label="${t('setup.confirmPassword')}" autocomplete="new-password" class="setup-pw"><div id="setup-bars" class="setup-bars"><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span></div><div id="setup-hint" class="setup-hint"></div><div id="setup-err" class="setup-err" role="alert"></div><div class="setup-btns"><button id="setup-skip" type="button" class="setup-btn setup-btn-skip">${t('setup.skip')}</button><button id="setup-set" type="button" class="setup-btn setup-btn-set" disabled>${t('setup.set')}</button></div></div>`,
+      html`<div class="setup-card"><p id="setup-title" class="setup-title">${t('setup.title')}</p><p class="setup-sub">${t('setup.sub')}</p><div class="setup-field"><input id="setup-pw" type="password" placeholder="${t('setup.newPassword')}" aria-label="${t('setup.newPassword')}" autocomplete="new-password" class="setup-pw"><button id="setup-reveal" type="button" class="setup-reveal" aria-pressed="false" aria-label="${t('common.showPassword')}" title="${t('common.showPassword')}">${raw(EYE)}</button></div><input id="setup-pw2" type="password" placeholder="${t('setup.confirmPassword')}" aria-label="${t('setup.confirmPassword')}" autocomplete="new-password" class="setup-pw"><div id="setup-bars" class="setup-bars"><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span></div><div id="setup-hint" class="setup-hint"></div><div id="setup-err" class="setup-err" role="alert"></div><div class="setup-btns"><button id="setup-skip" type="button" class="setup-btn setup-btn-skip">${t('setup.skip')}</button><button id="setup-set" type="button" class="setup-btn setup-btn-set" disabled>${t('setup.set')}</button></div></div>`,
     );
-    document.body.appendChild(ov);
-
     const pw = qi('#setup-pw', ov);
     const pw2 = qi('#setup-pw2', ov);
     const rev = qi('#setup-reveal', ov);
@@ -697,15 +689,17 @@ function showSetupPrompt() {
       rev.title = label;
     };
 
-    let releaseTrap = trapFocus(ov, { closeOnEscape: false, initialFocus: pw });
-    const close = () => {
-      if (releaseTrap) {
-        releaseTrap();
-        releaseTrap = null;
-      }
+    document.body.appendChild(ov);
+    ov.showModal();
+    pw.focus();
+    /* Escape must not dismiss this: there is nothing usable behind it, and Skip
+       is the deliberate way past. */
+    ov.addEventListener('cancel', e => e.preventDefault());
+    ov.addEventListener('close', () => {
       ov.remove();
       resolve();
-    };
+    });
+    const close = () => ov.close();
 
     skip.onclick = async () => {
       skip.disabled = true;
@@ -950,17 +944,13 @@ async function boot() {
      and the mobile layout is measured. Debounced, and only while it is the
      layout in use: on a phone the keyboard opening resizes the viewport too. */
   let _rt;
-  window.addEventListener(
-    'orientationchange',
-    () => {
-      clearTimeout(_rt);
-      _rt = setTimeout(() => {
-        if (MOB) buildLayout();
-        resampleBg();
-      }, 150);
-    },
-    { passive: true },
-  );
+  screen.orientation.addEventListener('change', () => {
+    clearTimeout(_rt);
+    _rt = setTimeout(() => {
+      if (MOB) buildLayout();
+      resampleBg();
+    }, 150);
+  });
 
   /* The desktop tile size follows the viewport, so a resize can change how many
      rows fit. Rebuild only when the slot count actually moves, not on every

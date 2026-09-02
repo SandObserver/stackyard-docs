@@ -65,7 +65,7 @@
 </div>
 
 <script type="module">
-import { poll, openUrl, loadStrings, wt, formatNumber } from '/js/widget-toolbox.js?v=1dda58ca';
+import { poll, openUrl, loadStrings, wt, formatNumber } from '/js/widget-toolbox.js?v=432c5712';
 await loadStrings();
 /* These two are in the markup, so the widget still reads correctly in English
    if the catalog fetch fails. */
@@ -74,7 +74,6 @@ document.getElementById('widget').setAttribute('aria-label', wt('ui.aria', 'DNS 
 const TICK_MS = 30000;
 const params = new URLSearchParams(location.search);
 const id   = params.get('id')   || '';
-const size = params.get('size') || 'medium';
 const API  = '/api';
 const NS   = 'http://www.w3.org/2000/svg';
 

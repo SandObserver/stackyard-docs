@@ -665,7 +665,11 @@ button.sy-iconbtn:focus-visible {
 .sl-markdown-content :where(
   .sy-tiles, .sy-tile, .sy-order, .sy-order__step, .sy-group, .sy-row,
   .sy-shot, .sy-tile__art, .sy-row__label, .sy-row__pills, .sy-row__acts,
-  .wpv, .wpv__mat, .wpv__card, .wpv-pair
+  .wpv, .wpv__mat, .wpv__card, .wpv-pair,
+  .sy-cmp, .sy-cmp__scroll, .sy-cmp__notes,
+  .sy-cc, .sy-cc__pair, .sy-cc__panel, .sy-cc__screen, .sy-cc__row, .sy-cc__head,
+  .sy-cc__stats, .sy-cc__stat, .sy-cc__grid, .sy-cc__tile, .sy-cc__card,
+  .sy-cc__head, .sy-cc__names
 ) > * {
   margin-top: 0;
 }

@@ -1,0 +1,484 @@
+---
+/* Left: the shape most dashboards take, a widget per service, each one a box of
+   labelled counts. Generic, not a copy of any product. Right: the real Stackyard
+   widgets, served from public/widgets, on the product's own surface. Geometry
+   mirrors WidgetPreview.astro and must stay in step with it. */
+
+const CARDS = [
+  { name: 'Jellyfin', sub: 'Media server', state: 'RUNNING',
+    stats: [['412', 'MOVIES'], ['38', 'SERIES'], ['1,204', 'EPISODES'], ['0', 'SONGS']] },
+  { name: 'Homebridge', sub: 'HomeKit bridge', state: 'RUNNING',
+    stats: [['0', 'UPDATES'], ['0', 'ERRORS'], ['1', 'PAIRED'], ['1/1', 'BRIDGES']] },
+  { name: 'AdGuard Home', sub: 'DNS filter', state: 'HEALTHY',
+    stats: [['12,059', 'QUERIES'], ['3,742', 'BLOCKED'], ['0', 'PARENTAL'], ['0', 'MALWARE']] },
+  { name: 'Kopia', sub: 'Backup and snapshots', state: 'HEALTHY',
+    stats: [['OK', 'STATUS'], ['128 GB', 'SIZE'], ['02:15', 'LAST RUN'], ['02:15', 'NEXT RUN']] },
+  { name: 'Seerr', sub: 'Request manager', state: 'RUNNING',
+    stats: [['7', 'PENDING'], ['112', 'APPROVED'], ['964', 'AVAILABLE'], ['88', 'COMPLETED']] },
+  { name: 'Proxy Manager', sub: 'Reverse proxy', state: 'UNHEALTHY', bad: true,
+    stats: [['-', 'ENABLED'], ['-', 'DISABLED'], ['-', 'TOTAL'], ['-', 'ERRORS']] },
+  { name: 'Portainer', sub: 'Container manager', state: 'RUNNING',
+    stats: [['38', 'RUNNING'], ['0', 'STOPPED'], ['38', 'TOTAL'], ['11%', 'CPU']] },
+  { name: 'Immich', sub: 'Photo and video library', state: 'RUNNING',
+    stats: [['1', 'USERS'], ['2,182', 'PHOTOS'], ['213', 'VIDEOS'], ['94 GB', 'STORAGE']] },
+];
+
+/* Every badge points at a count the left panel prints. */
+const ROW_1 = [
+  { name: 'Homebridge', icon: '/icons/homebridge.svg', bg: '#3d1854' },
+  { name: 'AdGuard', icon: '/icons/pi-hole.svg', bg: '#f2f2f7', badge: '31%', badgeBg: '#0091ff', badgeInk: '#ffffff' },
+  { name: 'Portainer', icon: '/icons/portainer.svg', bg: '#1c1c1e' },
+];
+
+const ROW_2 = [
+  { name: 'Seerr', icon: '/icons/seerr.svg', bg: '#1c1c1e', badge: '7', badgeBg: '#ffcc00', badgeInk: '#1c1c1e' },
+  { name: 'Proxy', icon: '/icons/npm.svg', bg: '#1c1c1e', badge: '!', badgeBg: '#ff4245', badgeInk: '#ffffff' },
+  { name: 'Immich', icon: '/icons/immich.svg', bg: '#f2f2f7' },
+];
+
+const DESIGN = 170;
+const CARD_W = 110;
+const CARD_H = 108.1;
+const RADIUS = 20.2;
+const scale = Math.max(CARD_W / DESIGN, CARD_H / DESIGN);
+const tx = (CARD_W - DESIGN * scale) / 2;
+const ty = (CARD_H - DESIGN * scale) / 2;
+const frameStyle = `width:${DESIGN}px;height:${DESIGN}px;transform:translate(${tx}px,${ty}px) scale(${scale});`;
+const cardStyle = `width:${CARD_W}px;height:${CARD_H}px;border-radius:${RADIUS}px;`;
+---
+
+<figure class="sy-cc">
+  <div class="sy-cc__pair">
+    <div class="sy-cc__panel">
+      <p class="sy-cc__title">The usual approach</p>
+      <div class="sy-cc__screen sy-cc__screen--dense" aria-hidden="true">
+        {CARDS.map((c) => (
+          <div class="sy-cc__card">
+            <div class="sy-cc__head">
+              <span class="sy-cc__glyph"></span>
+              <span class="sy-cc__names">
+                <span class="sy-cc__card-name">{c.name}</span>
+                <span class="sy-cc__card-sub">{c.sub}</span>
+              </span>
+              <span class={`sy-cc__pill${c.bad ? ' sy-cc__pill--bad' : ''}`}>{c.state}</span>
+            </div>
+            <div class="sy-cc__stats">
+              {c.stats.map(([value, label]) => (
+                <span class="sy-cc__stat">
+                  <span class="sy-cc__stat-v">{value}</span>
+                  <span class="sy-cc__stat-l">{label}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p class="sy-cc__cap">Everything is equally loud.</p>
+    </div>
+
+    <div class="sy-cc__panel">
+      <p class="sy-cc__title">Stackyard</p>
+      <div class="sy-cc__screen sy-cc__screen--calm">
+        <div class="sy-cc__grid">
+          <div class="wpv__card sy-cc__wcell" data-card="dark" style={cardStyle}>
+            <iframe
+              data-np
+              src="/widgets/nowplaying/index.html?id=cc-np-a&size=small&lang=en"
+              title="Now Playing widget"
+              aria-label="Now Playing widget"
+              loading="lazy"
+              scrolling="no"
+              tabindex="-1"
+              style={frameStyle}
+            ></iframe>
+          </div>
+          {ROW_1.map((t) => (
+            <span class="sy-cc__tile">
+              <span class="sy-cc__art" style={`background:${t.bg}`}>
+                <img src={t.icon} alt="" loading="lazy" decoding="async" width="30" height="30" />
+                {t.badge && (
+                  <span class="sy-cc__badge" style={`background:${t.badgeBg};color:${t.badgeInk}`}>
+                    {t.badge}
+                  </span>
+                )}
+              </span>
+              <span class="sy-cc__name">{t.name}</span>
+            </span>
+          ))}
+          <div class="wpv__card sy-cc__wcell" data-card="dark" style={cardStyle}>
+            <iframe
+              src="/widgets/backup/backup.html?id=cc-backup&size=small&lang=en"
+              title="Backup widget"
+              aria-label="Backup widget"
+              loading="lazy"
+              scrolling="no"
+              tabindex="-1"
+              style={frameStyle}
+            ></iframe>
+          </div>
+          {ROW_2.map((t) => (
+            <span class="sy-cc__tile">
+              <span class="sy-cc__art" style={`background:${t.bg}`}>
+                <img src={t.icon} alt="" loading="lazy" decoding="async" width="30" height="30" />
+                {t.badge && (
+                  <span class="sy-cc__badge" style={`background:${t.badgeBg};color:${t.badgeInk}`}>
+                    {t.badge}
+                  </span>
+                )}
+              </span>
+              <span class="sy-cc__name">{t.name}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+      <p class="sy-cc__cap">Only what matters to you.</p>
+    </div>
+  </div>
+
+  <figcaption class="sy-cc__figcap">
+    The same facts either way: what is playing, last night's backup, seven
+    pending requests, thirty-one percent of queries blocked and a proxy that
+    needs attention.
+  </figcaption>
+</figure>
+
+<script>
+  /* The preview data is static, so the session is picked per page load. */
+  const frame = document.querySelector('iframe[data-np]') as HTMLIFrameElement | null;
+  if (frame) {
+    const ids = ['cc-np-a', 'cc-np-b', 'cc-np-c'];
+    const id = ids[Math.floor(Math.random() * ids.length)];
+    frame.src = frame.src.replace(/id=cc-np-[abc]/, `id=${id}`);
+  }
+</script>
+
+<style>
+  /* The content column narrows with the sidebar, not with the viewport, so the
+     stacking point is measured on the figure itself. */
+  .sy-cc {
+    margin: 24px 0;
+    container-type: inline-size;
+  }
+
+  .sy-cc__pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .sy-cc__panel {
+    min-width: 0;
+  }
+
+  .sy-cc__title {
+    margin: 0 0 8px;
+    font-size: 13px;
+    line-height: 1.3846;
+    letter-spacing: -0.0062em;
+    color: var(--sl-color-gray-3);
+  }
+
+  .sy-cc__screen {
+    border-radius: var(--sy-radius-lg, 14px);
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-gray-7);
+    padding: 10px;
+    height: 272px;
+    overflow: hidden;
+  }
+
+  /* These dashboards are usually laid over a wallpaper, with translucent cards
+     and text that fights the image behind it. That is the point of the panel. */
+  .sy-cc__screen--dense {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-content: start;
+    background-color: #2f3a44;
+  }
+
+  .sy-cc__screen--dense::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(60% 70% at 18% 12%, rgba(64, 132, 176, 0.55), transparent 70%),
+      radial-gradient(55% 60% at 86% 22%, rgba(196, 116, 62, 0.45), transparent 72%),
+      radial-gradient(70% 65% at 62% 96%, rgba(72, 132, 92, 0.5), transparent 70%),
+      linear-gradient(160deg, #46525c, #2b333b);
+  }
+
+  .sy-cc__screen--dense > * {
+    position: relative;
+  }
+
+  .sy-cc__card {
+    border-radius: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.09);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .sy-cc__head {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 6px;
+    min-width: 0;
+  }
+
+  .sy-cc__names {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .sy-cc__glyph {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.22);
+    flex: 0 0 auto;
+  }
+
+  .sy-cc__card-name {
+    font-size: 8.5px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sy-cc__card-sub {
+    font-size: 6.5px;
+    line-height: 1.25;
+    color: rgba(255, 255, 255, 0.42);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sy-cc__pill {
+    margin-inline-start: auto;
+    flex: 0 0 auto;
+    padding: 1px 3px;
+    border-radius: 3px;
+    font-size: 5.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: rgba(126, 214, 152, 0.85);
+    background: rgba(126, 214, 152, 0.16);
+  }
+
+  .sy-cc__pill--bad {
+    color: rgba(255, 138, 138, 0.9);
+    background: rgba(255, 100, 100, 0.18);
+  }
+
+  .sy-cc__stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    padding: 0 5px 5px;
+  }
+
+  .sy-cc__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 1px;
+    min-width: 0;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .sy-cc__stat-v {
+    font-size: 9px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.78);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .sy-cc__stat-l {
+    font-size: 5.2px;
+    line-height: 1.2;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  /* The product's own surface: the dashboard wallpaper under the grid. */
+  .sy-cc__screen--calm {
+    position: relative;
+    background-color: #0d1117;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+  }
+
+  /* Keep the filter on this layer. On the panel it dims the widgets too. */
+  .sy-cc__screen--calm::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.52)),
+      url('/img/wallpaper.jpg');
+    background-size: cover, cover;
+    background-position: center, center;
+    filter: blur(3px);
+    transform: scale(1.06);
+  }
+
+  .sy-cc__screen--calm > * {
+    position: relative;
+  }
+
+  /* One widget column, then three app columns, two rows. */
+  .sy-cc__grid {
+    display: grid;
+    grid-template-columns: auto repeat(3, 1fr);
+    gap: 14px 8px;
+    align-items: center;
+    justify-items: center;
+  }
+
+  .sy-cc__wcell {
+    justify-self: start;
+  }
+
+  .sy-cc__spacer {
+    display: block;
+  }
+
+  .sy-cc__tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .sy-cc__art {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+    /* A near-white tile has no edge against the light panel. The dark theme
+       needs none, the tile is already darker than the panel. */
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  }
+
+  :root[data-theme='dark'] .sy-cc__art {
+    box-shadow: none;
+  }
+
+  .sy-cc__art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 60%);
+  }
+
+  .sy-cc__art img {
+    width: 27px;
+    height: 27px;
+    object-fit: contain;
+  }
+
+  .sy-cc__badge {
+    position: absolute;
+    top: -6px;
+    inset-inline-end: -6px;
+    z-index: 3;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10.5px;
+    font-weight: 700;
+  }
+
+  .sy-cc__name {
+    font-size: 9px;
+    line-height: 1.2;
+    color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .sy-cc__cap {
+    margin: 8px 0 0;
+    font-size: 13px;
+    line-height: 1.3846;
+    letter-spacing: -0.0062em;
+    color: var(--sl-color-gray-3);
+  }
+
+  .sy-cc__figcap {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Reduced transparency drops every backdrop blur, per the design system. The
+     card keeps a solid fill so it stays readable without one. */
+  @media (prefers-reduced-transparency: reduce) {
+    .sy-cc__card {
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      background: rgba(20, 26, 32, 0.82);
+    }
+
+    .sy-cc__screen--dense::before,
+    .sy-cc__screen--calm::before {
+      filter: none;
+    }
+  }
+
+  /* The dim text is the argument this panel makes, but not at the cost of a
+     reader who asked for more contrast. */
+  @media (prefers-contrast: more) {
+    .sy-cc__card-name { color: #ffffff; }
+    .sy-cc__card-sub { color: rgba(255, 255, 255, 0.75); }
+    .sy-cc__stat-v { color: #ffffff; }
+    .sy-cc__stat-l { color: rgba(255, 255, 255, 0.75); }
+    .sy-cc__card { background: rgba(20, 26, 32, 0.85); border-color: rgba(255, 255, 255, 0.35); }
+    .sy-cc__stat { background: rgba(255, 255, 255, 0.14); }
+  }
+
+  @container (max-width: 700px) {
+    .sy-cc__pair {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

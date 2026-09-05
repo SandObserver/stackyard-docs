@@ -82,6 +82,7 @@ export default defineConfig({
       },
       sidebar: [
         { label: 'Introduction', link: '/docs/' },
+        { label: 'Compare dashboards', link: '/docs/is-stackyard-for-you/' },
         {
           label: 'Installation',
           items: [

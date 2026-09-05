@@ -1,0 +1,82 @@
+---
+title: Stackyard vs gethomepage, Dashy and Homarr
+description: How Stackyard compares to gethomepage, Dashy and Homarr on setup, integrations and dependencies, and who each one suits.
+---
+
+import CompareTable from '../../../components/CompareTable.astro';
+import CalmContrast from '../../../components/CalmContrast.astro';
+
+Self-hosted dashboards make different bets. Here is the one Stackyard makes, next to the three you are most likely to be choosing between.
+
+<CompareTable
+  rivals={['gethomepage', 'Dashy', 'Homarr']}
+  footnotes={[
+    'A badge is a small number, label or dot shown on an app\u2019s icon. In Stackyard you make one by giving it the address of a service\u2019s API. Stackyard reads what comes back, shows you the values it found, and you choose which one to display. There is nothing to write and no file to edit. See <a href="/docs/badges/">Badges</a>.',
+    'Counted from each project\u2019s own documentation and source, September 2026. Services are self-hosted ones with a built-in integration. Dependencies are the external runtime packages each project lists.',
+    'No user management. The dashboard is password protected. For more than one dashboard, run a container each with its own password and move between them with the <a href="/docs/widgets/dashboard-switch/">Dashboard switch</a> widget.',
+  ]}
+  rows={[
+    {
+      label: 'Settings',
+      values: ['Web UI', 'YAML file', 'YAML or UI', 'Web UI'],
+    },
+    {
+      label: 'Custom API',
+      cellNote: 1,
+      values: ['Live badge', 'YAML widget', 'YAML widget', 'Admin widget'],
+    },
+    {
+      label: 'Health checks',
+      values: ['HTTP, Docker', 'HTTP, ICMP, Docker', 'HTTP, ICMP', 'HTTP'],
+    },
+    {
+      label: 'Self-hosted integrations',
+      labelNote: 2,
+      values: ['24', '134', '19', '40'],
+    },
+    {
+      label: 'User accounts',
+      cellNote: 3,
+      values: ['None', 'None', 'Yes, with roles', 'Yes, with groups'],
+    },
+    {
+      label: 'Runtime dependencies',
+      labelNote: 2,
+      values: ['None', '32', '34', '58'],
+    },
+  ]}
+/>
+
+<CalmContrast />
+
+A health badge is hidden while a service is fine, so a working Stackyard shows no badges at all. See [Badges](/docs/badges/).
+
+## Is Stackyard for you?
+
+### Stackyard is a good fit if
+
+- You want a launcher first. The dashboard's job is to get you into your apps, and to tell you when one is unhealthy.
+- You configure things in a web UI. There is no YAML file to hand-edit.
+- You look at the dashboard many times a day. It is designed to stay calm at that frequency rather than to impress once.
+- You want values from your own services on the tiles, without waiting for someone to write a widget for them.
+- You want it to install to a phone home screen and work in six languages, right to left included.
+- Accessibility matters to you. Stackyard is built to WCAG 2.2 level AA. See [Accessibility](/docs/accessibility/).
+
+### Another dashboard is a better fit if
+
+- You want a metrics dashboard. Stackyard shows current values, not history, and it does not alert. It sits next to a monitoring stack rather than replacing one.
+- You want configuration as code. State lives in a single JSON file that the web UI writes. You can [export and import](/docs/import-export/backup-and-restore/) it, but it is not designed to be hand-edited or templated in a Git repository.
+- You need user accounts. There is one admin password and one shared dashboard per instance. For a separate dashboard per person, room or site, run separate instances and link them with the [Dashboard switch](/docs/widgets/dashboard-switch/) widget. See [Security](/docs/security/).
+- You want a plugin ecosystem. The widget set is fixed, plus a [Custom](/docs/widgets/custom/) widget that embeds any web page.
+
+## Where to go next
+
+Stackyard imports links and folders from gethomepage and Dashy configuration
+files, so moving over is a file upload. See
+[Migrating from another dashboard](/docs/import-export/migrating/).
+
+Look around the [demo](https://demo.sandobserver.com). Give the first load a
+moment.
+
+Install it with [Docker](/docs/installation/docker/), then work through
+[First setup](/docs/first-setup/).

@@ -1,0 +1,274 @@
+---
+interface Row {
+  label: string;
+  values: [string, string, string, string];
+  /* 1-based index into `footnotes`, marked on the Stackyard cell. */
+  cellNote?: number;
+  /* 1-based index into `footnotes`, marked on the row label. */
+  labelNote?: number;
+}
+
+interface Props {
+  rows: Row[];
+  rivals: string[];
+  /* Rendered as HTML so a note can link. Authored here, never user input. */
+  footnotes: string[];
+}
+
+const { rows, rivals, footnotes } = Astro.props;
+---
+
+<div class="sy-cmp">
+  <div class="sy-cmp__scroll sy-tscroll">
+    <table class="sy-cmp__t">
+      <caption class="sy-cmp__sr">Stackyard compared with {rivals.join(', ')}</caption>
+      <thead>
+        <tr>
+          <th scope="col"><span class="sy-cmp__sr">Feature</span></th>
+          <th scope="col" class="sy-cmp__own">
+            <img
+              class="sy-cmp__logo sy-cmp__logo--light"
+              src="/img/stackyard-wordmark-light.svg"
+              alt="Stackyard"
+              width="118"
+              height="26"
+            />
+            <img
+              class="sy-cmp__logo sy-cmp__logo--dark"
+              src="/img/stackyard-wordmark-dark.svg"
+              alt="Stackyard"
+              width="118"
+              height="26"
+            />
+          </th>
+          {rivals.map((name) => (
+            <th scope="col"><span class="sy-cmp__rival">{name}</span></th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr>
+            <th scope="row">
+              {row.label}
+              {row.labelNote && (
+                <a class="sy-cmp__mark" href={`#sy-fn-${row.labelNote}`}>
+                  <sup>{row.labelNote}</sup>
+                  <span class="sy-cmp__sr">See note {row.labelNote}</span>
+                </a>
+              )}
+            </th>
+            {row.values.map((value, i) => (
+              <td class={i === 0 ? 'sy-cmp__own' : undefined}>
+                {value}
+                {i === 0 && row.cellNote && (
+                  <a class="sy-cmp__mark" href={`#sy-fn-${row.cellNote}`}>
+                    <sup>{row.cellNote}</sup>
+                    <span class="sy-cmp__sr">See note {row.cellNote}</span>
+                  </a>
+                )}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <ol class="sy-cmp__notes">
+    {footnotes.map((text, i) => (
+      <li id={`sy-fn-${i + 1}`} set:html={text} />
+    ))}
+  </ol>
+</div>
+
+<style>
+  /* Type is the product scale: footnote 13/18, subheadline 15/20, callout 16/21.
+     Docs pages do not load tokens.css, so the values are literal here. */
+
+  .sy-cmp {
+    margin: 20px 0 24px;
+  }
+
+  .sy-cmp__t {
+    width: 100%;
+    min-width: 40rem;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+
+  .sy-cmp__t th,
+  .sy-cmp__t td {
+    padding: 16px 12px;
+    text-align: center;
+    vertical-align: middle;
+    border: 0;
+    /* Starlight fills every th. The column tint is the only fill this wants. */
+    background: transparent;
+  }
+
+  .sy-cmp__t tbody th,
+  .sy-cmp__t tbody td {
+    height: 52px;
+  }
+
+  /* Row name. Sentence case, not caps: caps costs word shape at 13px. */
+  .sy-cmp__t tbody th {
+    width: 9.5rem;
+    padding-left: 0;
+    padding-right: 16px;
+    text-align: left;
+    font-size: 13px;
+    line-height: 1.3846;
+    letter-spacing: -0.0062em;
+    font-weight: 400;
+    color: var(--sl-color-gray-3);
+  }
+
+  .sy-cmp__t thead th {
+    padding-top: 4px;
+    padding-bottom: 20px;
+    vertical-align: bottom;
+  }
+
+  .sy-cmp__t td {
+    font-size: 15px;
+    line-height: 1.3333;
+    letter-spacing: -0.0153em;
+    color: var(--sl-color-gray-2);
+  }
+
+  .sy-cmp__t td.sy-cmp__own {
+    font-size: 16px;
+    line-height: 1.3125;
+    letter-spacing: -0.0194em;
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  /* Separator: 1px, inset 16 leading, flush trailing. */
+  .sy-cmp__t tbody tr + tr td {
+    border-top: 1px solid var(--sl-color-gray-6);
+  }
+
+  .sy-cmp__t tbody tr + tr th {
+    position: relative;
+  }
+
+  .sy-cmp__t tbody tr + tr th::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 16px;
+    right: 0;
+    height: 1px;
+    background: var(--sl-color-gray-6);
+  }
+
+  .sy-cmp__logo {
+    display: block;
+    width: 118px;
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .sy-cmp__logo--dark {
+    display: none;
+  }
+
+  :root[data-theme='dark'] .sy-cmp__logo--light {
+    display: none;
+  }
+
+  :root[data-theme='dark'] .sy-cmp__logo--dark {
+    display: block;
+  }
+
+  .sy-cmp__rival {
+    font-size: 15px;
+    line-height: 1.3333;
+    letter-spacing: -0.0153em;
+    font-weight: 600;
+    color: var(--sl-color-gray-3);
+  }
+
+  /* The Stackyard column reads as one grouped card behind the rows. */
+  .sy-cmp__t th.sy-cmp__own,
+  .sy-cmp__t td.sy-cmp__own {
+    background: color-mix(in srgb, var(--sl-color-accent-low) 40%, transparent);
+    box-shadow:
+      inset 1px 0 0 color-mix(in srgb, var(--sl-color-text-accent) 20%, transparent),
+      inset -1px 0 0 color-mix(in srgb, var(--sl-color-text-accent) 20%, transparent);
+  }
+
+  .sy-cmp__t thead th.sy-cmp__own {
+    padding-top: 16px;
+    border-radius: var(--sy-radius-lg, 14px) var(--sy-radius-lg, 14px) 0 0;
+    box-shadow:
+      inset 1px 1px 0 color-mix(in srgb, var(--sl-color-text-accent) 20%, transparent),
+      inset -1px 0 0 color-mix(in srgb, var(--sl-color-text-accent) 20%, transparent);
+  }
+
+  .sy-cmp__t tbody tr:last-child td.sy-cmp__own {
+    border-radius: 0 0 var(--sy-radius-lg, 14px) var(--sy-radius-lg, 14px);
+    box-shadow:
+      inset 1px -1px 0 color-mix(in srgb, var(--sl-color-text-accent) 20%, transparent),
+      inset -1px 0 0 color-mix(in srgb, var(--sl-color-text-accent) 20%, transparent);
+  }
+
+  .sy-cmp__mark {
+    text-decoration: none;
+    color: var(--sl-color-text-accent);
+  }
+
+  .sy-cmp__mark sup {
+    font-size: 11px;
+    line-height: 1;
+    padding-left: 2px;
+  }
+
+  .sy-cmp__mark:hover sup {
+    text-decoration: underline;
+  }
+
+  .sy-cmp__notes {
+    margin: 20px 0 0;
+    padding-left: 16px;
+    font-size: 13px;
+    line-height: 1.3846;
+    letter-spacing: -0.0062em;
+    color: var(--sl-color-gray-3);
+  }
+
+  .sy-cmp__notes li + li {
+    margin-top: 8px;
+  }
+
+  .sy-cmp__notes a {
+    color: var(--sl-color-text-accent);
+  }
+
+  .sy-cmp__notes li:target {
+    color: var(--sl-color-white);
+  }
+
+  .sy-cmp__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    .sy-cmp__t th,
+    .sy-cmp__t td {
+      padding: 12px 8px;
+    }
+    .sy-cmp__t tbody th {
+      width: 8rem;
+    }
+  }
+</style>

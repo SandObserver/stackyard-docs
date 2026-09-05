@@ -7,6 +7,7 @@ import { join, resolve } from 'node:path';
 const REPO = process.env.STACKYARD_REPO ?? resolve(process.cwd(), '..', 'stackyard');
 const PUB = resolve(process.cwd(), 'public');
 const META = '<meta name="color-scheme" content="dark">';
+const ROBOTS = '<meta name="robots" content="noindex">';
 
 for (const [from, to] of [
   [join(REPO, 'ui', 'widgets'), join(PUB, 'widgets')],
@@ -28,12 +29,15 @@ function walk(dir, out = []) {
 let patched = 0;
 for (const file of walk(join(PUB, 'widgets'))) {
   let html = readFileSync(file, 'utf8');
-  if (html.includes('name="color-scheme"')) continue;
   const charset = html.match(/<meta charset="[^"]*">/i);
   if (!charset) continue;
-  html = html.replace(charset[0], `${charset[0]}\n${META}`);
+  const inject = [];
+  if (!html.includes('name="color-scheme"')) inject.push(META);
+  if (!html.includes('name="robots"')) inject.push(ROBOTS);
+  if (inject.length === 0) continue;
+  html = html.replace(charset[0], [charset[0], ...inject].join('\n'));
   writeFileSync(file, html);
   patched++;
 }
 
-console.log(`widgets and js synced from ${REPO}; color-scheme declared in ${patched} documents`);
+console.log(`widgets and js synced from ${REPO}; meta injected into ${patched} documents`);

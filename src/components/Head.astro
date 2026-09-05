@@ -1,0 +1,37 @@
+---
+import Default from '@astrojs/starlight/components/Head.astro';
+
+const site = Astro.site?.href.replace(/\/$/, '') ?? '';
+const { entry, id } = Astro.locals.starlightRoute;
+const pageTitle = entry.data.title;
+const pageDescription = entry.data.description ?? '';
+
+const segments = id.split('/').filter(Boolean);
+const crumbs = [{ name: 'Stackyard', item: `${site}/` }];
+let path = '';
+for (const segment of segments.slice(0, -1)) {
+  path += `/${segment}`;
+  crumbs.push({
+    name: segment.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()),
+    item: `${site}${path}/`,
+  });
+}
+crumbs.push({ name: pageTitle, item: new URL(Astro.url.pathname, `${site}/`).href });
+
+const breadcrumb = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: crumbs.map((crumb, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    name: crumb.name,
+    item: crumb.item,
+  })),
+};
+---
+
+<Default {...Astro.props}><slot /></Default>
+<meta name="twitter:title" content={`${pageTitle} | Stackyard`} />
+{pageDescription && <meta name="twitter:description" content={pageDescription} />}
+<meta property="og:image:alt" content="The Stackyard dashboard, showing app tiles and widgets" />
+<script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />

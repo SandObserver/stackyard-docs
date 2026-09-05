@@ -28,6 +28,7 @@ export default defineConfig({
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
+      components: { Head: './src/components/Head.astro' },
       customCss: ['./src/styles/fonts.css', './src/styles/docs.css'],
       head: [
         {

@@ -24,7 +24,7 @@ export default defineConfig({
       logo: {
         light: './public/img/stackyard-wordmark-light.svg',
         dark: './public/img/stackyard-wordmark-dark.svg',
-        alt: 'Stackyard',
+        alt: '',
         replacesTitle: true,
       },
       favicon: '/favicon.svg',

@@ -7,7 +7,7 @@ Stackyard is a self-hosted dashboard for the services on your network: a launche
 
 Most dashboards are a wall of numbers and charts. Stackyard is built to be glanced at a hundred times a day without feeling cluttered.
 
-<img src="/img/dashboard.jpg" width="1800" height="1125" alt="The Stackyard dashboard, showing widgets, app tiles, a folder and the dock." />
+<img src="/img/dashboard-c33a4d22.jpg" width="1800" height="1125" alt="The Stackyard dashboard, showing widgets, app tiles, a folder and the dock." />
 
 That is the whole interface. Widgets across the top, apps and folders below, a dock at the bottom, and everything on it added through the web UI.
 

@@ -93,6 +93,13 @@ const schema = {
       href="/fonts/inter-latin.woff2"
       crossorigin
     />
+    <link
+      rel="preload"
+      as="image"
+      type="image/jpeg"
+      href="/img/wallpaper.jpg"
+      fetchpriority="high"
+    />
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -625,12 +632,12 @@ if (!reduced) {
     .foot-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-10px 0}
     .foot-links a{font-size:14px;color:var(--a11y-dim);display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
     .foot-links a:hover{color:var(--label-primary)}
-    .foot-links span{color:rgba(255,255,255,.28);font-size:13px}
+    .foot-links span{color:rgba(255,255,255,.5);font-size:13px}
     .foot-r{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
     .verbadge{display:flex;border-radius:5px;overflow:hidden;font-size:12px;font-weight:600}
     .verbadge span{padding:4px 8px;background:var(--bg-elevated-tertiary);color:var(--label-secondary)}
-    .verbadge b{padding:4px 8px;background:#007ec6;color:#fff;font-weight:700}
-    .license{font-size:13px;color:rgba(255,255,255,.45)}
+    .verbadge b{padding:4px 8px;background:#0072b5;color:#fff;font-weight:700}
+    .license{font-size:13px;color:rgba(255,255,255,.5)}
 
 
     @media (max-width:1180px){

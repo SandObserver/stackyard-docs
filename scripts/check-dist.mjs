@@ -63,7 +63,7 @@ const files = [
 ]
   .filter((f) => f !== SELF && statSync(f).isFile() && statSync(f).size < 3_000_000)
   /* Binary bytes produce meaningless matches. */
-  .filter((f) => !/\.(png|jpe?g|ico|woff2?)$/i.test(f));
+  .filter((f) => !/\.(png|jpe?g|webp|ico|woff2?)$/i.test(f));
 report('hygiene', files.filter((f) => BANNED.test(read(f))));
 
 /* Nothing authored here may carry a credential or a real private address.
@@ -82,7 +82,7 @@ const SECRET = [
   [/\b172\.(?:1[6-9]|2\d|3[01])\.\d{1,3}\.\d{1,3}\b/, 'private IP'],
 ];
 const authored = [...globSync('src/**/*'), ...globSync('public/api/**/*')]
-  .filter((f) => statSync(f).isFile() && !/\.(png|jpe?g|ico|woff2?)$/i.test(f));
+  .filter((f) => statSync(f).isFile() && !/\.(png|jpe?g|webp|ico|woff2?)$/i.test(f));
 const secretHits = [];
 for (const f of authored) {
   const t = read(f);

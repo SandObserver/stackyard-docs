@@ -198,7 +198,7 @@ const schema = {
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/radarr.svg" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/sabnzbd.svg" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/prowlarr.svg" alt=""></div>
-                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/tdarr.png" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/tdarr.webp" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/bazarr.svg" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/agregarr.svg" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/profilarr.svg" alt=""></div>
@@ -211,7 +211,7 @@ const schema = {
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/ntfy.svg" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/beszel-light.svg" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/scrutiny-light.svg" alt=""></div>
-                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/speedtest-tracker.png" alt=""></div>
+                <div class="fmini"><img loading="lazy" decoding="async" src="/icons/speedtest-tracker.webp" alt=""></div>
                 <div class="fmini"><img loading="lazy" decoding="async" src="/icons/dozzle.svg" alt=""></div>
               </div>
               <span class="ilabel">Monitoring</span>
@@ -392,17 +392,27 @@ function fitDemoWidgets() {
   }
   const screenW = demoScreen.clientWidth;
   if (screenW) demoScreen.style.setProperty('--sc', String(screenW / 393));
+  /* Measure after --sc lands. The grid resizes with it. Both reads must come
+     before both writes, or each write forces another layout pass. */
   const card = demoScreen.querySelector('.wcell');
-  const w = card ? card.getBoundingClientRect().width : 0;
-  if (w) demoScreen.style.setProperty('--ws', String(w / 170));
   const glass = demoScreen.querySelector('.np');
-  if (glass && glass.clientWidth) {
-    demoScreen.style.setProperty('--nps', String(glass.clientWidth / 170));
-  }
+  const cardW = card ? card.getBoundingClientRect().width : 0;
+  const glassW = glass ? glass.clientWidth : 0;
+  if (cardW) demoScreen.style.setProperty('--ws', String(cardW / 170));
+  if (glassW) demoScreen.style.setProperty('--nps', String(glassW / 170));
+}
+let fitQueued = false;
+function queueFitDemoWidgets() {
+  if (fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(() => {
+    fitQueued = false;
+    fitDemoWidgets();
+  });
 }
 fitDemoWidgets();
-addEventListener('resize', fitDemoWidgets);
-phoneDemo.addEventListener('change', fitDemoWidgets);
+addEventListener('resize', queueFitDemoWidgets);
+phoneDemo.addEventListener('change', queueFitDemoWidgets);
 
 if (reduced) {
   const strip = document.querySelector('.marquee');

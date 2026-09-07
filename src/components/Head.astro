@@ -35,3 +35,28 @@ const breadcrumb = {
 {pageDescription && <meta name="twitter:description" content={pageDescription} />}
 <meta property="og:image:alt" content="The Stackyard dashboard, showing app tiles and widgets" />
 <script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />
+
+<script>
+  /* A table wider than its column scrolls. A scroll container that a keyboard
+     cannot reach strands the hidden columns. */
+  const sync = (box: HTMLElement) => {
+    if (box.scrollWidth > box.clientWidth + 1) {
+      box.tabIndex = 0;
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', 'Scrollable table');
+    } else {
+      box.removeAttribute('tabindex');
+      box.removeAttribute('role');
+      box.removeAttribute('aria-label');
+    }
+  };
+
+  const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) sync(entry.target as HTMLElement);
+  });
+
+  for (const box of document.querySelectorAll<HTMLElement>('.sy-tscroll')) {
+    sync(box);
+    observer.observe(box);
+  }
+</script>

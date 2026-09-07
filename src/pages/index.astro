@@ -177,14 +177,14 @@ const schema = {
             <div class="cell">
               <div class="itile" style="background:#1c1c1e">
                 <img src="/icons/jellyfin.svg" alt="">
-                <span class="badge" style="background:#1d6cf5" id="jellyfinCount">2</span>
+                <span class="badge" style="background:#1d6cf5" data-live-jellyfin>2</span>
               </div>
               <span class="ilabel">Jellyfin</span>
             </div>
             <div class="cell">
               <div class="itile" style="background:#1c1c1e">
                 <img src="/icons/seerr.svg" alt="">
-                <span class="badge" style="background:#ffcc00;color:#1c1c1e" id="seerrCount">7</span>
+                <span class="badge" style="background:#ffcc00;color:#1c1c1e" data-live-seerr>7</span>
               </div>
               <span class="ilabel">Seerr</span>
             </div>
@@ -253,7 +253,7 @@ const schema = {
             </div>
           </div>
           <div class="bdemo-item">
-            <div class="banchor" style="background:#5A4636"><span class="badge" style="background:#ffcc00;color:#1c1c1e" id="seerrCount">7</span></div>
+            <div class="banchor" style="background:#5A4636"><span class="badge" style="background:#ffcc00;color:#1c1c1e" data-live-seerr>7</span></div>
             <div class="bmeta">
               <span class="bcap">Live activity</span>
               <span class="bsrc">A number from the service API</span>
@@ -401,18 +401,9 @@ function fitDemoWidgets() {
   if (cardW) demoScreen.style.setProperty('--ws', String(cardW / 170));
   if (glassW) demoScreen.style.setProperty('--nps', String(glassW / 170));
 }
-let fitQueued = false;
-function queueFitDemoWidgets() {
-  if (fitQueued) return;
-  fitQueued = true;
-  requestAnimationFrame(() => {
-    fitQueued = false;
-    fitDemoWidgets();
-  });
-}
 fitDemoWidgets();
-addEventListener('resize', queueFitDemoWidgets);
-phoneDemo.addEventListener('change', queueFitDemoWidgets);
+if (demoScreen) new ResizeObserver(fitDemoWidgets).observe(demoScreen);
+phoneDemo.addEventListener('change', fitDemoWidgets);
 
 if (reduced) {
   const strip = document.querySelector('.marquee');
@@ -420,16 +411,22 @@ if (reduced) {
 }
 
 if (!reduced) {
-  const jf = document.getElementById('jellyfinCount');
-  const sr = document.getElementById('seerrCount');
-  const srcs = document.querySelectorAll('[data-live-seerr]');
-  setInterval(() => {
-    const a = Math.max(1, 2 + Math.round((Math.random() - 0.5) * 2));
-    const b = Math.max(1, 7 + Math.round((Math.random() - 0.5) * 2));
-    if (jf) jf.textContent = a;
-    if (sr) sr.textContent = b;
-    srcs.forEach(n => { n.textContent = b; });
-  }, 3400);
+  const jellyfin = document.querySelectorAll('[data-live-jellyfin]');
+  const seerr = document.querySelectorAll('[data-live-seerr]');
+  const jitter = (base) => String(Math.max(1, base + Math.round((Math.random() - 0.5) * 2)));
+  let timer = 0;
+  const tick = () => {
+    const j = jitter(2);
+    const s = jitter(7);
+    jellyfin.forEach((n) => { n.textContent = j; });
+    seerr.forEach((n) => { n.textContent = s; });
+  };
+  const schedule = () => {
+    clearInterval(timer);
+    if (!document.hidden) timer = setInterval(tick, 3400);
+  };
+  schedule();
+  document.addEventListener('visibilitychange', schedule);
 }
     </script>
   </body>

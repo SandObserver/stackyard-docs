@@ -80,7 +80,7 @@ Stackyard names the items to re-enter. Enter the credential again and save.
 
 ## Widgets
 
-### A widget says "Not configured" or shows an error instead of data
+### A widget says "Not set up yet" or shows an error instead of data
 
 Check three things in order.
 
@@ -88,9 +88,13 @@ Check three things in order.
 2. That the container can reach the URL you entered. Right network, right port, no firewall in between.
 3. For an HTTPS service with a self-signed certificate, the TLS-skip option.
 
-### A widget briefly shows "Unavailable" then recovers
+### A widget dims and shows a line instead of its data
 
-Widgets keep the last good reading through a transient failure and only surface an error after repeated failures. A flash that clears on its own means one poll timed out.
+The widget keeps its layout, fades what it was showing, and puts one line where its own labels are. The line names the kind of failure, not the service's own message. See [Messages a widget shows](#messages-a-widget-shows).
+
+Widgets keep the last good reading through a transient failure and only surface a line after repeated failures. A line that clears on its own means one poll timed out.
+
+A widget that reached its service and got nothing back stays at full brightness and says so, for example `No data`. That is not a failure.
 
 ### Settings unavailable, or a widget is missing from the list
 
@@ -199,6 +203,23 @@ nginx allows 3 MB, above both, so the API is always the component that refuses a
 ### The container health check is failing
 
 The health check runs through nginx to the API, so it covers both processes. Check the logs for either failing to start. A data volume the container's `node` user cannot write to is a common cause.
+
+## Messages a widget shows
+
+One line, in place of the widget's data. Each names a kind of failure rather than repeating what the service said, because a service's own message names hosts, ports and status codes.
+
+| Message | Meaning | Where to look |
+| --- | --- | --- |
+| `Out of reach` | Nothing answered at the address. | The URL, the network, the port. |
+| `Took too long` | The service answered too slowly. | The service's own load, or a link that drops packets. |
+| `Key rejected` | The credential was refused. | The API key or token, and its scopes. |
+| `Request blocked` | Stackyard refused to make the request. | A private address with `ALLOW_PRIVATE_IPS` unset. See [Security](/docs/security/). |
+| `Not set up yet` | The widget has no address or credential yet. | The widget's own settings. |
+| `Service error` | The service answered with an error. | The service's logs. |
+| `Something went wrong` | Anything else. | The container logs. |
+| `No data` | The service answered, and had nothing to report. | Nothing. This is not a failure. |
+
+The Disk health widget marks a single bay `Not reporting` when the drive it names is no longer in the monitoring service's list. The other bays are unaffected.
 
 ## Messages you might see
 

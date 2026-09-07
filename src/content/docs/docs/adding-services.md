@@ -32,6 +32,8 @@ The dock is the row of icons pinned at the bottom of the dashboard. Turn on Show
 
 It holds four apps. Once full, the toggle refuses more until you remove one. Widgets cannot go in the dock.
 
+The dock is hidden while no app is in it, and the grid uses the space instead.
+
 ## Folders
 
 A folder groups apps behind one tile, whose artwork is a grid of the icons inside it.

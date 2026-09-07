@@ -5,6 +5,8 @@ description: Open the admin UI, set a password, and learn what the four sections
 
 Open `http://localhost:8700/admin`. The Settings icon on the dashboard goes to the same place.
 
+A dashboard with nothing on it shows a welcome screen instead of tiles. Its **Open settings** button goes to the admin UI, and the link under it goes to the same place to import a [backup](/docs/import-export/backup-and-restore/) or [another dashboard's config](/docs/import-export/migrating/). The Settings icon returns once the dashboard holds something.
+
 ## Set a password first
 
 In **General**, turn on Password Protection. The minimum length is 8 characters.

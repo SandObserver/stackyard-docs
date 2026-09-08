@@ -24,7 +24,7 @@
   .shelves{flex:1;display:flex;flex-direction:column;min-height:0}
   .shelf-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
   .shelf-lbl{flex:none;font-size:9px;font-weight:600;color:#636366;letter-spacing:.06em;margin-top:5px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .shelf-lbl[hidden]{display:none}
   .shelf{flex:1;position:relative;padding-bottom:9px;margin-top:6px;perspective:520px}
   .size-large .shelf{margin-top:2px}
@@ -98,7 +98,7 @@
   <span class="sr" id="sr" aria-live="polite"></span>
 </div>
 <script type="module">
-  import { poll, openUrl, loadStrings, wt, formatNumber, errorState } from '/js/widget-toolbox.js?v=c27f1c81';
+  import { poll, openUrl, loadStrings, wt, formatNumber, errorState } from '/js/widget-toolbox.js?v=833f5b5f';
   await loadStrings();
   document.getElementById('lbl').textContent = wt('ui.reading', 'READING');
   document.getElementById('card').setAttribute('aria-label', wt('widget.label', 'Books'));
@@ -106,11 +106,19 @@
   const params=new URLSearchParams(location.search);
   const id=params.get('id')||'';
   const SIZES={small:{shelves:1,show:8},medium:{shelves:1,show:16},large:{shelves:3,show:16}};
-  const size=SIZES[params.get('size')]?params.get('size'):'small';
+  const size=Object.hasOwn(SIZES,params.get('size'))?params.get('size'):'small';
   const {shelves:SHELVES,show:SHOW}=SIZES[size];
   const POLL_MS=300000;
   const PALETTE=['#8E8E93','#008575','#956D51','#48484A','#008198','#A16A00','#C55300'];
-  const SRC_LABEL={recently:'RECENTLY ADDED',unread:'ON DECK',list:'READING'};
+  const SRC={recently:['ui.srcRecently','RECENTLY ADDED'],unread:['ui.srcUnread','ON DECK'],list:['ui.reading','READING']};
+  /* The reader's own name for the shelf, then the service's, then the generic
+     word for what the shelf holds. */
+  function shelfName(sh){
+    if(sh&&sh.name) return sh.name;
+    const src=sh&&sh.source;
+    const [key,en]=Object.hasOwn(SRC,src)?SRC[src]:SRC.list;
+    return wt(key,en);
+  }
 
   const card=document.getElementById('card'), lbl=document.getElementById('lbl');
   const host=document.getElementById('shelves');
@@ -198,20 +206,17 @@
       caption:document.getElementById('cap') });
 
     poll({ interval:POLL_MS,
-      isEmpty:d=>{
-        const shelves=Array.isArray(d&&d.shelves)?d.shelves:[{books:d&&d.books}];
-        return shelves.every(sh=>!(sh&&Array.isArray(sh.books)&&sh.books.length));
-      },
+      isEmpty:d=>(Array.isArray(d&&d.shelves)?d.shelves:[]).every(sh=>!(sh&&Array.isArray(sh.books)&&sh.books.length)),
       onEmpty:()=>state.empty(wt('ui.noBooks','No books')),
       onError:({error,everOk,stale,since})=>{ if(!everOk||stale) state.fail(error,{since,inert:everOk}); },
       render:d=>{
       state.ok();
-      const shelves=Array.isArray(d.shelves)?d.shelves:[{source:d.source,books:d.books}];
-      lbl.textContent=SHELVES>1?wt('widget.label','Books'):(SRC_LABEL[shelves[0]&&shelves[0].source]||'READING');
+      const shelves=Array.isArray(d.shelves)?d.shelves:[];
+      lbl.textContent=SHELVES>1?wt('widget.label','Books'):shelfName(shelves[0]);
       bays.forEach((bay,i)=>{
         const sh=shelves[i]||{books:[]};
         bay.lbl.hidden=SHELVES<2;
-        bay.lbl.textContent=SRC_LABEL[sh.source]||'READING';
+        bay.lbl.textContent=shelfName(sh);
         render(decorate((Array.isArray(sh.books)?sh.books:[]).slice(0,SHOW)),bay.list,bay.shelf);
       });
     } });

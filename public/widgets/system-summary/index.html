@@ -90,7 +90,7 @@
      the sparklines' time axis right to left. -->
 <div class="widget" id="widget" aria-hidden="true" dir="ltr"></div>
 <script type="module">
-import { poll, fetchData, html, setHtml, loadStrings, wt, formatNumber, errorState } from '/js/widget-toolbox.js?v=c27f1c81';
+import { poll, fetchData, html, setHtml, loadStrings, wt, formatNumber, errorState } from '/js/widget-toolbox.js?v=833f5b5f';
 await loadStrings();
 const TICK_MS  = 10000;
 const SPEED_MS = 60000;
@@ -150,7 +150,7 @@ async function boot() {
   poll({ fetch: fetchStats, interval: TICK_MS,
     render: d => { state.ok(); stats = d; applyStats(stats); },
     onError: ({ error, everOk, stale, since }) => {
-      if (!everOk && !stale) return;
+      if (everOk && !stale) return;
       const line = state.fail(error, { since, inert: everOk });
       /* #widget is aria-hidden, so the summary paragraph is the only thing a
          screen reader reads here. */

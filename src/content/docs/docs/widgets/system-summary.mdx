@@ -70,5 +70,17 @@ Off by default. Turn on Show Network Row, then pick a mode.
 | Throughput | Live throughput on one interface. |
 | Uptime | Uptime. |
 
-Speed mode takes a service URL, and a password if you use MySpeed. Throughput mode takes an interface picked from the loaded list.
+Speed mode reads MySpeed or Speedtest Tracker.
+
+| Field | What it does | Required |
+| --- | --- | --- |
+| Service URL | The address of MySpeed or Speedtest Tracker. | Yes |
+| MySpeed Password | The MySpeed password, if it has one. | No |
+| API Token | A Speedtest Tracker token with the `results:read` ability. Stored as a secret. | No |
+
+Without a token, Speedtest Tracker is read through an older route that needs no
+authentication. With one, the widget reads Speedtest Tracker's documented v1
+API.
+
+Throughput mode takes an interface picked from the loaded list.
 

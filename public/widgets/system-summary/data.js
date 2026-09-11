@@ -1,3 +1,6 @@
+const SEED_POINTS = 120;
+const SEED_STEP_SEC = 10;
+
 module.exports = async function (ctx) {
   if (ctx.endpoint === 'speed') return speed(ctx);
   if (ctx.endpoint === 'sensors') return sensorOptions(ctx);
@@ -30,7 +33,7 @@ function sensorOptions(ctx) {
 
 /* Mount paths come from the widget's disk slots, then the global
    stats.diskMount setting, then '/'. */
-async function systemSummaryLocal({ config, settings, metrics }) {
+async function systemSummaryLocal({ config, settings, metrics, params }) {
   const slots = config.slots || [];
 
   const mounts = new Set();
@@ -57,7 +60,46 @@ async function systemSummaryLocal({ config, settings, metrics }) {
     if (t !== null) temps[z] = t;
   }
 
-  return { cpu, ram, temp: temps[0] ?? null, temps, disks, iowait, procs, uptime };
+  return {
+    cpu,
+    ram,
+    temp: temps[0] ?? null,
+    temps,
+    disks,
+    iowait,
+    procs,
+    uptime,
+    history: params?.get('seed') === '1' ? seedHistory(metrics, zones) : undefined,
+  };
+}
+
+/* Charts start empty and gain one point per tick, so a fresh demo shows a flat
+   widget for minutes. Only the demo host supplies a past. */
+function seedHistory(metrics, zones) {
+  if (typeof metrics.series !== 'function') return undefined;
+  /* The series ends at the reading this same response reports live, and the
+     widget appends that reading to the seed. Stop one step short, or the chart
+     draws the same value twice at its right edge. */
+  const past = kind => metrics.series(kind, SEED_POINTS + 1, SEED_STEP_SEC).slice(0, -1);
+  const temps = {};
+  for (const z of zones) temps[z] = past('temp');
+  return {
+    cpu: past('cpu'),
+    ram: past('ram'),
+    iowait: past('iowait'),
+    procs: past('procs'),
+    temps,
+  };
+}
+
+function demoSpeed({ wave, round }) {
+  return {
+    download: round(wave(900, 380, 520), 1),
+    upload: round(wave(1100, 32, 48), 1),
+    ping: round(wave(700, 6, 18), 1),
+    failed: false,
+    ts: new Date().toISOString(),
+  };
 }
 
 /* The provider lives in the nested network slot, so this branches directly
@@ -65,10 +107,14 @@ async function systemSummaryLocal({ config, settings, metrics }) {
 async function speed(ctx) {
   const { config, fetchJSON, normalizeBase } = ctx;
   const net = config.network;
-  if (!net?.enabled || !net?.url) ctx.fail('network slot not configured', { kind: ctx.KIND.INVALID });
+  if (!net?.enabled) ctx.fail('network slot not configured', { kind: ctx.KIND.INVALID });
+  if (ctx.demo) return demoSpeed(ctx.demo);
+  if (!net.url) ctx.fail('network slot not configured', { kind: ctx.KIND.INVALID });
   const base = normalizeBase(net.url);
 
   if ((net.provider || 'myspeed') === 'speedtest-tracker') {
+    const token = (net.stToken || '').trim();
+    if (token) return speedtestTrackerV1(ctx, base, token);
     const r = await fetchJSON(base + '/api/speedtest/latest', { timeout: 8000 });
     const row = r.data?.data;
     if (!row?.id) ctx.fail('No result from Speedtest Tracker');
@@ -87,6 +133,30 @@ async function speed(ctx) {
   const row = Array.isArray(r.data) ? r.data[0] : r.data;
   if (!row) ctx.fail('No result from MySpeed');
   return { download: row.download, upload: row.upload, ping: row.ping, failed: false, ts: row.created };
+}
+
+/* The v1 result reports bytes per second in `download`, where the untokened
+   route reports megabits. Read `download_bits`, or the widget states an eighth
+   of the real speed. */
+async function speedtestTrackerV1(ctx, base, token) {
+  const r = await ctx.fetchJSON(base + '/api/v1/results/latest', {
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+    timeout: 8000,
+  });
+  if (r.status === 401 || r.status === 403) {
+    ctx.fail('Speedtest Tracker rejected the API token', { kind: ctx.KIND.AUTH });
+  }
+  if (r.status >= 400) ctx.fail('Speedtest Tracker HTTP ' + r.status);
+  const row = r.data?.data;
+  if (!row?.id) ctx.fail('No result from Speedtest Tracker');
+  const mbit = bits => (bits == null ? null : bits / 1e6);
+  return {
+    download: mbit(row.download_bits),
+    upload: mbit(row.upload_bits),
+    ping: row.ping,
+    failed: row.status === 'failed',
+    ts: row.created_at,
+  };
 }
 
 /* Glances serves the same fields under /api/4 and /api/3, and offers no way to

@@ -49,13 +49,14 @@ The guard limits what a compromised widget can reach. It does not protect agains
 
 | Host | Why |
 | --- | --- |
-| `cdn.jsdelivr.net` | The dashboard-icons set. |
+| `cdn.jsdelivr.net` | Icon files, and three of the four icon catalogue indexes. |
+| `raw.githubusercontent.com` | The dashboard-icons index and its files, when jsdelivr does not answer. |
 | Unsplash | Wallpaper, only when the wallpaper source is Unsplash. |
-| `api.github.com` | The update check, when About is opened, at most once an hour. |
+| `api.github.com` | The update check, when About is opened, at most once an hour. Also two icon catalogue listings, while you type in the icon picker. |
 
 Nothing else leaves your network, and no usage data is collected.
 
-Icons load through the server, which caches each one for 24 hours, so the CDN does not learn which services your dashboard shows. Set the wallpaper to an image or a solid colour and Unsplash is never contacted.
+Icons load through the server, which caches each one for 24 hours, so the CDN does not learn which services your dashboard shows. A catalogue index is read only while you type in the icon picker, and is cached for 24 hours. A dashboard load fetches none of them. Set the wallpaper to an image or a solid colour and Unsplash is never contacted.
 
 ## The container
 

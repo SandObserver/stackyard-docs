@@ -1,8 +1,9 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
-import { nextActiveIndex, recoversSession, toastHoldMs } from '/js/admin-logic.js?v=dcf7c37d';
-import { el, qa, q } from '/js/utils.js?v=e8b2a9f7';
+import { nextActiveIndex, recoversSession, toastHoldMs } from '/js/admin-logic.js?v=74cb4272';
+import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
+import { el, qa, q } from '/js/utils.js?v=970a91b0';
 import { t } from '/js/i18n.js?v=e644a5c5';
-import { iconChain } from '/js/icons.js?v=69c2b9bd';
+import { iconChain } from '/js/icons.js?v=04e7796e';
 
 export const API = '';
 
@@ -218,6 +219,7 @@ export function wireChecklist(dd, btn, list, onToggle) {
       li.classList.toggle('kb-active', n === active);
     });
     o[active].focus();
+    fluidHoverKb(o[active]);
   };
   /* Scoped to the open state. A listener that outlives the list holds the
      detached subtree it closes over, and the settings form rewires on every
@@ -244,6 +246,7 @@ export function wireChecklist(dd, btn, list, onToggle) {
     list.hidden = true;
     btn.setAttribute('aria-expanded', 'false');
     opts().forEach(li => li.classList.remove('kb-active'));
+    fluidHoverClear(list);
     if (focusBtn) btn.focus();
   };
   const toggle = li => {

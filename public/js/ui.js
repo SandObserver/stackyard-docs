@@ -1,4 +1,4 @@
-import { iconChain } from '/js/icons.js?v=69c2b9bd';
+import { iconChain } from '/js/icons.js?v=04e7796e';
 import { widgetSrc, cardPreset, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=a1b61636';
 import {
   mk,
@@ -13,7 +13,7 @@ import {
   q,
   qa,
   setUserText,
-} from '/js/utils.js?v=e8b2a9f7';
+} from '/js/utils.js?v=970a91b0';
 import { t, currentLang } from '/js/i18n.js?v=e644a5c5';
 import { toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
 import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=ab5fe77e';
@@ -581,7 +581,12 @@ export function buildMobile() {
 
   /* Every size below comes from this box, so the safe-area insets reach the
      layout as the space the stylesheet already reserved. Reading the insets
-     instead would take a value the platform has not reported yet. */
+     instead would take a value the platform has not reported yet.
+
+     Clear the width first. The grid is sized by --mgw, so a rebuild would
+     otherwise measure the width it was given last time rather than the space
+     it now has, and a reserve that grew would never be taken. */
+  css(document.body, { '--mgw': '' });
   const firstPage = mkPage();
   strip.appendChild(firstPage.page);
   const gridBox = firstPage.grid.getBoundingClientRect();

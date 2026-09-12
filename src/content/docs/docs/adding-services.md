@@ -18,7 +18,11 @@ Press <span class="sy-btn sy-btn--primary">Add</span>, then fill in the app.
 
 ## Icons
 
-Type a name and Stackyard resolves it from the community [dashboard-icons](https://github.com/homarr-labs/dashboard-icons) set. Typing `sonarr` finds the Sonarr icon. You can also paste a full URL or upload a file. Uploads are stored in `./icons` and served from your own server.
+Type a name and Stackyard searches four community catalogues together: [dashboard-icons](https://github.com/homarr-labs/dashboard-icons), [selfh.st](https://github.com/selfhst/icons), [simple-icons](https://github.com/simple-icons/simple-icons) and [lobehub](https://github.com/lobehub/lobe-icons). Typing `sonarr` finds the Sonarr icon. A service is matched by its name, by other spellings of it, and by the aliases a catalogue lists. Each suggestion names the catalogue it came from.
+
+Where a catalogue holds an icon as a light and a dark file, the picker offers a Variant choice. The choice is fixed, not theme-aware.
+
+You can also paste a full URL or upload a file. Uploads are stored in `./icons` and served from your own server.
 
 Icons load through the server, which fetches each one once, sanitizes SVGs, and caches it for 24 hours. The CDN does not learn which services your dashboard shows.
 

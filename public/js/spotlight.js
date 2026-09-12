@@ -1,4 +1,5 @@
-import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=e8b2a9f7';
+import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
+import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=970a91b0';
 import { t } from '/js/i18n.js?v=e644a5c5';
 
 /* Attached to the window so a re-open can undo the previous one. */
@@ -130,6 +131,7 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
       f.appendChild(a);
     });
     res.appendChild(f);
+    fluidHoverClear(res);
     if (live) live.textContent = cur.length + ' ' + (cur.length === 1 ? t('home.result') : t('home.results'));
     inp.setAttribute('aria-expanded', 'true');
     inp.setAttribute('aria-activedescendant', cur.length ? 'sr-opt-0' : '');
@@ -143,6 +145,7 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
       if (on) {
         e.scrollIntoView({ block: 'nearest' });
         inp.setAttribute('aria-activedescendant', e.id);
+        fluidHoverKb(e);
       }
     });
 

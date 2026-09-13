@@ -1,13 +1,89 @@
-import { toast, ag, ap } from '/js/admin-shared.js?v=0f36d0dc';
+import { toast, ag, ap, reveal, swapContent } from '/js/admin-shared.js?v=ca64cc9c';
 import { pwStrength } from '/js/password-strength.js?v=42f45ac7';
 import { t } from '/js/i18n.js?v=e644a5c5';
-import { shouldWritePassword, settingsSaveBlocker, clearsStoredPassword, BLOCK } from '/js/admin-logic.js?v=74cb4272';
+import {
+  shouldWritePassword,
+  settingsSaveBlocker,
+  clearsStoredPassword,
+  createDirtyTracker,
+  BLOCK,
+} from '/js/admin-logic.js?v=69e57d35';
 import { confirmText } from '/js/modal.js?v=11fa1eff';
-import { el, inp, q, qa, setUserText } from '/js/utils.js?v=970a91b0';
+import { el, inp, setUserText } from '/js/utils.js?v=ada0c382';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
 let _authEnabled = false;
+
+/** @type {{ dirty: () => boolean, reset: () => void } | null} */
+let _srvTrack = null;
+/** @type {{ dirty: () => boolean, reset: () => void } | null} */
+let _bgTrack = null;
+
+const _val = (...ids) => {
+  for (const id of ids) {
+    const node = inp(id);
+    if (node) return node.type === 'checkbox' ? String(node.checked) : node.value;
+  }
+  return '';
+};
+const _shown = id => {
+  const node = el(id);
+  return node && !node.classList.contains('is-ph') ? node.textContent : '';
+};
+
+/* Only what the header Save writes. The switches that save on change are left
+   out. */
+const readServerForm = () =>
+  JSON.stringify([
+    _shown('ie-title-v'),
+    _shown('ie-desc-v'),
+    _val('srv-ip'),
+    _val('srv-docker-en'),
+    _val('srv-socket'),
+    _val('srv-hide-healthy'),
+    _val('log-level'),
+    _val('lang-sel'),
+    _val('sec-en'),
+    _val('sec-pw'),
+  ]);
+const readWallpaperForm = () =>
+  JSON.stringify([
+    _val('bg-type'),
+    _val('bg-br'),
+    _val('bg-col-inp', 'bg-col'),
+    _val('bg-url-inp', 'bg-url'),
+    _val('bg-fit'),
+    _val('bg-color-inp', 'bg-color'),
+    _val('bg-apikey-inp', 'bg-apikey'),
+  ]);
+
+/** Disables `buttonId` while its section matches what was last saved. */
+function trackSave(buttonId, read) {
+  const btn = /** @type {HTMLButtonElement|null} */ (el(buttonId));
+  const tr = createDirtyTracker(read);
+  const sync = () => {
+    if (btn) btn.disabled = !tr.dirty();
+  };
+  /* On the document, not the section: a picker's option list is attached to
+     the body, and a choice made there must still enable Save. Deferred: pickers
+     and inline editors update their value after the event. */
+  for (const type of ['input', 'change', 'click', 'keyup', 'focusout'])
+    document.addEventListener(type, () => setTimeout(sync));
+  sync();
+  return {
+    dirty: tr.dirty,
+    reset: () => {
+      tr.reset();
+      sync();
+    },
+  };
+}
+
+/** Whether General or Appearance holds edits their Save has not written. */
+export function settingsDirty() {
+  return !!(_srvTrack?.dirty() || _bgTrack?.dirty());
+}
 
 /* Hint codes from the socket proxy probe. The server picks the code from the
    address shape; the wording lives here so it is translated. */
@@ -18,13 +94,12 @@ const SOCKET_HINTS = Object.freeze({
 
 /* Both controls only mean anything while auth is on. Revoke also needs a stored
    password, which is what makes a session possible. */
-function syncSessionRows() {
+function syncSessionRows(now = false) {
   const on = !!inp('sec-en')?.checked;
   el('sec-logout')?.classList.toggle('d-none', !on);
   const canRevoke = on && _passwordSet;
-  el('sec-revoke-row')?.classList.toggle('d-none', !canRevoke);
-  const revokeTip = el('revoke-tip');
-  if (revokeTip) revokeTip.classList.toggle('d-none', !canRevoke);
+  reveal(el('sec-revoke-wrap'), canRevoke, now);
+  reveal(el('revoke-tip-wrap'), canRevoke, now);
 }
 
 export function loadSettings(c) {
@@ -49,46 +124,11 @@ export function loadSettings(c) {
   if (typeEl) {
     typeEl.value = bg.type || 'unsplash';
     showBgFields(bg.type || 'unsplash');
-    const btn = el('bg-type-btn');
-    const labels = {
-      unsplash: t('appearance.sourceUnsplash'),
-      url: t('appearance.sourceUrl'),
-      color: t('appearance.sourceColor'),
-    };
-    if (btn) {
-      const tn = btn.childNodes[0];
-      if (tn && tn.nodeType === 3) tn.textContent = labels[typeEl.value] || typeEl.value;
-    }
-    qa('#bg-type-list li', document).forEach(li =>
-      li.setAttribute('aria-selected', String(li.dataset.val === typeEl.value)),
-    );
   }
   const llEl = inp('log-level');
-  if (llEl) {
-    llEl.value = s.logLevel || 'info';
-    const llBtn = el('log-level-btn');
-    const llLabels = { debug: t('general.logDebug'), info: t('general.logInfo'), error: t('general.logError') };
-    if (llBtn) {
-      const tn = llBtn.childNodes[0];
-      if (tn && tn.nodeType === 3) tn.textContent = llLabels[llEl.value] || llEl.value;
-    }
-    qa('#log-level-list li', document).forEach(li =>
-      li.setAttribute('aria-selected', String(li.dataset.val === llEl.value)),
-    );
-  }
+  if (llEl) llEl.value = s.logLevel || 'info';
   const langEl = inp('lang-sel');
-  if (langEl) {
-    langEl.value = s.language || 'en';
-    const laBtn = el('lang-btn');
-    const laLi = q(`#lang-list li[data-val="${langEl.value}"]`);
-    if (laBtn) {
-      const tn = laBtn.childNodes[0];
-      if (tn && tn.nodeType === 3) tn.textContent = laLi ? laLi.textContent : langEl.value;
-    }
-    qa('#lang-list li', document).forEach(li =>
-      li.setAttribute('aria-selected', String(li.dataset.val === langEl.value)),
-    );
-  }
+  if (langEl) langEl.value = s.language || 'en';
   /* The key itself is never included in /api/config. */
   const apiEl = inp('bg-apikey-inp') || inp('bg-apikey');
   if (apiEl) {
@@ -164,7 +204,6 @@ export function loadSettings(c) {
   _si('bg-col-inp', s.background?.collection || '');
   _si('bg-url-inp', s.background?.url || '');
   _si('bg-fit', s.background?.fit === 'fit' ? 'fit' : 'fill');
-  showBgFit(s.background?.fit === 'fit' ? 'fit' : 'fill');
   showWallpaperFile(s.background?.url || '');
   _si('bg-color-inp', s.background?.color || '');
   _sv('ie-bgurl-v', s.background?.url, 'Image URL');
@@ -175,19 +214,15 @@ export function loadSettings(c) {
   const dockerEnEl = inp('srv-docker-en');
   const dockerSubEl = el('srv-docker-sub');
   const socketEl = inp('srv-socket');
-  const hideHealthyRowEl = el('srv-hide-healthy-row');
   const hideHealthyEl = inp('srv-hide-healthy');
   if (dockerEnEl) {
     dockerEnEl.checked = !!s.server?.socketProxyUrl;
-    const applyDocker = v => {
+    const applyDocker = (v, now = false) => {
       if (dockerSubEl) dockerSubEl.classList.toggle('open', v);
-      if (hideHealthyRowEl) hideHealthyRowEl.classList.toggle('d-none', !v);
-      const socketRow = el('ie-socket');
-      if (socketRow) socketRow.classList.toggle('d-none', !v);
-      const socketHint = el('socket-hint');
-      if (socketHint) socketHint.classList.toggle('d-none', !v);
+      reveal(el('srv-docker-rows'), v, now);
+      reveal(el('socket-hint-wrap'), v, now);
     };
-    applyDocker(dockerEnEl.checked);
+    applyDocker(dockerEnEl.checked, true);
     dockerEnEl.addEventListener('change', () => applyDocker(dockerEnEl.checked));
   }
   if (hideHealthyEl) hideHealthyEl.checked = s.server?.hideHealthyBadge !== false;
@@ -220,9 +255,11 @@ export function loadSettings(c) {
       secRevoke.disabled = false;
     }
   });
-  secEnEl?.addEventListener('change', syncSessionRows);
+  secEnEl?.addEventListener('change', () => syncSessionRows());
 
-  syncAuthFromServer();
+  _srvTrack = trackSave('srv-save', readServerForm);
+  _bgTrack = trackSave('bg-save', readWallpaperForm);
+  syncAuthFromServer().then(() => _srvTrack?.reset());
 }
 
 async function syncAuthFromServer() {
@@ -238,14 +275,12 @@ async function syncAuthFromServer() {
   if (secEnEl) {
     /* The effective state. Enabled with no password behaves as off. */
     secEnEl.checked = !!d.enabled;
-    const pwRow = el('ie-pw');
-    const pwHint = el('pw-hint-static');
-    if (pwRow) pwRow.classList.toggle('d-none', !d.enabled);
-    if (pwHint) pwHint.classList.toggle('d-none', !d.enabled);
+    reveal(el('ie-pw-wrap'), !!d.enabled, true);
+    reveal(el('pw-hint-wrap'), !!d.enabled, true);
   }
   const pwValEl = el('ie-pw-v');
   if (pwValEl) pwValEl.textContent = d.passwordSet ? t('common.configured') : t('common.notSet');
-  syncSessionRows();
+  syncSessionRows(true);
 }
 /** The stored wallpaper, named by its file rather than its full path.
 
@@ -263,21 +298,16 @@ export function showWallpaperFile(url) {
   }
 }
 
-/** @param {string} fit @returns {void} */
-export function showBgFit(fit) {
-  const btn = el('bg-fit-btn');
-  const tn = btn?.childNodes[0];
-  if (tn && tn.nodeType === 3) tn.textContent = fit === 'fit' ? t('appearance.fitContain') : t('appearance.fitFill');
-  qa('#bg-fit-list li', document).forEach(li => li.setAttribute('aria-selected', String(li.dataset.val === fit)));
-}
-
 export function showBgFields(type) {
-  ['unsplash', 'url', 'color'].forEach(t => {
-    const node = el(`bg-${t}-fields`);
-    if (node) node.classList.toggle('d-none', t !== type);
+  const host = el('bg-unsplash-fields')?.parentElement;
+  swapContent(host, () => {
+    ['unsplash', 'url', 'color'].forEach(t => {
+      const node = el(`bg-${t}-fields`);
+      if (node) node.classList.toggle('d-none', t !== type);
+    });
+    const brRow = el('bg-brightness-row');
+    if (brRow) brRow.classList.toggle('d-none', type === 'color');
   });
-  const brRow = el('bg-brightness-row');
-  if (brRow) brRow.classList.toggle('d-none', type === 'color');
 }
 /** @param {Event} [e] */
 async function saveLabels(e) {
@@ -335,6 +365,7 @@ async function saveWallpaper() {
       const keyVal = (inp('bg-apikey-inp') || inp('bg-apikey'))?.value?.trim() || '';
       if (keyVal) await ap('/api/settings/unsplash-key', { apiKey: keyVal });
     }
+    _bgTrack?.reset();
     toast(t('toast.saved'));
   } catch (e) {
     toast(t('toast.saveFailed', { err: e.message }), 'err');
@@ -444,6 +475,7 @@ async function saveServer() {
         pwEl.value = '';
       }
     }
+    _srvTrack?.reset();
     toast(socketWarning || t('toast.saved'), socketWarning ? 'err' : 'ok');
     if (langChanged) {
       location.reload();

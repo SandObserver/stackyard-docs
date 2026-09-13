@@ -1,5 +1,5 @@
 ---
-title: First setup
+title: First setup after installing Stackyard
 description: Open the admin UI, set a password, and learn what the four sections do.
 ---
 
@@ -22,8 +22,8 @@ The password is a gate between local users, not an authentication layer. See [Se
 | Section | What it covers |
 | --- | --- |
 | **General** | Server identity and behaviour: title, host IP, language, logging, password, Docker health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
-| **Appearance** | How the dashboard looks: wallpaper, labels, and theme. See [Customization](/docs/customization/). |
-| **Dashboard** | What is on the dashboard: apps, widgets, folders, and their order. See [Adding services](/docs/adding-services/). |
+| **Appearance** | How the dashboard looks: wallpaper, labels, and theme. See [Wallpaper and themes](/docs/customization/). |
+| **Dashboard** | What is on the dashboard: apps, widgets, folders, and their order. See [Apps and folders](/docs/apps-and-folders/). |
 | **About** | Version, update notice, and links to the project. |
 
 Each section saves on its own with <span class="sy-btn sy-btn--primary">Save</span>.
@@ -32,4 +32,4 @@ Set **Host IP** if your services run on the same machine as Stackyard. Badge and
 
 ## Next
 
-Add your services in [Adding services](/docs/adding-services/).
+Add your apps in [Apps and folders](/docs/apps-and-folders/).

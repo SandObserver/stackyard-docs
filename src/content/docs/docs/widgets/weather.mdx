@@ -1,13 +1,13 @@
 ---
-title: Weather
-description: Current conditions from Open-Meteo. No API key required.
+title: Weather widget
+description: Current conditions for any city from Open-Meteo, with no account or API key, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
-Current weather for one place. Data comes from Open-Meteo, which needs no account and no API key.
-
-Sizes: Small.
+Current weather for one place.
 
 <WidgetGroup caption="Three locations. The artwork follows the conditions, and the card turns dark after sunset."
   items={[
@@ -16,17 +16,25 @@ Sizes: Small.
     { type: 'weather', file: 'index.html', id: 'w-weather-night', title: 'Weather, night',     label: 'Night' },
   ]} />
 
-## Picking a location
+Small only.
 
-Type a city into Search, press Fetch, then pick the matching place from the list. Choosing a place stores its coordinates with the widget.
+<ServiceList items={[
+  {
+    name: 'Open-Meteo',
+    kind: 'Weather API',
+    needs: 'Nothing',
+    fields: [['Account', 'None. Open-Meteo needs no account and no API key.']],
+    links: [
+      { label: 'open-meteo/open-meteo', href: 'https://github.com/open-meteo/open-meteo' },
+      { label: 'open-meteo.com', href: 'https://open-meteo.com/' },
+    ],
+  },
+]} />
 
-## Configuration
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Search | A city name to look up. Not stored. | No |
-| Location | The place picked from the search results. | Yes |
-| Units | Celsius or Fahrenheit. Defaults to Celsius. | Yes |
-| Show feels like | Adds the apparent temperature. Off by default. | No |
-| Link URL | Where clicking the widget opens. | No |
-
+<SettingList title="Settings" items={[
+  { name: 'Search', text: 'A city name to look up. Not saved.', optional: true },
+  { name: 'Location', text: 'Type a city into Search, press Fetch, then pick the place. Its coordinates are saved with the widget.' },
+  { name: 'Units', text: 'Celsius or Fahrenheit. Defaults to Celsius.' },
+  { name: 'Show feels like', text: 'Adds the apparent temperature. Off by default.' },
+  { name: 'Link URL', text: 'Where clicking the widget opens.', optional: true },
+]} />

@@ -1,0 +1,60 @@
+---
+title: Stackyard design system
+description: The Stackyard colours, logo and the few design rules that go beyond Apple's Human Interface Guidelines.
+---
+
+Stackyard follows Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines) for type, spacing, controls and motion. This page covers only what is specific to Stackyard. Tokens live in `ui/css/tokens.css`.
+
+## Colour
+
+Teal is the brand accent. Rules name a role below, never a raw colour.
+
+<p class="sy-sw-label">Dark theme</p>
+<div class="sy-sw-row">
+  <div class="sy-sw-chip"><b style="--c:#00D2E0"></b><span>Accent</span>#00D2E0</div>
+  <div class="sy-sw-chip"><b style="--c:#30D158"></b><span>Success</span>#30D158</div>
+  <div class="sy-sw-chip"><b style="--c:#FF9230"></b><span>Warning</span>#FF9230</div>
+  <div class="sy-sw-chip"><b style="--c:#FF4245"></b><span>Danger</span>#FF4245</div>
+  <div class="sy-sw-chip"><b style="--c:#0091FF"></b><span>Info</span>#0091FF</div>
+</div>
+
+<p class="sy-sw-label">Light theme</p>
+<div class="sy-sw-row">
+  <div class="sy-sw-chip"><b style="--c:#0071A4"></b><span>Accent</span>#0071A4</div>
+  <div class="sy-sw-chip"><b style="--c:#238539"></b><span>Success</span>#238539</div>
+  <div class="sy-sw-chip"><b style="--c:#C93400"></b><span>Warning</span>#C93400</div>
+  <div class="sy-sw-chip"><b style="--c:#D70015"></b><span>Danger</span>#D70015</div>
+  <div class="sy-sw-chip"><b style="--c:#0040DD"></b><span>Info</span>#0040DD</div>
+</div>
+
+The other hues and greys are Apple's system colours.
+
+## What differs from the guidelines
+
+- **The dashboard is always dark.** Only the Settings page has a light theme.
+- **Text on cards uses `--sy-a11y-dim`.** Apple's secondary label colours fail WCAG contrast on Stackyard's cards.
+- **Text on a user-picked tile colour is black or white,** whichever contrasts more. It is measured, never fixed.
+- **Widgets cannot read tokens.** A widget copies the values it needs from the palette.
+
+## Logo
+
+Use the files as they are. Do not recolour, stretch or redraw them.
+
+<div class="sy-logo">
+  <figure class="sy-logo__dark">
+    <img src="/img/stackyard-wordmark-dark.svg" alt="Stackyard wordmark on dark" />
+    <figcaption><a href="/img/stackyard-wordmark-dark.svg" download>Wordmark, dark</a></figcaption>
+  </figure>
+  <figure class="sy-logo__light">
+    <img src="/img/stackyard-wordmark-light.svg" alt="Stackyard wordmark on light" />
+    <figcaption><a href="/img/stackyard-wordmark-light.svg" download>Wordmark, light</a></figcaption>
+  </figure>
+  <figure class="sy-logo__dark">
+    <img src="/img/stackyard-mark.svg" alt="Stackyard mark on dark" />
+    <figcaption><a href="/img/stackyard-mark.svg" download>Mark, dark</a></figcaption>
+  </figure>
+  <figure class="sy-logo__light">
+    <img src="/img/stackyard-mark-light.svg" alt="Stackyard mark on light" />
+    <figcaption><a href="/img/stackyard-mark-light.svg" download>Mark, light</a></figcaption>
+  </figure>
+</div>

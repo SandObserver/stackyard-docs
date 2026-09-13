@@ -1,51 +1,69 @@
 ---
-title: Connections
-description: VPN and network service status, as a map or a single connection tile.
+title: Connections widget
+description: VPN tunnel status and a world map of Gluetun, NetBird, Psiphon Conduit, Plausible and Umami services on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
-Two views of your network connections.
-
-Sizes: Small, Medium.
-
-<WidgetGroup caption="The two views. Map plots where traffic goes; VPN reports one tunnel."
-  items={[
-    { type: 'connections', file: 'connections-map.html', id: 'gh-connections', size: 'medium', title: 'Connections, map view', label: 'Map' },
-    { type: 'connections', file: 'connections-vpn.html', id: 'gh-vpn',         title: 'Connections, VPN view', label: 'VPN' },
-  ]} />
-
-## Views
-
-| View | What it shows |
-| --- | --- |
-| Map | Several services plotted on a world map, with an optional legend. |
-| VPN | One VPN connection and its state. |
-
-## VPN view
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Service | Gluetun or NetBird. | Yes |
-| Display Name | The label on the tile. | No |
-| Control Server URL | The Gluetun control server, for example `http://gluetun:8000`. | Gluetun |
-| Management API URL | The NetBird management API, for example `http://netbird:33073`. | NetBird |
-| API Key | Gluetun credential. Stored as a secret. | No |
-| Access Token (PAT) | NetBird credential. Stored as a secret. | NetBird |
-| Click URL | Where clicking the widget opens. | No |
-| Dot Color | The status dot colour. | Yes |
+Shows your network services on a world map, or one VPN connection on a tile. Pick one with the **View** setting.
 
 ## Map view
 
-Add one entry per service. Each takes a type, a URL, and its own credentials.
+Medium only. One marker per service, with an optional legend.
 
-| Service | What it needs |
-| --- | --- |
-| Gluetun | Control server URL. |
-| Psiphon Conduit | Metrics URL, for example `conduit:9090`. |
-| NetBird | Management API URL and an access token. |
-| Plausible | Plausible URL, a site ID (the domain), and a stats API key. |
-| Umami | Umami URL, a website ID, a username, and a password. |
+<WidgetGroup items={[
+  { type: 'connections', file: 'connections-map.html', id: 'gh-connections', size: 'medium', title: 'Connections, map view', label: 'Map' },
+]} />
 
-Each entry also takes an optional display name, an optional admin UI URL, and a dot colour. Show Legend adds a service key along the bottom of the map.
+<ServiceList items={[
+  { name: 'Gluetun', kind: 'VPN client', needs: 'Control server URL',
+    fields: [['Control server URL', 'Such as `gluetun:8000`.']],
+    links: [{ label: 'qdm12/gluetun', href: 'https://github.com/passteque/gluetun' }] },
+  { name: 'Conduit', kind: 'Psiphon proxy node', needs: 'Metrics URL',
+    fields: [['Metrics URL', 'Such as `conduit:9090`.']],
+    links: [{ label: 'Psiphon-Inc/conduit', href: 'https://github.com/Psiphon-Inc/conduit' }] },
+  { name: 'NetBird', kind: 'Mesh VPN', needs: 'API URL, access token',
+    fields: [['Management API URL', 'Such as `netbird:33073`.'], ['Access token', 'A personal access token.']],
+    links: [{ label: 'netbirdio/netbird', href: 'https://github.com/netbirdio/netbird' }] },
+  { name: 'Plausible', kind: 'Web analytics', needs: 'URL, site ID, API key',
+    fields: [['Plausible URL', 'Such as `plausible:8000`.'], ['Site ID', 'The site domain.'], ['Stats API key', '']],
+    links: [{ label: 'plausible/analytics', href: 'https://github.com/plausible/analytics' }] },
+  { name: 'Umami', kind: 'Web analytics', needs: 'URL, website ID, login',
+    fields: [['Umami URL', 'Such as `umami:3000`.'], ['Website ID', 'The website UUID.'], ['Username and password', 'The Umami login.']],
+    links: [{ label: 'umami-software/umami', href: 'https://github.com/umami-software/umami' }] },
+]} />
 
+<SettingList title="Settings for each service" items={[
+  { name: 'Display name', text: 'The name in the legend.', optional: true },
+  { name: 'Admin UI URL', text: 'Where the marker links.', optional: true },
+  { name: 'Dot color', text: 'Green by default.' },
+]} />
+
+<SettingList title="Map settings" items={[
+  { name: 'Show Legend', text: 'A service key under the map. On by default.' },
+]} />
+
+## VPN view
+
+Small or Medium. The state of one VPN connection.
+
+<WidgetGroup items={[
+  { type: 'connections', file: 'connections-vpn.html', id: 'gh-vpn', title: 'Connections, VPN view', label: 'VPN' },
+]} />
+
+<ServiceList items={[
+  { name: 'Gluetun', kind: 'VPN client', needs: 'Control server URL',
+    fields: [['Control server URL', 'Such as `http://gluetun:8000`.'], ['API key', 'Only if Gluetun has one.']],
+    links: [{ label: 'qdm12/gluetun', href: 'https://github.com/passteque/gluetun' }] },
+  { name: 'NetBird', kind: 'Mesh VPN', needs: 'API URL, access token',
+    fields: [['Management API URL', 'Such as `http://netbird:33073`.'], ['Access token', 'A personal access token.']],
+    links: [{ label: 'netbirdio/netbird', href: 'https://github.com/netbirdio/netbird' }] },
+]} />
+
+<SettingList title="VPN settings" items={[
+  { name: 'Display name', text: 'The label on the tile.', optional: true },
+  { name: 'Click URL', text: 'Where the tile links.', optional: true },
+  { name: 'Dot color', text: 'Green by default.' },
+]} />

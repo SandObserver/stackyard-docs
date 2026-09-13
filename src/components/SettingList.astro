@@ -1,0 +1,33 @@
+---
+import { inline } from '../lib/inline';
+
+interface Setting {
+  name: string;
+  text: string;
+  optional?: boolean;
+}
+
+interface Props {
+  title: string;
+  items: Setting[];
+}
+
+const { title, items } = Astro.props;
+---
+
+<section class="sy-list" aria-label={title}>
+  <p class="sy-list__head">{title}</p>
+  <ul class="sy-list__box" role="list">
+    {
+      items.map((s) => (
+        <li class="sy-set__row">
+          <span class="sy-set__main">
+            <span class="sy-set__name" set:html={inline(s.name)} />
+            <span class="sy-set__text" set:html={inline(s.text)} />
+          </span>
+          {s.optional && <span class="sy-set__tag">Optional</span>}
+        </li>
+      ))
+    }
+  </ul>
+</section>

@@ -1,0 +1,47 @@
+---
+title: Dashboard widgets
+description: Every Stackyard widget, what it shows, and which self-hosted services each one reads.
+---
+
+import LinkList from '../../../../components/LinkList.astro';
+
+**In the admin:** Dashboard, then Add. See the [Settings reference](/docs/settings-reference/).
+
+A widget is a small visual on the dashboard grid, for information worth a glance rather than a readout.
+
+Each widget runs as a separate document in a sandboxed frame and fetches only from the Stackyard API. The server makes the outbound call.
+
+## Add a widget
+
+Under **Dashboard**, press <span class="sy-btn sy-btn--primary">Add</span> and pick Widget. Choose a type, then a card size, then fill in the fields that type needs.
+
+Most types offer Small, some offer Medium or larger. Some fields change with the size, such as how many slots there is room for.
+
+Widgets reorder in the same list as apps and folders. See [Apps and folders](/docs/apps-and-folders/).
+
+## The widgets
+
+<LinkList title="12 widgets" items={[
+  { href: '/docs/widgets/backup/', name: 'Backup', text: 'Last and next run of backup jobs.', value: 'Duplicati, Kopia' },
+  { href: '/docs/widgets/books/', name: 'Books', text: 'Reading progress and shelves.', value: 'Audiobookshelf, Komga, Kavita' },
+  { href: '/docs/widgets/clock/', name: 'Clock', text: 'A digital or analog clock.', value: 'No service' },
+  { href: '/docs/widgets/connections/', name: 'Connections', text: 'A VPN tile, or services on a world map.', value: 'Gluetun, NetBird, Conduit, Plausible, Umami' },
+  { href: '/docs/widgets/custom/', name: 'Custom', text: 'Any web page, in a frame.', value: 'Any page' },
+  { href: '/docs/widgets/dashboard-switch/', name: 'Dashboard switch', text: 'Links to your other dashboards.', value: 'No service' },
+  { href: '/docs/widgets/disk-health/', name: 'Disk health', text: 'SMART status per drive bay.', value: 'Scrutiny, TrueNAS' },
+  { href: '/docs/widgets/dns/', name: 'DNS', text: 'Blocked and total queries.', value: 'AdGuard Home, Pi-hole, Technitium, NextDNS' },
+  { href: '/docs/widgets/github/', name: 'GitHub', text: 'Pull requests or a contribution graph.', value: 'GitHub' },
+  { href: '/docs/widgets/now-playing/', name: 'Now Playing', text: 'What is playing, with progress.', value: 'Plex, Jellyfin, Emby, Navidrome' },
+  { href: '/docs/widgets/system-summary/', name: 'System summary', text: 'CPU, memory, disk, temperature and network.', value: 'This machine, Glances, Beszel, Unraid' },
+  { href: '/docs/widgets/weather/', name: 'Weather', text: 'Current conditions for one place.', value: 'Open-Meteo' },
+]} />
+
+## Credentials
+
+A field marked Secret is stored on the server and never sent back to the browser. It shows as set without revealing its value.
+
+Changing where a credential would be sent, by editing a URL or a non-secret field, clears the stored value, and Stackyard names what to re-enter. This stops an imported config from taking a credential out of an install.
+
+## Writing a widget
+
+A widget is one folder, with no changes to the rest of the app. See [Build your first widget](/docs/create-a-widget/).

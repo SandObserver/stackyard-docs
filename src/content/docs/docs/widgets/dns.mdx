@@ -1,40 +1,67 @@
 ---
-title: DNS
-description: Query and blocking counts from AdGuard Home, Pi-hole, Technitium, or NextDNS.
+title: DNS widget
+description: Blocked and total DNS query counts from AdGuard Home, Pi-hole, Technitium or NextDNS on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
-Shows how many DNS queries were blocked, with a breakdown of allowed, cached, and blocked.
-
-Sizes: Small.
+Shows how many DNS queries were blocked, with a breakdown of allowed, cached and blocked.
 
 <WidgetGroup caption="The headline figure, with the breakdown below it."
   items={[
-    { type: 'dns', file: 'index.html', id: 'w-dns',    card: 'translucent', title: 'DNS widget, small',  label: 'Small' },
+    { type: 'dns', file: 'index.html', id: 'w-dns', card: 'translucent', title: 'DNS widget, small', label: 'Small' },
   ]} />
 
-## Providers
+Small only.
 
-| Provider | Credentials |
-| --- | --- |
-| AdGuard Home | Server URL, optional username and password. |
-| Pi-hole | Server URL, plus the password if one is set. |
-| Technitium | Server URL and an API token (Administration, Sessions, Create Token). |
-| NextDNS | An API key from my.nextdns.io (Account, API) and a profile ID. |
+<ServiceList items={[
+  {
+    name: 'AdGuard Home',
+    kind: 'Network ad blocker',
+    needs: 'URL, login if set',
+    fields: [
+      ['Server URL', 'Container name and port, or a full URL.'],
+      ['Username', 'Optional.'],
+      ['Password', 'Optional. Stored as a secret.'],
+    ],
+    links: [{ label: 'AdguardTeam/AdGuardHome', href: 'https://github.com/AdguardTeam/AdGuardHome' }],
+  },
+  {
+    name: 'Pi-hole',
+    kind: 'Network ad blocker',
+    needs: 'URL, password if set',
+    fields: [
+      ['Server URL', 'Container name and port, or a full URL.'],
+      ['Pi-hole Password', 'Leave blank when Pi-hole has no password. Stored as a secret.'],
+    ],
+    links: [{ label: 'pi-hole/pi-hole', href: 'https://github.com/pi-hole/pi-hole' }],
+  },
+  {
+    name: 'Technitium',
+    kind: 'DNS server',
+    needs: 'URL, API token',
+    fields: [
+      ['Server URL', 'Container name and port, or a full URL.'],
+      ['API Token', 'In Technitium, Administration, Sessions, Create Token. Stored as a secret.'],
+    ],
+    links: [{ label: 'TechnitiumSoftware/DnsServer', href: 'https://github.com/TechnitiumSoftware/DnsServer' }],
+  },
+  {
+    name: 'NextDNS',
+    kind: 'Hosted DNS',
+    needs: 'API key, profile ID',
+    fields: [
+      ['API Key', 'From my.nextdns.io, Account, API. Stored as a secret.'],
+      ['Profile ID', 'The short configuration ID, for example `abc123`.'],
+    ],
+    notes: ['A hosted service, so it takes no server URL.'],
+    links: [{ label: 'nextdns.io', href: 'https://nextdns.io/' }],
+  },
+]} />
 
-NextDNS is a hosted service, so it takes no server URL.
-
-## Configuration
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Provider | Which DNS server to read. | Yes |
-| Server URL | Container name and port, or a full URL. Not used by NextDNS. | Yes, except NextDNS |
-| Click URL | Where clicking the widget opens. Leave blank to disable. | No |
-| Username, Password | AdGuard Home only. | No |
-| Pi-hole Password | Leave blank if your Pi-hole has no password. | No |
-| API Token | Technitium only. Stored as a secret. | Technitium |
-| API Key | NextDNS only. Stored as a secret. | NextDNS |
-| Profile ID | The short NextDNS configuration ID. | NextDNS |
-
+<SettingList title="Settings" items={[
+  { name: 'Provider', text: 'Which DNS server to read.' },
+  { name: 'Click URL', text: 'Where clicking the widget opens. Leave blank to disable.', optional: true },
+]} />

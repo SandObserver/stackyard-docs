@@ -1,5 +1,5 @@
 ---
-title: Settings reference
+title: Stackyard settings reference
 description: Every setting in the admin, in the order you meet it, with a link to the page that explains it.
 ---
 
@@ -23,7 +23,7 @@ At the top, before any group:
 
 | Setting | What it does |
 | --- | --- |
-| Language | The interface language. English, Persian, Simplified Chinese, Spanish, German or French. Persian flips the whole layout to right to left. See [Customization](/docs/customization/#language). |
+| Language | The interface language. English, Persian, Simplified Chinese, Spanish, German or French. Persian flips the whole layout to right to left. See [Wallpaper and themes](/docs/customization/#language). |
 
 ### Monitoring
 
@@ -32,7 +32,7 @@ At the top, before any group:
 | Logging Level | How much detail goes to the container log. Errors shows warnings and errors. Security events are always logged. See [Support](/docs/support/#reading-the-logs). |
 | Docker Container Health Checks | Turns on container status for apps. Needs a socket proxy address below. See [Badges](/docs/badges/). |
 | Hide Healthy Badge | Shows the health dot only when something is wrong. |
-| Socket URL | Where your Docker socket proxy is. Never the Docker socket itself. See [Advanced configuration](/docs/advanced-configuration/). |
+| Socket URL | Where your Docker socket proxy is. Never the Docker socket itself. See [Health check](/docs/badges/#health-check). |
 
 If every app suddenly shows as unhealthy, the socket proxy address is the usual cause. See [Troubleshooting](/docs/troubleshooting/#every-app-with-a-container-shows-as-unhealthy-at-once).
 
@@ -50,11 +50,11 @@ Locked out? See [password recovery](/docs/troubleshooting/#i-forgot-the-password
 | Setting | What it does |
 | --- | --- |
 | Import / Export | Downloads your whole config as one file, or restores it. See [Backup and restore](/docs/import-export/backup-and-restore/). |
-| Import from another dashboard | Reads gethomepage and Dashy files. Apps and folders are added. See [Migrating](/docs/import-export/migrating/). |
+| Import from another dashboard | Reads gethomepage and Dashy files. Apps and folders are added. See [Import](/docs/import-export/migrating/). |
 
 ## Appearance
 
-How the dashboard looks. Every change applies immediately. Explained in full on [Customization](/docs/customization/).
+How the dashboard looks. Every change applies immediately. Explained in full on [Wallpaper and themes](/docs/customization/).
 
 ### App Title
 
@@ -93,7 +93,7 @@ Search narrows the list. The **All**, **Apps**, **Widgets** and **Folders** filt
 
 | To do this | See |
 | --- | --- |
-| Add an app, a folder, or another dashboard page | [Adding services](/docs/adding-services/) |
+| Add an app, a folder, or another dashboard page | [Apps and folders](/docs/apps-and-folders/) |
 | Put a live value or a health dot on an app | [Badges](/docs/badges/) |
 | Add a widget and fill in its fields | [Widgets](/docs/widgets/) |
 

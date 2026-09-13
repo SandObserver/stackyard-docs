@@ -1,5 +1,5 @@
 ---
-title: Support
+title: Get help with Stackyard
 description: Where to get help, how to read the logs, and how to file a bug report that gets fixed.
 ---
 
@@ -11,7 +11,7 @@ For a problem you are trying to solve yourself, start with [Troubleshooting](/do
 | --- | --- |
 | Bug reports and feature requests | [GitHub issues](https://github.com/SandObserver/stackyard/issues) |
 | Questions and setup help | A GitHub issue with the `question` label |
-| Suspected security vulnerability | Privately, never a public issue. See [Security](/docs/security/). |
+| Suspected security vulnerability | Privately, never a public issue. See [Security policy](/docs/security-policy/). |
 
 Search the existing issues first. Most setup questions have been asked already.
 
@@ -67,7 +67,7 @@ A few things that are easy to misread:
 
 The format is logfmt. Anything shipping to Loki or Grafana parses it with `| logfmt` and no custom rules.
 
-To change how much is logged, set **Logging Level** in **General**, or see [Advanced configuration](/docs/advanced-configuration/).
+To change how much is logged, set **Logging Level** in **General**, or set `LOG_LEVEL`. See [Environment variables](/docs/installation/docker/#environment-variables).
 
 ## Supporting Stackyard
 

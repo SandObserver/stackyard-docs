@@ -15,7 +15,7 @@ Stackyard serves plain HTTP and does not terminate TLS.
 Stackyard is not designed or hardened for direct exposure to the public internet. Authentication exists to separate local users. It is not an internet-facing security boundary.
 :::
 
-Run it on a trusted network, or behind a reverse proxy that terminates TLS and adds its own access control. See [Advanced configuration](/docs/advanced-configuration/).
+Run it on a trusted network, or behind a reverse proxy that terminates TLS and adds its own access control. See [Use a reverse proxy](/docs/reverse-proxy/).
 
 ## Authentication
 
@@ -39,7 +39,27 @@ Secrets are stored in plain text in `apps.json` on the data volume. Protect that
 
 The server blocks outbound requests to private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
 
-`localhost` is refused by name. Dotless hostnames such as Docker container names are trusted, as is the host IP set in General.
+`localhost` is refused by name. Dotless hostnames such as Docker container names are trusted, as is the host IP set in General. Only `http` and `https` URLs are fetched.
+
+| Range | Why |
+| --- | --- |
+| `0.0.0.0/8` | this network (RFC 1122) |
+| `10.0.0.0/8` | private (RFC 1918) |
+| `100.64.0.0/10` | carrier-grade NAT (RFC 6598) |
+| `127.0.0.0/8` | loopback (RFC 1122) |
+| `169.254.0.0/16` | link-local, includes cloud metadata (RFC 3927) |
+| `172.16.0.0/12` | private (RFC 1918) |
+| `192.0.0.0/24` | IETF protocol assignments (RFC 6890) |
+| `192.168.0.0/16` | private (RFC 1918) |
+| `198.18.0.0/15` | benchmarking (RFC 2544) |
+| `224.0.0.0/4` | multicast (RFC 5771) |
+| `240.0.0.0/4` | reserved, includes broadcast (RFC 1112) |
+| `::1`, `::` | IPv6 loopback and unspecified |
+| `fc00::/7` | IPv6 unique local |
+| `fe80::/10` | IPv6 link-local |
+| `ff00::/8` | IPv6 multicast |
+
+An IPv4 address inside an IPv6 literal is checked against the same table.
 
 `ALLOW_PRIVATE_IPS=true` disables the guard entirely. Most homelab installs need it.
 
@@ -70,7 +90,7 @@ Every released image is signed with [cosign](https://docs.sigstore.dev/) using k
 
 ```sh
 cosign verify ghcr.io/sandobserver/stackyard:1.5.0 \
-  --certificate-identity-regexp '^https://github.com/SandObserver/stackyard/' \
+  --certificate-identity-regexp '^https://github.com/SandObserver/Stackyard/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
@@ -83,10 +103,10 @@ The build produces an SPDX SBOM listing what is inside the image. It is attached
 ```sh
 cosign verify-attestation ghcr.io/sandobserver/stackyard:1.5.0 \
   --type spdxjson \
-  --certificate-identity-regexp '^https://github.com/SandObserver/stackyard/' \
+  --certificate-identity-regexp '^https://github.com/SandObserver/Stackyard/' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
 ## Reporting a problem
 
-See [SECURITY.md](https://github.com/SandObserver/stackyard/blob/main/SECURITY.md). The full security notes are in [docs/security.md](https://github.com/SandObserver/stackyard/blob/main/docs/security.md).
+See [Security policy](/docs/security-policy/).

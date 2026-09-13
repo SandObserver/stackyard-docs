@@ -1,0 +1,37 @@
+---
+import { inline } from '../lib/inline';
+
+interface Row {
+  href: string;
+  name: string;
+  text: string;
+  value?: string;
+}
+
+interface Props {
+  title: string;
+  items: Row[];
+}
+
+const { title, items } = Astro.props;
+---
+
+<section class="sy-list" aria-label={title}>
+  <p class="sy-list__head">{title}</p>
+  <ul class="sy-list__box" role="list">
+    {
+      items.map((r) => (
+        <li class="sy-link">
+          <a class="sy-link__row" href={r.href}>
+            <span class="sy-disc__main">
+              <span class="sy-disc__name">{r.name}</span>
+              <span class="sy-disc__kind" set:html={inline(r.text)} />
+            </span>
+            {r.value && <span class="sy-disc__needs">{r.value}</span>}
+            <span class="sy-link__chev" aria-hidden="true" />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</section>

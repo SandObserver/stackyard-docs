@@ -1,16 +1,13 @@
 ---
-title: Books
-description: Reading progress from Audiobookshelf, Komga, or Kavita.
+title: Books widget
+description: Reading progress and shelves from Audiobookshelf, Komga or Kavita on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
 Shows what you are reading and how far through you are.
-
-Sizes: Small, Medium, Large.
-
-Small and medium hold one shelf. Large holds three, and each shelf shows its
-own view of the same library.
 
 <WidgetGroup caption="Two libraries. Small reads an Audiobookshelf list, medium a Komga library."
   items={[
@@ -18,29 +15,48 @@ own view of the same library.
     { type: 'books', file: 'index.html', id: 'w-books-md', size: 'medium', card: 'dark', title: 'Books widget, medium', label: 'Medium' },
   ]} />
 
-## Services
+Small and Medium hold one shelf. Large holds three, and each shelf shows its own view of the same library.
 
-| Service | Where the API key comes from |
-| --- | --- |
-| Audiobookshelf | Settings, API Keys (v2.26 and later), or your account token. |
-| Komga | Account Settings, API Keys. |
-| Kavita | User Settings, 3rd Party Clients. |
+<ServiceList items={[
+  {
+    name: 'Audiobookshelf',
+    kind: 'Audiobook and podcast server',
+    needs: 'URL, API key',
+    fields: [
+      ['URL', 'For example `http://host:13378`.'],
+      ['API key', 'Settings, API Keys, on v2.26 and later. Older versions use your account token. Stored as a secret.'],
+    ],
+    links: [{ label: 'advplyr/audiobookshelf', href: 'https://github.com/advplyr/audiobookshelf' }],
+  },
+  {
+    name: 'Komga',
+    kind: 'Comics and manga server',
+    needs: 'URL, API key',
+    fields: [
+      ['URL', 'For example `http://host:25600`.'],
+      ['API key', 'Account Settings, API Keys. Stored as a secret.'],
+    ],
+    links: [{ label: 'gotson/komga', href: 'https://github.com/gotson/komga' }],
+  },
+  {
+    name: 'Kavita',
+    kind: 'Reading server',
+    needs: 'URL, API key',
+    fields: [
+      ['URL', 'For example `http://host:5000`.'],
+      ['API key', 'User Settings, 3rd Party Clients. Stored as a secret.'],
+    ],
+    links: [{ label: 'Kareadita/Kavita', href: 'https://github.com/Kareadita/Kavita' }],
+  },
+]} />
 
-## Configuration
+<SettingList title="Settings" items={[
+  { name: 'Service', text: 'Which library to read.' },
+  { name: 'Click URL', text: 'Where clicking the widget opens.', optional: true },
+]} />
 
-| Field | What it does | Required |
-| --- | --- | --- |
-| Service | Which library to read. | Yes |
-| URL | The service address. Audiobookshelf defaults to port 13378, Komga to 25600, Kavita to 5000. | Yes |
-| API key | The credential for that service. Stored as a secret. | Yes |
-| Click URL | Where clicking the widget opens. | No |
-
-Each shelf is configured on its own. Small and medium show one Shelf section,
-large shows three.
-
-| Shelf field | What it does | Required |
-| --- | --- | --- |
-| Name | The label above the shelf. Left empty, a Custom List shelf shows the name of the list, and the other shelves show what they hold. | No |
-| Show | Recently Added, Unread and On-deck, or a Custom List. | Yes |
-| List | Which collection or reading list to show. Enter the URL and key first, then Fetch to load the options. | Custom List only |
-
+<SettingList title="Settings for each shelf" items={[
+  { name: 'Name', text: 'The label above the shelf. Left empty, a Custom List shelf shows the name of the list, and the other shelves show what they hold.', optional: true },
+  { name: 'Show', text: 'Recently Added, Unread and On-deck, or a Custom List.' },
+  { name: 'List', text: 'Custom List only. Enter the URL and key, then Fetch to load your collections and reading lists.' },
+]} />

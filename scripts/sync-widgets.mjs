@@ -12,9 +12,10 @@ const ROBOTS = '<meta name="robots" content="noindex">';
 for (const [from, to] of [
   [join(REPO, 'ui', 'widgets'), join(PUB, 'widgets')],
   [join(REPO, 'ui', 'js'), join(PUB, 'js')],
+  [join(REPO, 'docs', 'widget-template'), join(PUB, 'widgets', 'mywidget')],
 ]) {
   rmSync(to, { recursive: true, force: true });
-  cpSync(from, to, { recursive: true });
+  cpSync(from, to, { recursive: true, filter: (src) => !src.endsWith('README.md') });
 }
 
 function walk(dir, out = []) {

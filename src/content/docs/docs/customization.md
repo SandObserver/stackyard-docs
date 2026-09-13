@@ -1,5 +1,5 @@
 ---
-title: Customization
+title: Wallpaper, themes and language
 description: Wallpaper, themes, app titles, language, and running Stackyard from a phone home screen.
 ---
 

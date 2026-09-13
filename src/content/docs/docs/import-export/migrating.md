@@ -1,6 +1,6 @@
 ---
-title: Migrating from another dashboard
-description: Import links and folders from a gethomepage or Dashy YAML config.
+title: Import from Homepage or Dashy
+description: Import links and folders into Stackyard from a gethomepage (Homepage) or Dashy YAML config.
 ---
 
 **In the admin:** General, then Backup. See the [Settings reference](/docs/settings-reference/).
@@ -19,7 +19,7 @@ This is one way. It does not keep the two in sync, and it writes nothing back.
 
 A widget in the source becomes a plain app tile, never a Stackyard widget. The two projects model widgets differently, so there is nothing to translate.
 
-Descriptions, abbreviations, tags, and per-item colours are dropped. Icons are not carried over either, because Stackyard resolves icons by name. See [Adding services](/docs/adding-services/).
+Descriptions, abbreviations, tags, and per-item colours are dropped. Icons are not carried over either, because Stackyard resolves icons by name. See [Apps and folders](/docs/apps-and-folders/).
 
 ## What is skipped
 

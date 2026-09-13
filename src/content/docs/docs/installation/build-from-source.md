@@ -1,5 +1,5 @@
 ---
-title: Build from source
+title: Build Stackyard from source
 description: Clone the repository and build the Stackyard container image yourself.
 next:
   link: /docs/first-setup/
@@ -16,4 +16,4 @@ Then run `stackyard:local` the same way as the published image. See [Docker](/do
 
 ## Working on the code
 
-To run Stackyard without Docker while developing, see [CONTRIBUTING.md](https://github.com/SandObserver/stackyard/blob/main/CONTRIBUTING.md) and [Development](/docs/development/).
+To run Stackyard without Docker while developing, see [How to contribute](/docs/contributing/).

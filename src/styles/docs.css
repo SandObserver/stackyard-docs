@@ -187,6 +187,10 @@
   border-radius: var(--sy-radius-lg);
   border: 1px solid var(--sl-color-hairline);
 }
+.expressive-code .frame .copy > [aria-live] {
+  display: flex;
+  align-items: center;
+}
 
 .sl-markdown-content table {
   border-collapse: collapse;
@@ -636,7 +640,64 @@ button.sy-iconbtn:focus-visible {
   }
 }
 
+.sidebar-content,
+starlight-toc nav {
+  position: relative;
+}
+.sidebar-content :where(a, summary),
+starlight-toc nav a {
+  position: relative;
+}
+#starlight__sidebar summary {
+  border-radius: 0.25rem;
+}
+/* pointer-events: none, or the pill swallows every hover and click in the list. */
+.sy-mp {
+  position: absolute;
+  top: 0;
+  inset-inline-start: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.sy-mp.on {
+  opacity: 1;
+  transition:
+    opacity 0.12s ease,
+    transform 0.19s cubic-bezier(0.22, 1, 0.36, 1),
+    width 0.19s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.19s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sy-mp--hover {
+  background: var(--sy-overlay);
+}
+.sy-mp--toc {
+  background: color-mix(in srgb, var(--sl-color-text-accent) 14%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+  :root {
+    view-transition-name: none;
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (min-width: 50em) {
+  #starlight__sidebar a[aria-current='page'] {
+    view-transition-name: sy-current-page;
+  }
+}
+::view-transition-group(sy-current-page) {
+  animation-duration: 0.32s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .sy-mp,
+  .sy-mp.on {
+    transition: none;
+  }
 }
 
 .sy-shot {
@@ -1106,7 +1167,7 @@ button.sy-iconbtn:focus-visible {
 }
 
 .sl-markdown-content .sy-disc__body {
-  padding: 0 16px 16px;
+  padding: 8px 16px 16px;
 }
 .sl-markdown-content .sy-disc__fields {
   display: grid;

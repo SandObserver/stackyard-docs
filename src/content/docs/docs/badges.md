@@ -31,7 +31,7 @@ A badge is the small pill on the corner of an app tile. It carries context witho
 Each kind is turned on per app, in that app's edit form under Badge.
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/app-edit-badge.png" alt="The Badge section of an app's edit form: Health Check, Fixed Label and Live Activity" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-badge-dark.png" alt="The Badge section of an app's edit form: Health Check, Fixed Label and Live Activity" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/app-edit-badge-8cf6ea34.png" alt="The Badge section of an app's edit form: Health Check, Fixed Label and Live Activity" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-badge-dark-48e1e5f8.png" alt="The Badge section of an app's edit form: Health Check, Fixed Label and Live Activity" loading="lazy">
   <figcaption>The three kinds, each with its own toggle. Live Activity opens the API fields when it is on.</figcaption>
 </figure>
 
@@ -75,7 +75,7 @@ Enter the API URL and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Sta
 One poll can feed several labels. Each names one number from the response and carries its own text, colour, unit and threshold.
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/app-edit-labels.png" alt="Two label cards in an app's edit form, each with Value, Label Text, Color, Unit and Show From, above the Add Label button" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark.png" alt="Two label cards in an app's edit form, each with Value, Label Text, Color, Unit and Show From, above the Add Label button" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/app-edit-labels-27443940.png" alt="Two label cards in an app's edit form, each with Value, Label Text, Color, Unit and Show From, above the Add Label button" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark-4998668a.png" alt="Two label cards in an app's edit form, each with Value, Label Text, Color, Unit and Show From, above the Add Label button" loading="lazy">
   <figcaption>Press Add Label for another. Drag a card by its handle to reorder it, or use the arrows.</figcaption>
 </figure>
 

@@ -1,0 +1,34 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { marked } from 'marked';
+import { readRepoFile, stripTitle, absolutiseLinks, withHeadingIds } from '../../lib/repo';
+
+const REPO = 'https://github.com/SandObserver/stackyard';
+const raw = readRepoFile('SECURITY.md');
+
+const parsed = raw
+  ? withHeadingIds(String(await marked.parse(absolutiseLinks(stripTitle(raw)))))
+  : {
+      html: `<p>The security policy is read from the Stackyard repository at build time, and that
+       checkout was not available for this build. Read it on
+       <a href="${REPO}/blob/main/SECURITY.md">GitHub</a>.</p>`,
+      headings: [],
+    };
+const { html, headings } = parsed;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Security policy',
+    description:
+      'How to report a Stackyard vulnerability privately, how a report is handled, and how releases are scanned.',
+  }}
+  headings={headings}
+>
+  <p>
+    This page is generated from <code>SECURITY.md</code> in the Stackyard repository, so it matches
+    the source. How Stackyard protects an install is on <a href="/docs/security/">Security</a>.
+  </p>
+
+  <Fragment set:html={html} />
+</StarlightPage>

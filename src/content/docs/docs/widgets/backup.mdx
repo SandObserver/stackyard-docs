@@ -1,13 +1,13 @@
 ---
-title: Backup
-description: Last and next run for Duplicati or Kopia jobs.
+title: Backup widget
+description: Last run, next run and live status of Duplicati and Kopia backup jobs on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
-Backup job status, one slot per job.
-
-Sizes: Small holds one slot, Medium holds three.
+Shows each backup job at a glance: the last run, the next scheduled run, and whether a run is in progress. An unreachable service says so. It never reports success in its place.
 
 <WidgetGroup caption="Small shows one job. Medium shows three, here with one failed and one still running."
   items={[
@@ -15,25 +15,37 @@ Sizes: Small holds one slot, Medium holds three.
     { type: 'backup', file: 'backup.html', id: 'w-backup-md', size: 'medium', card: 'translucent', title: 'Backup widget, medium', label: 'Medium' },
   ]} />
 
-## Providers
+Small holds one slot. Medium holds three. Each slot reads one job.
 
-| Provider | Credentials |
-| --- | --- |
-| Duplicati | URL, and a password if the interface has one. |
-| Kopia | URL, and a username and password if the server has them. |
+<ServiceList items={[
+  {
+    name: 'Duplicati',
+    kind: 'Backup software',
+    needs: 'URL, password if set',
+    fields: [
+      ['URL', 'The Duplicati address, for example `http://duplicati:8200`.'],
+      ['Password', 'Optional. The web interface password. Stored as a secret.'],
+      ['Job', 'Optional. Enter the URL and password, then load the jobs and pick one.'],
+      ['Poll interval', 'Seconds between reads. Defaults to 60.'],
+    ],
+    links: [{ label: 'duplicati/duplicati', href: 'https://github.com/duplicati/duplicati' }],
+  },
+  {
+    name: 'Kopia',
+    kind: 'Backup software',
+    needs: 'URL, login if set',
+    fields: [
+      ['URL', 'The Kopia server address, for example `http://kopia:51515`.'],
+      ['Username', 'Optional. The server username.'],
+      ['Password', 'Optional. Stored as a secret.'],
+      ['Source', 'Optional. Enter the URL and credentials, then load the sources and pick one.'],
+    ],
+    links: [{ label: 'kopia/kopia', href: 'https://github.com/kopia/kopia' }],
+  },
+]} />
 
-## Slot configuration
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Provider | Duplicati, Kopia, or None. | Yes |
-| URL | The service address. Duplicati defaults to port 8200, Kopia to 51515. | Yes |
-| Password | Stored as a secret. | No |
-| Username | Kopia only. | No |
-| Job or Source | Which job to watch. Enter the URL and credentials first, then load the list. | No |
-| Click URL | Where clicking the slot opens. | No |
-| Display Name | Overrides the name shown on the card. | No |
-| Poll Interval (sec) | How often to re-read. Duplicati only. Defaults to 60. | No |
-
-Each slot shows the last run, the next scheduled run, and whether a run is in progress. An unreachable service says so rather than reporting success.
-
+<SettingList title="Settings for each slot" items={[
+  { name: 'Provider', text: 'Duplicati, Kopia, or None for an empty slot.' },
+  { name: 'Display name', text: 'Replaces the job name shown on the card.', optional: true },
+  { name: 'Click URL', text: 'Where clicking the slot opens.', optional: true },
+]} />

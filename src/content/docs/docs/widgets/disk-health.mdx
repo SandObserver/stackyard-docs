@@ -1,9 +1,11 @@
 ---
-title: Disk health
-description: SMART status per drive bay, from Scrutiny or TrueNAS.
+title: Disk health widget
+description: SMART status for every drive bay, from Scrutiny or TrueNAS, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
 One tile per drive bay, coloured by SMART status.
 
@@ -13,24 +15,41 @@ One tile per drive bay, coloured by SMART status.
     { type: 'disk-health', file: 'index.html', id: 'gh-diskhealth-md', size: 'medium', title: 'Disk health widget, medium', label: 'Medium' },
   ]} />
 
-Sizes: Small, Medium. Small holds four bays, Medium holds ten.
+Small holds four bays. Medium holds ten.
 
-## Sources
+<ServiceList items={[
+  {
+    name: 'Scrutiny',
+    kind: 'SMART monitoring',
+    needs: 'URL',
+    fields: [['Scrutiny URL', 'For example `scrutiny:8080`. No API key.']],
+    notes: ['Works with the original project and with the maintained fork. Original builds before and after 0.9.0 name drives differently, and the widget reads all three.'],
+    links: [
+      { label: 'AnalogJ/scrutiny (original)', href: 'https://github.com/AnalogJ/scrutiny' },
+      { label: 'Starosdev/scrutiny (maintained fork)', href: 'https://github.com/Starosdev/scrutiny' },
+    ],
+  },
+  {
+    name: 'TrueNAS',
+    kind: 'NAS operating system',
+    needs: 'URL, API key',
+    fields: [
+      ['TrueNAS URL', 'For example `truenas.local`.'],
+      ['TrueNAS API Key', 'Stored as a secret.'],
+    ],
+    notes: ['TrueNAS 25.x only. Version 26 removed the REST API this widget reads. On a newer release, run Scrutiny instead.'],
+    links: [{ label: 'truenas.com', href: 'https://www.truenas.com/' }],
+  },
+]} />
 
-| Source | Credentials |
-| --- | --- |
-| Scrutiny | Server URL. No key needed. |
-| TrueNAS | Server URL and an API key. |
+<SettingList title="Settings" items={[
+  { name: 'Source', text: 'Scrutiny or TrueNAS. Defaults to Scrutiny.' },
+  { name: 'Click URL', text: 'Where clicking the widget opens.', optional: true },
+  { name: 'Bays', text: 'Which drive sits in which bay. Enter the URL, load the drives, then assign each bay.' },
+]} />
 
-## Configuration
+## Drive states
 
-| Field | What it does | Required |
-| --- | --- | --- |
-| Source | Scrutiny or TrueNAS. Defaults to Scrutiny. | Yes |
-| URL | The service address, for example `scrutiny:8080` or `truenas.local`. | Yes |
-| TrueNAS API Key | Stored as a secret. | TrueNAS |
-| Click URL | Where clicking the widget opens. | No |
-| Bays | Which drive goes in which bay. Enter the URL first, then Fetch Drives and assign each bay. | Yes |
+A bay shows Healthy, Warning, Failed or Age Alert. A drive with no SMART data reports that. It is never shown as healthy.
 
-States are Healthy, Warning, Failed, and Age Alert. A drive with no SMART data reports as such rather than as healthy.
-
+A bay shows `Not reporting` when its drive is no longer in the monitoring service list. The other bays are unaffected.

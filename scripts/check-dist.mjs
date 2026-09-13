@@ -97,13 +97,15 @@ report('secrets', secretHits);
 /* House style. */
 report('style', files.filter((f) => f.startsWith('src') && read(f).includes('—')));
 
-/* The development, changelog and accessibility pages are generated from the application
-   repository. When that checkout is absent they render a link instead, which
-   is a valid page and would otherwise pass every check above. */
+/* The changelog, accessibility, security policy and governance pages are
+   generated from the application repository. When that checkout is absent they
+   render a link instead, which is a valid page and would otherwise pass every
+   check above. */
 const generated = [
-  ['dist/docs/development/index.html', 'CONTRIBUTING.md'],
   ['dist/docs/changelog/index.html', 'CHANGELOG.md'],
   ['dist/docs/accessibility/index.html', 'ACCESSIBILITY.md'],
+  ['dist/docs/security-policy/index.html', 'SECURITY.md'],
+  ['dist/docs/governance/index.html', 'GOVERNANCE.md'],
 ];
 report(
   'genpage',

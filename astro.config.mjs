@@ -10,6 +10,11 @@ const SITE = 'https://stackyard.sandobserver.com';
 
 export default defineConfig({
   site: SITE,
+  redirects: {
+    '/docs/development': '/docs/contributing/',
+    '/docs/adding-services': '/docs/apps-and-folders/',
+    '/docs/advanced-configuration': '/docs/installation/docker/',
+  },
   markdown: {
     rehypePlugins: [
       [rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] }],
@@ -72,23 +77,28 @@ export default defineConfig({
         baseUrl: 'https://github.com/SandObserver/stackyard-docs/edit/main/',
       },
       sidebar: [
-        { label: 'Introduction', link: '/docs/' },
-        { label: 'Compare dashboards', link: '/docs/is-stackyard-for-you/' },
         {
-          label: 'Installation',
+          label: 'Get started',
           items: [
-            { label: 'Docker', link: '/docs/installation/docker/' },
-            { label: 'Unraid', link: '/docs/installation/unraid/' },
+            { label: 'Introduction', link: '/docs/' },
+            { label: 'Comparison', link: '/docs/is-stackyard-for-you/' },
+            { label: 'Install with Docker', link: '/docs/installation/docker/' },
+            { label: 'Install on Unraid', link: '/docs/installation/unraid/' },
             { label: 'Build from source', link: '/docs/installation/build-from-source/' },
+            { label: 'First setup', link: '/docs/first-setup/' },
           ],
         },
-        { label: 'First setup', link: '/docs/first-setup/' },
-        { label: 'Settings reference', link: '/docs/settings-reference/' },
-        { label: 'Advanced configuration', link: '/docs/advanced-configuration/' },
-        { label: 'Adding services', link: '/docs/adding-services/' },
-        { label: 'Badges', link: '/docs/badges/' },
+        {
+          label: 'Build your dashboard',
+          items: [
+            { label: 'Add apps and folders', link: '/docs/apps-and-folders/' },
+            { label: 'Show status badges', link: '/docs/badges/' },
+            { label: 'Wallpaper and themes', link: '/docs/customization/' },
+          ],
+        },
         {
           label: 'Widgets',
+          collapsed: true,
           items: [
             { label: 'Overview', link: '/docs/widgets/' },
             { label: 'Backup', link: '/docs/widgets/backup/' },
@@ -105,23 +115,51 @@ export default defineConfig({
             { label: 'Weather', link: '/docs/widgets/weather/' },
           ],
         },
-        { label: 'Customization', link: '/docs/customization/' },
         {
-          label: 'Import and export',
+          label: 'Run Stackyard',
           items: [
-            { label: 'Backup and restore', link: '/docs/import-export/backup-and-restore/' },
-            {
-              label: 'Migrating from another dashboard',
-              link: '/docs/import-export/migrating/',
-            },
+            { label: 'Back up and restore', link: '/docs/import-export/backup-and-restore/' },
+            { label: 'Import', link: '/docs/import-export/migrating/' },
+            { label: 'Use a reverse proxy', link: '/docs/reverse-proxy/' },
+            { label: 'Security', link: '/docs/security/' },
           ],
         },
-        { label: 'Security', link: '/docs/security/' },
-        { label: 'Accessibility', link: '/docs/accessibility/' },
+        { label: 'Settings', link: '/docs/settings-reference/' },
         { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
-        { label: 'Support', link: '/docs/support/' },
-        { label: 'Development', link: '/docs/development/' },
-        { label: 'Changelog', link: '/docs/changelog/' },
+        {
+          label: 'Create a widget',
+          collapsed: true,
+          items: [
+            { label: 'Build your first widget', link: '/docs/create-a-widget/' },
+            { label: 'Manifest', link: '/docs/create-a-widget/manifest/' },
+            { label: 'Data', link: '/docs/create-a-widget/data/' },
+            { label: 'Widget page', link: '/docs/create-a-widget/widget-page/' },
+            { label: 'Checklist', link: '/docs/create-a-widget/checklist/' },
+          ],
+        },
+        {
+          label: 'Contributing',
+          collapsed: true,
+          items: [
+            { label: 'How to contribute', link: '/docs/contributing/' },
+            { label: 'Architecture', link: '/docs/contributing/architecture/' },
+            { label: 'Design system', link: '/docs/contributing/design-system/' },
+            { label: 'Translations', link: '/docs/contributing/translations/' },
+            { label: 'API errors', link: '/docs/contributing/api-errors/' },
+            { label: 'Releasing', link: '/docs/contributing/releasing/' },
+          ],
+        },
+        {
+          label: 'About',
+          collapsed: true,
+          items: [
+            { label: 'Accessibility', link: '/docs/accessibility/' },
+            { label: 'Security policy', link: '/docs/security-policy/' },
+            { label: 'Governance', link: '/docs/governance/' },
+            { label: 'Support', link: '/docs/support/' },
+            { label: 'Changelog', link: '/docs/changelog/' },
+          ],
+        },
       ],
     }),
     mdx(),

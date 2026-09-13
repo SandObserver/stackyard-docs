@@ -1,0 +1,33 @@
+---
+title: Custom widget
+description: Embed any web page, such as a Grafana panel or a status page, as a widget on your Stackyard dashboard.
+---
+
+import SettingList from '../../../../components/SettingList.astro';
+
+Puts a URL of your choice on the grid, in a frame. Use it for a service status page, a Grafana panel, or anything else that renders in a frame.
+
+Sizes: Small, Medium, Large, X-Large. There is no preview here, because the widget shows whatever page you point it at.
+
+<SettingList title="Settings" items={[
+  { name: 'Name', text: 'The label in the admin list.' },
+  { name: 'Size', text: 'How many grid cells the card takes.' },
+  { name: 'Iframe URL', text: 'The page to embed.' },
+]} />
+
+<SettingList title="Advanced, frame attributes" items={[
+  { name: 'Referrer Policy', text: 'Which referrer the frame sends. Defaults to the browser behaviour.' },
+  { name: 'Allow (feature policy)', text: 'The `allow` attribute of the frame, for example `autoplay; fullscreen`.' },
+  { name: 'Allow Fullscreen', text: 'Lets the embedded page go fullscreen. On by default.' },
+  { name: 'Refresh Interval', text: 'Reloads the frame on a timer, in milliseconds. Minimum 250.' },
+]} />
+
+:::caution
+A custom widget loads whatever the URL returns, straight into your dashboard. Point it only at pages you trust. The request goes from your browser to that page. Stackyard does not proxy or sanitize it, and the page can see it is framed.
+:::
+
+The frame is sandboxed. The page keeps scripts, forms, dialogs, pop-ups and downloads, so a real service still works. It cannot navigate the dashboard away.
+
+## A frame that stays blank
+
+A page that refuses to be framed does not render. Many sites send `X-Frame-Options` or a `frame-ancestors` policy that blocks embedding, and Stackyard cannot override that. Check the browser console when a frame stays blank.

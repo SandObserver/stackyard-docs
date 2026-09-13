@@ -1,19 +1,19 @@
 ---
-title: Stackyard vs gethomepage, Dashy and Homarr
+title: Stackyard vs Homepage, Dashy and Homarr
 description: How Stackyard compares to gethomepage, Dashy and Homarr on setup, integrations and dependencies, and who each one suits.
 ---
 
 import CompareTable from '../../../components/CompareTable.astro';
 import CalmContrast from '../../../components/CalmContrast.astro';
 
-Self-hosted dashboards make different bets. Here is the one Stackyard makes, next to the three you are most likely to be choosing between.
+How Stackyard compares with the three dashboards it is most often weighed against.
 
 <CompareTable
   rivals={['gethomepage', 'Dashy', 'Homarr']}
   footnotes={[
-    'A badge is a small number, label or dot shown on an app\u2019s icon. In Stackyard you make one by giving it the address of a service\u2019s API. Stackyard reads what comes back, shows you the values it found, and you choose which one to display. There is nothing to write and no file to edit. See <a href="/docs/badges/">Badges</a>.',
-    'Counted from each project\u2019s own documentation and source, September 2026. Services are self-hosted ones with a built-in integration. Dependencies are the external runtime packages each project lists.',
-    'No user management. The dashboard is password protected. For more than one dashboard, run a container each with its own password and move between them with the <a href="/docs/widgets/dashboard-switch/">Dashboard switch</a> widget.',
+    'Point a tile at any API and pick a value. No code. See <a href="/docs/badges/">Badges</a>.',
+    'From each project\u2019s docs and source, September 2026.',
+    'One password per instance. Link instances with the <a href="/docs/widgets/dashboard-switch/">Dashboard switch</a>.',
   ]}
   rows={[
     {
@@ -69,14 +69,6 @@ A health badge is hidden while a service is fine, so a working Stackyard shows n
 - You need user accounts. There is one admin password and one shared dashboard per instance. For a separate dashboard per person, room or site, run separate instances and link them with the [Dashboard switch](/docs/widgets/dashboard-switch/) widget. See [Security](/docs/security/).
 - You want a plugin ecosystem. The widget set is fixed, plus a [Custom](/docs/widgets/custom/) widget that embeds any web page.
 
-## Where to go next
+## Switching
 
-Stackyard imports links and folders from gethomepage and Dashy configuration
-files, so moving over is a file upload. See
-[Migrating from another dashboard](/docs/import-export/migrating/).
-
-Look around the [demo](https://demo.sandobserver.com). Give the first load a
-moment.
-
-Install it with [Docker](/docs/installation/docker/), then work through
-[First setup](/docs/first-setup/).
+Stackyard imports apps and folders from Homepage and Dashy files. See [Import](/docs/import-export/migrating/).

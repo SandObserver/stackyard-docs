@@ -1,0 +1,83 @@
+---
+title: Build a custom Stackyard widget
+description: Build a Stackyard dashboard widget step by step, from the manifest to the data handler and the page that draws it.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+
+A widget is one folder in `ui/widgets/`. This page builds one from the template in the repository.
+
+<WidgetGroup caption="The finished widget, running with sample data."
+  items={[
+    { type: 'mywidget', file: 'index.html', id: 'tpl-mywidget', title: 'Template widget, small', label: 'Small' },
+    { type: 'mywidget', file: 'index.html', id: 'tpl-mywidget', size: 'medium', title: 'Template widget, medium', label: 'Medium' },
+  ]} />
+
+A widget has three files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` runs on the dashboard and draws the result.
+
+## 1. Copy the template
+
+```sh
+cp -r docs/widget-template ui/widgets/mywidget
+```
+
+## 2. Settings
+
+```json title="widget.json"
+{
+  "name": "mywidget",
+  "label": "My Widget",
+  "sizes": ["small", "medium"],
+  "fields": [
+    { "key": "url", "type": "text", "label": "Service URL", "placeholder": "http://host:port" },
+    { "key": "apiKey", "type": "secret", "label": "API key", "optional": true },
+    { "key": "showTotal", "type": "toggle", "label": "Show total", "default": true }
+  ]
+}
+```
+
+`name` must match the folder. Each field becomes a row in the widget's settings. A `secret` never returns to the browser. See [Manifest](/docs/create-a-widget/manifest/).
+
+## 3. Data
+
+```js title="data.js"
+module.exports = async function (ctx) {
+  const { url, apiKey } = ctx.config;
+  if (!url) ctx.fail('Enter the service URL.', { kind: ctx.KIND.INVALID });
+
+  const r = await ctx.fetchJSON(`${ctx.normalizeBase(url)}/api/items`, {
+    headers: apiKey ? { 'X-Api-Key': apiKey } : {},
+    timeout: 8000,
+  });
+
+  return {
+    items: (r.data.items || []).slice(0, 10).map(i => ({ name: i.name })),
+    total: r.data.total ?? 0,
+  };
+};
+```
+
+The return value is served at `/api/widget-data/<id>`. The template returns `{ error }` when the URL is missing. Use `ctx.fail` as shown, so the widget shows its failure state. See [Data](/docs/create-a-widget/data/).
+
+## 4. Page
+
+```html title="index.html"
+<script type="module">
+  import { poll } from '/js/widget-toolbox.js?v=1';
+  const root = document.getElementById('root');
+
+  poll({
+    render: data => { root.textContent = `${data.total} items`; },
+    isEmpty: data => !data.items?.length,
+    interval: 30000,
+  });
+</script>
+```
+
+`poll()` fetches the data and handles loading, empty, stale and failed states. The template adds the markup and styles. See [Widget page](/docs/create-a-widget/widget-page/).
+
+## 5. Try it
+
+Restart Stackyard, then in Settings, **Dashboard**, press <span class="sy-btn sy-btn--primary">Add</span> and pick **My Widget**. If it is missing, the container log says why.
+
+Before a pull request, go through the [checklist](/docs/create-a-widget/checklist/).

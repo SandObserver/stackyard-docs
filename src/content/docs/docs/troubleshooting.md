@@ -1,5 +1,5 @@
 ---
-title: Troubleshooting
+title: Troubleshooting Stackyard
 description: Find a problem by its symptom, then the cause and the fix.
 ---
 
@@ -19,7 +19,7 @@ Set `TRUST_PROXY=true` and make the proxy send `X-Forwarded-Proto: https`. Only 
 
 Logins are limited to 5 attempts per IP per 15 minutes. Behind another reverse proxy, Stackyard's nginx sees that proxy as the client, so every request through it shares one bucket.
 
-Set `TRUSTED_PROXY` to where the proxy is, for example `TRUSTED_PROXY=172.18.0.0/16`. See [Advanced configuration](/docs/advanced-configuration/).
+Set `TRUSTED_PROXY` to where the proxy is, for example `TRUSTED_PROXY=172.18.0.0/16`. See [Use a reverse proxy](/docs/reverse-proxy/).
 
 ### I forgot the password and I am locked out
 
@@ -62,7 +62,7 @@ Icons are served with revalidation, so a re-upload appears on the next load. If 
 
 The SSRF guard blocks private, loopback and link-local addresses by default, so a URL pointing at `192.168.x.x` or `10.x.x.x` is refused.
 
-Set `ALLOW_PRIVATE_IPS=true`. Read [Security](/docs/security/) first, then see [Advanced configuration](/docs/advanced-configuration/).
+Set `ALLOW_PRIVATE_IPS=true`. Read [Security](/docs/security/) first, then see [Environment variables](/docs/installation/docker/#environment-variables).
 
 Two things work without it. A dotless hostname such as a Docker container name is trusted. So is the Host IP set in **General**.
 
@@ -106,7 +106,7 @@ Check the container logs for a definition that failed to load. A `WIDGETS_PATH` 
 
 A definition that is refused is not listed, and the reason is written to the container log only. Nothing in the admin says why.
 
-Run `docker logs <container>` and look for the refusal at startup. See [Development](/docs/development/).
+Run `docker logs <container>` and look for the refusal at startup. See [Widget checklist](/docs/create-a-widget/checklist/).
 
 ## Docker and networking
 
@@ -247,7 +247,7 @@ Messages shown in the admin, and what each one means.
 | `<id>: children point at items that are not here: ...` | A folder in the config lists apps that are not in the same file. The named entries are missing. Usually a hand-edited or partly merged export. |
 | `Nothing to import. The file matches your current config.` | The imported file is identical to what is already stored. |
 | `Icon catalogues could not be reached` | No catalogue answered while searching. The field still takes a full URL or an upload. |
-| `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Migrating](/docs/import-export/migrating/). |
+| `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Import](/docs/import-export/migrating/). |
 | `(may be out of date)` | A stale reading. The last poll failed and the previous value is shown. |
 
 ## Not actually broken

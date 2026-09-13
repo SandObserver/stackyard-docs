@@ -1,15 +1,12 @@
 ---
-title: Dashboard switch
-description: A keyring of links to your other Stackyard instances.
+title: Dashboard switch widget
+description: Link separate Stackyard dashboards, one per room or per site, as a keyring on the grid.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
-A launcher for other dashboards, drawn as hanging keys. Use it to move between instances, for example one dashboard per room or per site.
-
-It renders in the browser and makes no outbound request.
-
-Sizes: Small holds two keychains, Medium holds five.
+A launcher for other dashboards, drawn as hanging keys. Use it to move between instances, for example one dashboard per room or per site. It renders in the browser and makes no network request.
 
 <WidgetGroup caption="Two keys is the limit at small, five at medium."
   items={[
@@ -17,23 +14,18 @@ Sizes: Small holds two keychains, Medium holds five.
     { type: 'dashboard-switch', file: 'index.html', id: 'demo-dashswitch-md', size: 'medium', card: 'dark', title: 'Dashboard switch, medium', label: 'Medium' },
   ]} />
 
-## Configuration
+Small holds two keychains. Medium holds five.
 
-Each keychain is one link.
+<SettingList title="Settings for each keychain" items={[
+  { name: 'Name', text: 'The label on the key, for example `Living Room`.', optional: true },
+  { name: 'Dashboard URL', text: 'Where the key opens.' },
+  { name: 'Fob colour', text: 'Auto derives the colour from the URL. Or pick Teal, Cyan, Orange, Pink, Purple, Green, Yellow or Blue.', optional: true },
+]} />
 
-| Field | What it does | Required |
-| --- | --- | --- |
-| Name | The label on the key, for example `Living Room`. | No |
-| Dashboard URL | Where the key opens. | Yes |
-| Fob colour | The key colour. Leave on Auto to derive it from the URL. | No |
-
-One setting applies to the whole widget:
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Open in | Same tab or new tab. Defaults to same tab. | Yes |
+<SettingList title="Settings" items={[
+  { name: 'Open in', text: 'Same tab or new tab. Defaults to same tab.' },
+]} />
 
 :::note
-Stackyard has no user accounts. This widget links between separate instances, it does not switch users.
+Stackyard has no user accounts. This widget links separate instances. It does not switch users.
 :::
-

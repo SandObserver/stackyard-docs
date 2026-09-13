@@ -1,5 +1,5 @@
 ---
-title: Unraid
+title: Install Stackyard on Unraid
 description: Install Stackyard on Unraid from Community Applications.
 next:
   link: /docs/first-setup/
@@ -9,6 +9,8 @@ next:
 Install Stackyard from [Community Applications](https://ca.unraid.net/apps/stackyard-0ara4ku0sjjwqy).
 
 Search for Stackyard in the Apps tab, then install it. The template fills in the port and the two volume mappings for you.
+
+The template also sets `ALLOW_PRIVATE_IPS`, `SOCKET_PROXY_URL` and `TRUST_PROXY`. Each is described under [Environment variables](/docs/installation/docker/#environment-variables).
 
 The template is kept in the repo at [`templates/stackyard.xml`](https://github.com/SandObserver/stackyard/blob/main/templates/stackyard.xml).
 

@@ -1,5 +1,5 @@
 ---
-title: Backup and restore
+title: Back up and restore Stackyard
 description: Export your Stackyard configuration to a file, and import it back.
 ---
 
@@ -31,4 +31,4 @@ If your dashboard is empty after a restart, look for an `apps.json.corrupt-*` fi
 
 ## Coming from another dashboard
 
-To import a gethomepage or Dashy config instead, see [Migrating from another dashboard](/docs/import-export/migrating/).
+To import a gethomepage or Dashy config instead, see [Import from Homepage or Dashy](/docs/import-export/migrating/).

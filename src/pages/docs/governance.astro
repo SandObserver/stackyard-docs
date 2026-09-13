@@ -1,0 +1,33 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { marked } from 'marked';
+import { readRepoFile, stripTitle, absolutiseLinks, withHeadingIds } from '../../lib/repo';
+
+const REPO = 'https://github.com/SandObserver/stackyard';
+const raw = readRepoFile('GOVERNANCE.md');
+
+const parsed = raw
+  ? withHeadingIds(String(await marked.parse(absolutiseLinks(stripTitle(raw)))))
+  : {
+      html: `<p>The governance document is read from the Stackyard repository at build time, and
+       that checkout was not available for this build. Read it on
+       <a href="${REPO}/blob/main/GOVERNANCE.md">GitHub</a>.</p>`,
+      headings: [],
+    };
+const { html, headings } = parsed;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Project governance',
+    description: 'Who maintains Stackyard, how decisions are made, and how access is granted.',
+  }}
+  headings={headings}
+>
+  <p>
+    This page is generated from <code>GOVERNANCE.md</code> in the Stackyard repository, so it
+    matches the source.
+  </p>
+
+  <Fragment set:html={html} />
+</StarlightPage>

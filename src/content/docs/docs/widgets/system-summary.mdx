@@ -1,13 +1,13 @@
 ---
-title: System summary
-description: CPU, memory, disk, temperature and network stats from this machine, Glances, Beszel, or Unraid.
+title: System summary widget
+description: CPU, memory, disk, temperature and network stats from the host, Glances, Beszel or Unraid, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
 Three stat slots and an optional network row.
-
-Sizes: Small, Medium.
 
 <WidgetGroup caption="Two different machines. Small fits a few slots, medium fits more."
   items={[
@@ -15,72 +15,110 @@ Sizes: Small, Medium.
     { type: 'system-summary', file: 'index.html', id: 'w-stats',    size: 'medium', card: 'dark', title: 'System summary, medium', label: 'Medium' },
   ]} />
 
-## Sources
+Sizes: Small, Medium.
 
-| Source | What it reads |
-| --- | --- |
-| This Machine | The container's own host metrics. |
-| Glances | A Glances instance. |
-| Beszel | A Beszel instance, for one registered system. |
-| Unraid | The Unraid API. |
+<ServiceList items={[
+  {
+    name: 'This Machine',
+    kind: 'The host Stackyard runs on',
+    needs: 'Nothing',
+    fields: [
+      ['Temperature', 'Needs `/sys/class/thermal` mounted into the container.'],
+      ['Disk', 'Needs each mount path mounted into the container.'],
+    ],
+    notes: ['See Host mounts below.'],
+  },
+  {
+    name: 'Glances',
+    kind: 'System monitor',
+    needs: 'URL, login if set',
+    fields: [
+      ['Glances URL', 'For example `glances:61208`.'],
+      ['Username', 'Optional.'],
+      ['Password', 'Optional. Stored as a secret.'],
+    ],
+    notes: ['Glances in Docker reports its own filesystems, not the host ones. Mount the host paths into the Glances container for a disk slot to read them.'],
+    links: [{ label: 'nicolargo/glances', href: 'https://github.com/nicolargo/glances' }],
+  },
+  {
+    name: 'Beszel',
+    kind: 'Server monitor',
+    needs: 'URL, login, system',
+    fields: [
+      ['Beszel URL', 'For example `beszel:8090`.'],
+      ['Account', 'The Beszel login email.'],
+      ['Password', 'Stored as a secret.'],
+      ['System', 'Enter the URL and account, then load the systems and pick one.'],
+    ],
+    notes: ['Beszel does not report a process count.'],
+    links: [{ label: 'henrygd/beszel', href: 'https://github.com/henrygd/beszel' }],
+  },
+  {
+    name: 'Unraid',
+    kind: 'NAS operating system',
+    needs: 'URL, API key',
+    fields: [
+      ['Unraid URL', 'For example `tower.local`.'],
+      ['Unraid API Key', 'Stored as a secret.'],
+    ],
+    notes: ['Unraid reports neither IO wait nor a process count.'],
+    links: [{ label: 'unraid.net', href: 'https://unraid.net/' }],
+  },
+]} />
 
-Not every source reports everything. Beszel does not report a process count. Unraid reports neither IO wait nor a process count.
+<SettingList title="Settings" items={[
+  { name: 'Source', text: 'Which of the above to read. Defaults to This Machine.' },
+]} />
 
-## Source configuration
+## Host mounts
 
-| Field | What it does | Required |
-| --- | --- | --- |
-| Source | Which backend to read. Defaults to This Machine. | Yes |
-| Glances URL | For example `glances:61208`. | Glances |
-| Username, Password | Glances credentials, if it has any. | No |
-| Beszel URL | For example `beszel:8090`. | Beszel |
-| Account, Password | The Beszel login. | Beszel |
-| System | Which registered Beszel system to read. Enter the URL and account first, then load the list. | Beszel |
-| Unraid URL | For example `tower.local`. | Unraid |
-| Unraid API Key | Stored as a secret. | Unraid |
+This Machine reads temperature and disk use from paths mounted into the Stackyard container:
+
+```yaml
+volumes:
+  - /sys/class/thermal:/sys/class/thermal:ro
+  - /mnt/your-drive:/mnt/your-drive:ro
+```
 
 ## Slots
 
-The widget always shows three slots. Each one picks a resource.
+The widget always shows three slots.
 
-| Resource | Notes |
-| --- | --- |
-| CPU | |
-| RAM | |
-| Temperature | Needs a thermal zone (This Machine) or a sensor picked from the loaded list. |
-| Disk Mount | Takes a first path and an optional second one. |
-| IO Wait | Not available from Unraid. |
-| Processes | Not available from Beszel or Unraid. |
-
-What a disk slot asks for depends on the source: mount paths for This Machine, filesystem names for Glances and Beszel, share names for Unraid. Leaving an Unraid share empty reads the whole array.
-
-Each slot takes a colour.
-
-:::note
-A Glances running in Docker reports its own filesystems, not the host's. Mount the host paths into the Glances container for a disk slot to read them.
-:::
+<SettingList title="Settings for each slot" items={[
+  { name: 'Resource', text: 'CPU, RAM, Temperature, Disk Mount, IO Wait or Processes.' },
+  { name: 'Thermal Zone or Sensor', text: 'Temperature only. A thermal zone number for This Machine, 0 by default. A sensor picked from the loaded list for the other sources.' },
+  { name: 'First and second disk', text: 'Disk Mount only. Mount paths for This Machine and Glances, filesystem names for Beszel, share names for Unraid. The second is optional. An empty Unraid share reads the whole array.' },
+  { name: 'Color', text: 'The slot colour. Defaults to blue.' },
+]} />
 
 ## Network row
 
-Off by default. Turn on Show Network Row, then pick a mode.
+<SettingList title="Network row settings" items={[
+  { name: 'Show Network Row', text: 'Off by default.' },
+  { name: 'Mode', text: 'Speed shows the last speed test. Throughput shows live traffic on one interface. Uptime shows uptime.' },
+  { name: 'Interface', text: 'Throughput only, for Glances, Beszel and Unraid. Load the list, then pick one.' },
+]} />
 
-| Mode | What it shows |
-| --- | --- |
-| Speed | The last speed test result, from MySpeed or Speedtest Tracker. |
-| Throughput | Live throughput on one interface. |
-| Uptime | Uptime. |
-
-Speed mode reads MySpeed or Speedtest Tracker.
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Service URL | The address of MySpeed or Speedtest Tracker. | Yes |
-| MySpeed Password | The MySpeed password, if it has one. | No |
-| API Token | A Speedtest Tracker token with the `results:read` ability. Stored as a secret. | No |
-
-Without a token, Speedtest Tracker is read through an older route that needs no
-authentication. With one, the widget reads Speedtest Tracker's documented v1
-API.
-
-Throughput mode takes an interface picked from the loaded list.
-
+<ServiceList title="Speed mode works with" items={[
+  {
+    name: 'MySpeed',
+    kind: 'Speed test tracker',
+    needs: 'URL, password if set',
+    fields: [
+      ['Service URL', 'For example `myspeed:5216`.'],
+      ['MySpeed Password', 'Optional. Stored as a secret.'],
+    ],
+    links: [{ label: 'gnmyt/MySpeed', href: 'https://github.com/gnmyt/MySpeed' }],
+  },
+  {
+    name: 'Speedtest Tracker',
+    kind: 'Speed test tracker',
+    needs: 'URL, API token if used',
+    fields: [
+      ['Service URL', 'The Speedtest Tracker address.'],
+      ['API Token', 'Optional. Needs the `results:read` ability. Stored as a secret.'],
+    ],
+    notes: ['Without a token, the widget reads an older route that needs no authentication. With one, it reads the documented v1 API.'],
+    links: [{ label: 'alexjustesen/speedtest-tracker', href: 'https://github.com/alexjustesen/speedtest-tracker' }],
+  },
+]} />

@@ -1,0 +1,68 @@
+---
+import { inline } from '../lib/inline';
+
+interface Link {
+  label: string;
+  href: string;
+}
+
+interface Service {
+  name: string;
+  kind?: string;
+  needs: string;
+  fields?: [string, string][];
+  notes?: string[];
+  links?: Link[];
+}
+
+interface Props {
+  title?: string;
+  footer?: string;
+  items: Service[];
+}
+
+const { title = 'Works with', footer, items } = Astro.props;
+---
+
+<section class="sy-list" aria-label={title}>
+  <p class="sy-list__head">{title}</p>
+  <div class="sy-list__box">
+    {
+      items.map((s) => (
+        <details class="sy-disc">
+          <summary class="sy-disc__row">
+            <span class="sy-disc__main">
+              <span class="sy-disc__name">{s.name}</span>
+              {s.kind && <span class="sy-disc__kind">{s.kind}</span>}
+            </span>
+            <span class="sy-disc__needs" set:html={inline(s.needs)} />
+            <span class="sy-disc__chev" aria-hidden="true" />
+          </summary>
+          <div class="sy-disc__body">
+            {s.fields && (
+              <dl class="sy-disc__fields">
+                {s.fields.map(([name, text]) => (
+                  <>
+                    <dt>{name}</dt>
+                    <dd set:html={inline(text || ' ')} />
+                  </>
+                ))}
+              </dl>
+            )}
+            {s.notes?.map((n) => <p class="sy-disc__note" set:html={inline(n)} />)}
+            {s.links && (
+              <p class="sy-disc__links">
+                {s.links.map((l) => (
+                  <a href={l.href} target="_blank" rel="noopener noreferrer">
+                    {l.label}
+                  </a>
+                ))}
+              </p>
+            )}
+          </div>
+        </details>
+      ))
+    }
+  </div>
+  {footer && <p class="sy-list__foot" set:html={inline(footer)} />}
+</section>

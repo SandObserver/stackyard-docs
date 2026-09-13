@@ -1,13 +1,13 @@
 ---
-title: Now Playing
-description: What is playing right now on Plex, Jellyfin, Emby, or Navidrome.
+title: Now Playing widget
+description: What is playing right now on Plex, Jellyfin, Emby or Navidrome, with progress, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
 
 Shows the current session on a media server, with progress.
-
-Sizes: Small.
 
 <WidgetGroup caption="The reel takes the colour of the service it is reading from."
   items={[
@@ -16,26 +16,55 @@ Sizes: Small.
     { type: 'nowplaying', file: 'index.html', id: 'np-emby',     title: 'Now Playing, Emby',     label: 'Emby' },
   ]} />
 
-## Media servers
+Small only. When nothing is playing, the widget says so. When several sessions are active, arrows step between them.
 
-Pick one server per widget. Add a second widget for a second server.
+One server per widget.
 
-| Server | Credentials |
-| --- | --- |
-| Plex | Server URL and a Plex token (`X-Plex-Token`). |
-| Jellyfin | URL and an API key. |
-| Emby | URL and an API key. |
-| Navidrome | URL, username, and password. |
+<ServiceList items={[
+  {
+    name: 'Plex',
+    kind: 'Media server',
+    needs: 'URL, Plex token',
+    fields: [
+      ['Plex server URL', 'For example `http://host:32400`.'],
+      ['Plex token', 'The `X-Plex-Token` value. Stored as a secret.'],
+    ],
+    links: [{ label: 'plex.tv', href: 'https://www.plex.tv/' }],
+  },
+  {
+    name: 'Jellyfin',
+    kind: 'Media server',
+    needs: 'URL, API key',
+    fields: [
+      ['Jellyfin URL', 'For example `http://host:8096`.'],
+      ['Jellyfin API key', 'Stored as a secret.'],
+    ],
+    links: [{ label: 'jellyfin/jellyfin', href: 'https://github.com/jellyfin/jellyfin' }],
+  },
+  {
+    name: 'Emby',
+    kind: 'Media server',
+    needs: 'URL, API key',
+    fields: [
+      ['Emby URL', 'For example `http://host:8096`.'],
+      ['Emby API key', 'Stored as a secret.'],
+    ],
+    links: [{ label: 'emby.media', href: 'https://emby.media/' }],
+  },
+  {
+    name: 'Navidrome',
+    kind: 'Music server',
+    needs: 'URL, username, password',
+    fields: [
+      ['Navidrome URL', 'For example `http://host:4533`.'],
+      ['Username', 'The Navidrome login.'],
+      ['Password', 'Stored as a secret.'],
+    ],
+    links: [{ label: 'navidrome/navidrome', href: 'https://github.com/navidrome/navidrome' }],
+  },
+]} />
 
-## Configuration
-
-| Field | What it does | Required |
-| --- | --- | --- |
-| Media server | Which server to read. | Yes |
-| Server URL | The server address. Plex defaults to port 32400, Jellyfin and Emby to 8096, Navidrome to 4533. | Yes |
-| Token, API key, or password | The credential for that server. Stored as a secret. | Yes |
-| Username | Navidrome only. | Navidrome |
-| Click URL | Where clicking the widget opens. | No |
-
-When nothing is playing the widget says so rather than going blank. If several sessions are active, arrows step between them.
-
+<SettingList title="Settings" items={[
+  { name: 'Media server', text: 'Which server to read.' },
+  { name: 'Click URL', text: 'Where clicking the widget opens.', optional: true },
+]} />

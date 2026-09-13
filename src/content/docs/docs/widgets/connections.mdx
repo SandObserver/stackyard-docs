@@ -18,19 +18,19 @@ Medium only. One marker per service, with an optional legend.
 ]} />
 
 <ServiceList items={[
-  { name: 'Gluetun', kind: 'VPN client', needs: 'Control server URL',
+  { name: 'Gluetun', icon: 'gluetun', kind: 'VPN client', needs: 'Control server URL',
     fields: [['Control server URL', 'Such as `gluetun:8000`.']],
     links: [{ label: 'qdm12/gluetun', href: 'https://github.com/passteque/gluetun' }] },
-  { name: 'Conduit', kind: 'Psiphon proxy node', needs: 'Metrics URL',
+  { name: 'Conduit', icon: 'conduit', kind: 'Psiphon proxy node', needs: 'Metrics URL',
     fields: [['Metrics URL', 'Such as `conduit:9090`.']],
     links: [{ label: 'Psiphon-Inc/conduit', href: 'https://github.com/Psiphon-Inc/conduit' }] },
-  { name: 'NetBird', kind: 'Mesh VPN', needs: 'API URL, access token',
+  { name: 'NetBird', icon: 'netbird', kind: 'Mesh VPN', needs: 'API URL, access token',
     fields: [['Management API URL', 'Such as `netbird:33073`.'], ['Access token', 'A personal access token.']],
     links: [{ label: 'netbirdio/netbird', href: 'https://github.com/netbirdio/netbird' }] },
-  { name: 'Plausible', kind: 'Web analytics', needs: 'URL, site ID, API key',
+  { name: 'Plausible', icon: 'plausible', kind: 'Web analytics', needs: 'URL, site ID, API key',
     fields: [['Plausible URL', 'Such as `plausible:8000`.'], ['Site ID', 'The site domain.'], ['Stats API key', '']],
     links: [{ label: 'plausible/analytics', href: 'https://github.com/plausible/analytics' }] },
-  { name: 'Umami', kind: 'Web analytics', needs: 'URL, website ID, login',
+  { name: 'Umami', icon: 'umami', kind: 'Web analytics', needs: 'URL, website ID, login',
     fields: [['Umami URL', 'Such as `umami:3000`.'], ['Website ID', 'The website UUID.'], ['Username and password', 'The Umami login.']],
     links: [{ label: 'umami-software/umami', href: 'https://github.com/umami-software/umami' }] },
 ]} />
@@ -54,10 +54,10 @@ Small or Medium. The state of one VPN connection.
 ]} />
 
 <ServiceList items={[
-  { name: 'Gluetun', kind: 'VPN client', needs: 'Control server URL',
+  { name: 'Gluetun', icon: 'gluetun', kind: 'VPN client', needs: 'Control server URL',
     fields: [['Control server URL', 'Such as `http://gluetun:8000`.'], ['API key', 'Only if Gluetun has one.']],
     links: [{ label: 'qdm12/gluetun', href: 'https://github.com/passteque/gluetun' }] },
-  { name: 'NetBird', kind: 'Mesh VPN', needs: 'API URL, access token',
+  { name: 'NetBird', icon: 'netbird', kind: 'Mesh VPN', needs: 'API URL, access token',
     fields: [['Management API URL', 'Such as `http://netbird:33073`.'], ['Access token', 'A personal access token.']],
     links: [{ label: 'netbirdio/netbird', href: 'https://github.com/netbirdio/netbird' }] },
 ]} />

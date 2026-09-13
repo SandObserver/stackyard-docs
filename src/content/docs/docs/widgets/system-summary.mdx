@@ -19,7 +19,7 @@ Sizes: Small, Medium.
 
 <ServiceList items={[
   {
-    name: 'This Machine',
+    name: 'This Machine', icon: 'this-machine',
     kind: 'The host Stackyard runs on',
     needs: 'Nothing',
     fields: [
@@ -29,7 +29,7 @@ Sizes: Small, Medium.
     notes: ['See Host mounts below.'],
   },
   {
-    name: 'Glances',
+    name: 'Glances', icon: 'glances',
     kind: 'System monitor',
     needs: 'URL, login if set',
     fields: [
@@ -41,7 +41,7 @@ Sizes: Small, Medium.
     links: [{ label: 'nicolargo/glances', href: 'https://github.com/nicolargo/glances' }],
   },
   {
-    name: 'Beszel',
+    name: 'Beszel', icon: 'beszel',
     kind: 'Server monitor',
     needs: 'URL, login, system',
     fields: [
@@ -54,7 +54,7 @@ Sizes: Small, Medium.
     links: [{ label: 'henrygd/beszel', href: 'https://github.com/henrygd/beszel' }],
   },
   {
-    name: 'Unraid',
+    name: 'Unraid', icon: 'unraid',
     kind: 'NAS operating system',
     needs: 'URL, API key',
     fields: [
@@ -101,7 +101,7 @@ The widget always shows three slots.
 
 <ServiceList title="Speed mode works with" items={[
   {
-    name: 'MySpeed',
+    name: 'MySpeed', icon: 'myspeed.png',
     kind: 'Speed test tracker',
     needs: 'URL, password if set',
     fields: [
@@ -111,7 +111,7 @@ The widget always shows three slots.
     links: [{ label: 'gnmyt/MySpeed', href: 'https://github.com/gnmyt/MySpeed' }],
   },
   {
-    name: 'Speedtest Tracker',
+    name: 'Speedtest Tracker', icon: 'speedtest-tracker',
     kind: 'Speed test tracker',
     needs: 'URL, API token if used',
     fields: [

@@ -8,6 +8,7 @@ interface Link {
 
 interface Service {
   name: string;
+  icon?: string;
   kind?: string;
   needs: string;
   fields?: [string, string][];
@@ -31,6 +32,18 @@ const { title = 'Works with', footer, items } = Astro.props;
       items.map((s) => (
         <details class="sy-disc">
           <summary class="sy-disc__row">
+            {s.icon && (
+              <span class="sy-disc__icon" aria-hidden="true">
+                {s.icon.endsWith('.png') ? (
+                  <img src={`/icons/services/${s.icon}`} alt="" width="28" height="28" />
+                ) : (
+                  <>
+                    <img class="sy-disc__icon-on-light" src={`/icons/services/${s.icon}-dark.svg`} alt="" width="28" height="28" />
+                    <img class="sy-disc__icon-on-dark" src={`/icons/services/${s.icon}-light.svg`} alt="" width="28" height="28" />
+                  </>
+                )}
+              </span>
+            )}
             <span class="sy-disc__main">
               <span class="sy-disc__name">{s.name}</span>
               {s.kind && <span class="sy-disc__kind">{s.kind}</span>}

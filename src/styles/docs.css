@@ -1034,6 +1034,23 @@ button.sy-iconbtn:focus-visible {
   outline: 2px solid var(--sl-color-accent);
   outline-offset: -2px;
 }
+.sy-disc__icon {
+  flex: none;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  margin-inline-end: 12px;
+}
+.sl-markdown-content .sy-disc__icon img {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  object-fit: contain;
+}
+:root[data-theme='dark'] .sy-disc__icon-on-light,
+:root[data-theme='light'] .sy-disc__icon-on-dark {
+  display: none;
+}
 .sy-disc__main,
 .sy-set__main {
   flex: 1;
@@ -1145,6 +1162,9 @@ button.sy-iconbtn:focus-visible {
   }
   .sy-disc__main {
     flex-basis: calc(100% - 24px);
+  }
+  .sy-disc__icon + .sy-disc__main {
+    flex-basis: calc(100% - 76px);
   }
   .sy-disc__chev,
   .sy-link__chev {

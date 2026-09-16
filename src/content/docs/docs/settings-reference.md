@@ -15,8 +15,6 @@ At the top, before any group:
 
 | Setting | What it does |
 | --- | --- |
-| Title | The name of this Stackyard instance. |
-| Description | Free text shown alongside the title. |
 | Host IP | Your server's own address. Setting it lets badges and widgets reach services on that IP, which the SSRF guard would otherwise block. See [Security](/docs/security/). |
 
 ### Language

@@ -32,6 +32,62 @@ export function desktopCols(avail) {
   return Math.max(DESKTOP_COL.min, Math.min(DESKTOP_COL.max, fit));
 }
 
+/** Must match the sparse auto-placement of `.grid`, or a tile lands below the page.
+
+    @template T
+    @param {T[]} tiles in display order
+    @param {(tile: T) => [number, number]} span columns and rows a tile takes
+    @param {number} cols @param {number} rows
+    @returns {T[][]} */
+export function desktopPages(tiles, span, cols, rows) {
+  /** @type {T[][]} */
+  const pages = [];
+  /** @type {T[]} */
+  let cur = [];
+  /** @type {boolean[][]} */
+  let taken = [];
+  let r = 0,
+    c = 0;
+  const free = (
+    /** @type {number} */ row,
+    /** @type {number} */ col,
+    /** @type {number} */ w,
+    /** @type {number} */ h,
+  ) => {
+    for (let y = row; y < row + h; y++) for (let x = col; x < col + w; x++) if (taken[y]?.[x]) return false;
+    return true;
+  };
+  for (const tile of tiles) {
+    const [sw, sh] = span(tile);
+    const w = Math.min(Math.max(1, sw), cols);
+    const h = Math.max(1, sh);
+    const place = () => {
+      for (;;) {
+        for (; c + w <= cols; c++) if (free(r, c, w, h)) return r;
+        r++;
+        c = 0;
+      }
+    };
+    let row = place();
+    if (row + h > rows && cur.length) {
+      pages.push(cur);
+      cur = [];
+      taken = [];
+      r = 0;
+      c = 0;
+      row = place();
+    }
+    for (let y = row; y < row + h; y++) {
+      taken[y] ??= [];
+      for (let x = c; x < c + w; x++) taken[y][x] = true;
+    }
+    c += w;
+    cur.push(tile);
+  }
+  if (cur.length) pages.push(cur);
+  return pages;
+}
+
 export function restorePage(stored, totalPages) {
   const n = Number(stored);
   if (stored == null || stored === '' || !Number.isInteger(n) || n < 0) return 0;

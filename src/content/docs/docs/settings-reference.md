@@ -38,7 +38,7 @@ If every app suddenly shows as unhealthy, the socket proxy address is the usual 
 
 | Setting | What it does |
 | --- | --- |
-| Password Protection | Sets or changes the dashboard password. Minimum 8 characters. Leave blank to keep the existing one. |
+| Password Protection | Sets or changes the dashboard password. Between 8 and 1024 characters. Leave blank to keep the existing one. |
 | Sign out all devices | Ends every session everywhere, including the one you are using. Use it if you think a session may be compromised. |
 
 Locked out? See [password recovery](/docs/troubleshooting/#i-forgot-the-password-and-i-am-locked-out).

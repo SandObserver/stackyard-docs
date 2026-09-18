@@ -5,7 +5,7 @@ description: Stackyard is a calm, self-hosted homelab dashboard for your apps, w
 
 Stackyard is a self-hosted dashboard for your homelab. Apps, folders, a few widgets and status badges, in one container.
 
-<img src="/img/dashboard-ff78b802.jpg" width="1800" height="1125" alt="The Stackyard dashboard, with widgets, app tiles, a folder and the dock." />
+<img src="/img/dashboard-b3d50cc8.jpg" width="1800" height="1125" alt="The Stackyard dashboard, with widgets, app tiles, a folder and the dock." />
 
 - **Calm.** A health badge shows only when something is wrong.
 - **Badges from any API.** Pick a value from a service's API response. No code. See [Badges](/docs/badges/).

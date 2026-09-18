@@ -49,12 +49,12 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0d1117' } },
-        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-8728426c.jpg` } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-64722d2b.jpg` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
         { tag: 'meta', attrs: { property: 'og:site_name', content: 'Stackyard' } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og-8728426c.jpg` } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og-64722d2b.jpg` } },
       ],
 
       expressiveCode: {

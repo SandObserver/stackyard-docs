@@ -9,7 +9,7 @@ A dashboard with nothing on it shows a welcome screen instead of tiles. Its **Op
 
 ## Set a password first
 
-In **General**, turn on Password Protection. The minimum length is 8 characters.
+In **General**, turn on Password Protection. The length must be between 8 and 1024 characters.
 
 :::caution
 Until a password is set, the endpoint that sets one accepts the first caller with no authentication. On a shared network, the first person to reach a fresh install can claim the account.

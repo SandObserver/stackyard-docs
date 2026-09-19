@@ -1,0 +1,74 @@
+---
+import { readRepoFile } from '../lib/repo';
+
+const source = readRepoFile('ui/js/icon-set.js');
+let sprite = '';
+let ids: string[] = [];
+if (source) {
+  const mod = await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+  let defs = '';
+  let syms = '';
+  ids = Object.keys(mod.ICONS);
+  for (const id of ids) {
+    const s = mod.symbol(id, mod.ICONS[id]);
+    defs += s.defs;
+    syms += s.sym;
+  }
+  sprite = `<svg class="sy-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>${defs}</defs>${syms}</svg>`;
+}
+---
+
+{
+  source ? (
+    <div class="sy-iconset not-content">
+      <Fragment set:html={sprite} />
+      {ids.map(id => (
+        <figure>
+          <svg class="sy-icon" width="28" height="28" aria-hidden="true" focusable="false">
+            <use href={`#sy-solid-${id}`} />
+          </svg>
+          <figcaption>{id}</figcaption>
+        </figure>
+      ))}
+    </div>
+  ) : (
+    <p>
+      See <a href="https://github.com/SandObserver/stackyard/blob/main/ui/js/icon-set.js">ui/js/icon-set.js</a>.
+    </p>
+  )
+}
+
+<style is:global>
+  .sy-iconset {
+    --icon-accent: #00d2e0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 1rem 0.5rem;
+    margin-block: 1.5rem;
+  }
+  :root[data-theme='light'] .sy-iconset {
+    --icon-accent: #0071a4;
+  }
+  .sy-iconset figure {
+    display: grid;
+    justify-items: center;
+    gap: 0.4rem;
+    margin: 0;
+  }
+  .sy-iconset figcaption {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+  .sy-iconset .sy-sprite {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+  .sy-i { fill: currentColor; }
+  .sy-i3 { fill: currentColor; fill-opacity: 0.4; }
+  .sy-a { fill: var(--icon-accent, currentColor); }
+  .sy-is { stroke: currentColor; }
+  .sy-i3s { stroke: currentColor; stroke-opacity: 0.4; }
+  .sy-as { stroke: var(--icon-accent, currentColor); }
+</style>

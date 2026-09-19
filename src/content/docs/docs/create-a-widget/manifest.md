@@ -60,17 +60,19 @@ Settings lists every item with an icon. A widget that names a `glyph` shows it. 
 
 | `glyph` | What it depicts |
 | --- | --- |
-| `clock` | A dial and hands |
+| `clock` | A dial with hands |
 | `weather` | A sun behind a cloud |
-| `gauge` | A dial with a needle, for a measured figure |
-| `shield` | A shield with record lines, for a name server |
-| `drive` | A drive with a trace across it |
-| `archive` | A store with an arrow into it |
-| `shelf` | Book spines |
+| `gauge` | A rising line, for live system figures |
+| `shield` | Queries flowing out, one blocked |
+| `drive` | A drive with a status light |
+| `archive` | A circular arrow around a clock |
+| `shelf` | Book spines, one leaning |
 | `play` | A play mark in a frame |
 | `network` | Three linked nodes |
-| `merge` | Two branches joining one |
-| `panels` | Two panels, one handing over to the other |
+| `merge` | A branch leaving a line |
+| `panels` | One card between its neighbours |
+
+The icons come from the shared [icon set](/docs/contributing/design-system/#icons).
 
 Two widgets may not name the same glyph. A test refuses it. A name not on this list is rejected at startup.
 

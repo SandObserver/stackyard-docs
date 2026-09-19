@@ -6,7 +6,7 @@ description: How a Stackyard version is cut, signed and published, and how the p
 ## Cut a release
 
 1. Run **Release prep** in Actions with the version, such as `1.8.0`.
-2. It folds `changelog.d/` into the changelog, bumps the version, pins the demo image, and opens a pull request.
+2. It dates the `[Unreleased]` section, bumps the version, pins the demo image, and opens a pull request.
 3. Merge it. The tag builds, scans, signs and publishes the image and the release page.
 4. Merge the Community Applications pull request that follows.
 
@@ -16,7 +16,7 @@ If a release build fails, fix `main`, delete the tag, and push it again.
 
 ## Secrets
 
-- `RELEASE_APP_CLIENT_ID` and `RELEASE_APP_PRIVATE_KEY`: a GitHub App with read and write on Contents and Pull requests, installed on this repository only. The built-in token cannot trigger the release workflows.
+- `RELEASE_APP_CLIENT_ID` and `RELEASE_APP_PRIVATE_KEY`: a GitHub App with read and write on Contents and Pull requests, installed on this repository only. The built-in token cannot trigger the release workflows. The app is also a bypass actor on the `main` ruleset, so it can push changelog entries after each merge.
 - `DOCS_DEPLOY_HOOK_URL`: a Cloudflare Pages deploy hook. It rebuilds this site after a stable release. The release still succeeds without it.
 
 ## Demo

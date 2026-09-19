@@ -1,7 +1,9 @@
 ---
 title: Stackyard design system
-description: The Stackyard colours, logo and the few design rules that go beyond Apple's Human Interface Guidelines.
+description: The Stackyard colours, logo, icons and the few design rules that go beyond Apple's Human Interface Guidelines.
 ---
+
+import IconSet from '../../../../components/IconSet.astro';
 
 Stackyard follows Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines) for type, spacing, controls and motion. This page covers only what is specific to Stackyard. Tokens live in `ui/css/tokens.css`.
 
@@ -58,3 +60,38 @@ Use the files as they are. Do not recolour, stretch or redraw them.
     <figcaption><a href="/img/stackyard-mark-light.svg" download>Mark, light</a></figcaption>
   </figure>
 </div>
+
+## Icons
+
+The interface draws one icon set, defined in [`ui/js/icon-set.js`](https://github.com/SandObserver/stackyard/blob/main/ui/js/icon-set.js). This list is built from that file, so it always matches the app.
+
+<IconSet />
+
+Each icon is a short list of shapes on a 24-unit grid. The file turns the list into an SVG sprite. Icons follow the text colour, and one part per icon takes the accent.
+
+| Rule | Value |
+| --- | --- |
+| Grid | 24 by 24. Draw inside 2 to 22. |
+| Coordinates | Whole numbers on every straight edge. |
+| Stroke and gap | 2 and 2. |
+| Corners | 4 for shapes 14 or larger, 3 medium, 2 small. |
+| Bars and dots | Bars 2 high, rows every 4. Dots radius 2, nodes radius 3. |
+| Accent | At most one part: the thing the icon is about. |
+
+### Adding an icon for a widget
+
+1. Add an entry to `ICONS` in `ui/js/icon-set.js`. Draw what the widget shows, in as few shapes as read at 16 pixels.
+
+   ```js
+   system: {
+     shapes: [
+       line('M3 16 7 12 11 15 16 8'),  // the graph
+       dot(19, 6, 3, 'accent'),         // the latest reading
+     ],
+   },
+   ```
+
+2. Map a glyph name to it in `ui/js/widget-glyphs.js`, and add the same name to `VALID_GLYPHS` in `api/src/widgets.js`.
+3. Set `"glyph"` in the widget's `widget.json`. See [List icon](/docs/create-a-widget/manifest/#list-icon).
+
+`rect`, `circle` and `shape` draw bodies. `detail`, `dot` and `bar` draw small parts. `line` and `ring` draw lines. A test rejects a glyph that points at no icon.

@@ -38,7 +38,6 @@ CI runs `.github/actions/checks/action.yml`:
 ```sh
 npm ci
 node scripts/changelog-check.js
-node scripts/changelog-fragments.js --check
 node scripts/bump-cache-busting.js --check
 npm run paths:check
 cd api && npm test
@@ -53,7 +52,7 @@ docker build -t stackyard:ci .
 
 CodeQL and Trivy also run. Both block on a finding.
 
-- Do not edit `CHANGELOG.md`. Add a fragment in `changelog.d/` named `<section>-<slug>.md`.
+- Do not edit `CHANGELOG.md`. List user-visible changes in the pull request description under **Changelog**, as `- ` lines below a Keep a Changelog heading such as `### Fixed`. Merging adds them to `[Unreleased]`.
 - Write `?v=1` on new `/css/` and `/js/` imports. The release sets the real hash.
 - A new `ui/js` module needs two entries in `tsconfig.frontend.json`: the path and its `?v=*` form.
 - Run Biome through `npm run lint`. A bare `npx biome` runs an unrelated package.

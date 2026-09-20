@@ -30,8 +30,8 @@ Medium only. One marker per service, with an optional legend.
   { name: 'Plausible', icon: 'plausible', kind: 'Web analytics', needs: 'URL, site ID, API key',
     fields: [['Plausible URL', 'Such as `plausible:8000`.'], ['Site ID', 'The site domain.'], ['Stats API key', '']],
     links: [{ label: 'plausible/analytics', href: 'https://github.com/plausible/analytics' }] },
-  { name: 'Umami', icon: 'umami', kind: 'Web analytics', needs: 'URL, website ID, login',
-    fields: [['Umami URL', 'Such as `umami:3000`.'], ['Website ID', 'The website UUID.'], ['Username and password', 'The Umami login.']],
+  { name: 'Umami', icon: 'umami', kind: 'Web analytics', needs: 'URL, website ID, API key or login',
+    fields: [['Umami URL', 'Such as `umami:3000`.'], ['Website ID', 'The website UUID.'], ['API key', 'Umami 3.4.0 and later. Leave empty to sign in with a username and password.'], ['Username and password', 'The Umami login.']],
     links: [{ label: 'umami-software/umami', href: 'https://github.com/umami-software/umami' }] },
 ]} />
 

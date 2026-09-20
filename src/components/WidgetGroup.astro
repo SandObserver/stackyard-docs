@@ -1,11 +1,13 @@
 ---
+import { manifestCard } from '../lib/widget-manifest';
+
 /* Geometry must match WidgetPreview. See the note there. */
 interface Item {
   type: string;
   file: string;
   id: string;
   size?: 'small' | 'medium';
-  card?: 'dark' | 'light' | 'translucent' | null;
+  card?: 'dark' | 'graphite' | 'light' | 'translucent' | null;
   title: string;
   label?: string;
 }
@@ -37,6 +39,7 @@ const built = items.map((it) => {
     tx: (w - dw * scale) / 2,
     ty: (CARD_H - dh * scale) / 2,
     src: `/widgets/${it.type}/${it.file}?id=${encodeURIComponent(it.id)}&size=${size}&lang=en`,
+    declared: manifestCard(it.type, it.file),
   };
 });
 ---
@@ -49,7 +52,8 @@ const built = items.map((it) => {
           <div class="wpv__slot">
             <div
               class="wpv__card"
-              data-card={b.card ?? undefined}
+              data-card={b.card ?? b.declared.card ?? undefined}
+              data-appearance={b.declared.appearance}
               style={`width:${b.w}px;height:${CARD_H}px;border-radius:${RADIUS}px;`}
             >
               <iframe

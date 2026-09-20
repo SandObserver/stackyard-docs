@@ -1,4 +1,6 @@
 ---
+import { manifestCard } from '../lib/widget-manifest';
+
 /* Geometry mirrors the product and must stay in step with it: the design
    canvas from WIDGET_DESIGN, the card width from the 1041px six-column grid,
    WIDGET_HEIGHTS for height, WIDGET_R for the corner, and mountScaledWidget's
@@ -8,12 +10,13 @@ interface Props {
   file: string;
   id: string;
   size?: 'small' | 'medium';
-  card?: 'dark' | 'light' | 'translucent' | null;
+  card?: 'dark' | 'graphite' | 'light' | 'translucent' | null;
   title: string;
   caption?: string;
 }
 
 const { type, file, id, size = 'small', card = null, title, caption } = Astro.props;
+const declared = manifestCard(type, file);
 
 const DESIGN = { small: [170, 170], medium: [360, 170] } as const;
 const CARD_W = { small: 152.67, medium: 330.34 } as const;
@@ -33,7 +36,8 @@ const src = `/widgets/${type}/${file}?id=${encodeURIComponent(id)}&size=${size}&
   <div class="wpv__mat">
     <div
       class="wpv__card"
-      data-card={card ?? undefined}
+      data-card={card ?? declared.card ?? undefined}
+      data-appearance={declared.appearance}
       style={`width:${w}px;height:${CARD_H}px;border-radius:${RADIUS}px;`}
     >
       <iframe

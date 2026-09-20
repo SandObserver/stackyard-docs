@@ -78,19 +78,28 @@ Two widgets may not name the same glyph. A test refuses it. A name not on this l
 
 ## Card background
 
-The card behind a widget is glass by default: dark, semi-transparent and blurred, so the wallpaper reads through. A widget can name another:
+The card behind a widget follows the display mode: white in light, `#1c1c1e` in dark. A widget can name another:
 
 | `card` | What it looks like |
 | --- | --- |
-| `dark` | Solid dark, `#1c1c1e`. |
-| `light` | Solid white. |
-| `translucent` | Darker than the default but more transparent, with a stronger blur. |
+| `dark` | Solid `#1c1c1e` in both themes. |
+| `graphite` | Solid `#2c2c2e` in both themes, for a widget drawn on that grey. |
+| `light` | Solid white in both themes. |
+| `translucent` | The default card, kept for a widget that named it. |
 
 A `card` inside a `views` entry overrides the widget-level one for that view.
 
-Keep the default glass when the widget paints its own interior. The [Weather](/docs/widgets/weather/) widget does this, white by day and dark by night.
+Keep the default card when the widget paints its own interior. The [Weather](/docs/widgets/weather/) widget does this, white by day and dark by night.
 
-Under the increased-contrast setting, `translucent` becomes as dense as the default card. An unknown name is rejected.
+## Widgets drawn only in dark
+
+A widget with no light design declares it, and keeps its dark card and dark interior on a light dashboard:
+
+```json
+{ "appearance": "dark" }
+```
+
+`dark` is the only value. An unknown `card` or `appearance` is rejected at startup.
 
 ## Field types
 

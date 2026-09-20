@@ -24,6 +24,8 @@ A problem shows a red `!`. Hover it for the reason. Turn on Hide Healthy Badge i
 
 Up to 10 characters of text, in a colour you pick.
 
+Badge colours are Accent, Success, Warning, Danger and Info. Each is drawn for the display mode it is shown in. The colour wheel opens the system colours and a colour code for anything else.
+
 ## Live activity
 
 A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response. Pick one.
@@ -35,7 +37,7 @@ Tick **Secret** on a header to keep its value on the server. Poll sets how often
 One API can feed up to five values. Press Add Label for each.
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/app-edit-labels-b87badcc.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark-7cf4b4cd.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/app-edit-labels-af3ec51a.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark-2ff5328b.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy">
 </figure>
 
 - **Show From** keeps a value hidden below that count.

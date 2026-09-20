@@ -6,7 +6,7 @@ description: A digital or analog clock for any timezone on your Stackyard dashbo
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
 import SettingList from '../../../../components/SettingList.astro';
 
-A digital or analog clock. It runs in the browser and needs no service.
+A digital or analog clock. It runs in the browser and needs no service. The face follows [Display Mode](/docs/customization/).
 
 <WidgetGroup items={[
   { type: 'clock', file: 'digital.html', id: 'demo-clock-digital', title: 'Digital clock', label: 'Digital' },
@@ -17,7 +17,6 @@ Small only.
 
 <SettingList title="Settings" items={[
   { name: 'Style', text: 'Digital or Analog.' },
-  { name: 'Theme', text: 'A dark or a light card.' },
   { name: 'Timezone', text: 'An IANA name, such as `America/Toronto`. Blank uses the browser time.', optional: true },
   { name: 'Show date', text: 'The weekday and date under the time. On by default.' },
 ]} />

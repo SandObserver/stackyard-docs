@@ -9,7 +9,9 @@ Set in the admin UI under **Appearance**. Everything applies immediately.
 
 Turning titles off gives a denser grid of icons alone.
 
-Settings Display Mode affects the Settings pages only. The dashboard stays dark: no stylesheet declares a `prefers-color-scheme` rule, so it does not follow the operating system.
+Display Mode sets light or dark for the dashboard and the Settings pages. System follows the device and changes with it, so a device that switches at sunset switches Stackyard too. The choice is stored in the browser, so each device has its own.
+
+Widget cards are white in light mode and near-black in dark mode. A few widgets are drawn only in dark and keep a dark card in both. The Weather widget follows its own day and night, never the display mode.
 
 Increased contrast and reduced motion are honoured. Reduced transparency drops the blur behind cards and keeps the motion.
 
@@ -19,7 +21,7 @@ Browsers only allow Keep Screen Awake over HTTPS. On a plain HTTP address the to
 
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/appearance-14c98840.png" alt="The Appearance section of the admin UI" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-ff2e7225.png" alt="The Appearance section of the admin UI" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/appearance-e9d99c15.png" alt="The Appearance section of the admin UI" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-449811e9.png" alt="The Appearance section of the admin UI" loading="lazy">
   <figcaption>Appearance, in the admin UI.</figcaption>
 </figure>
 

@@ -67,7 +67,7 @@ How the dashboard looks. Every change applies immediately. Explained in full on 
 | Setting | What it does |
 | --- | --- |
 | Keep Screen Awake | Stops the screen dimming while the dashboard is open. Browsers only allow this over HTTPS. |
-| Settings Display Mode | Light, dark or system, for these settings pages only. Stored in this browser, so it does not follow you to another device. |
+| Display Mode | Light, dark or system, for the dashboard and these settings pages. Stored in this browser, so it does not follow you to another device. |
 
 ### Wallpaper
 

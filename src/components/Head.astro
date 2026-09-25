@@ -59,5 +59,15 @@ const breadcrumb = {
     sync(box);
     observer.observe(box);
   }
+
+  /* Expressive Code makes a scrolling code block a region without a name. */
+  const blocks = [...document.querySelectorAll<HTMLElement>('.expressive-code pre')];
+  const label = new MutationObserver(() => {
+    blocks.forEach((pre, i) => {
+      if (pre.getAttribute('role') !== 'region') pre.removeAttribute('aria-label');
+      else pre.setAttribute('aria-label', `Code example ${i + 1}${pre.dataset.language ? `, ${pre.dataset.language}` : ''}`);
+    });
+  });
+  for (const pre of blocks) label.observe(pre, { attributes: true, attributeFilter: ['role'] });
 </script>
 <script src="../scripts/motion.ts"></script>

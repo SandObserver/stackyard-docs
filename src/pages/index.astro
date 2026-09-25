@@ -1,6 +1,5 @@
 ---
 import { readAppVersion } from '../lib/repo';
-import '../styles/fonts.css';
 
 const version = readAppVersion();
 
@@ -10,14 +9,14 @@ const description =
 
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
 const canonical = `${site}/`;
-const ogImage = `${site}/img/og-64722d2b.jpg`;
+const ogImage = `${site}/img/og-48fdebbd.jpg`;
 
 const publisher = {
   '@type': 'Organization',
   '@id': `${site}/#organization`,
   name: 'Stackyard',
   url: `${site}/`,
-  logo: `${site}/img/stackyard-wordmark-dark.svg`,
+  logo: `${site}/img/stackyard-wordmark-dark-4680834d.svg`,
   sameAs: ['https://github.com/SandObserver/stackyard'],
 };
 
@@ -88,13 +87,6 @@ const schema = {
     <script type="application/ld+json" set:html={JSON.stringify(schema)} />
     <link
       rel="preload"
-      as="font"
-      type="font/woff2"
-      href="/fonts/inter-latin.woff2"
-      crossorigin
-    />
-    <link
-      rel="preload"
       as="image"
       type="image/jpeg"
       href="/img/wallpaper.jpg"
@@ -107,7 +99,7 @@ const schema = {
 <div class="wrap">
   <nav class="nav">
     <div class="brand">
-      <img src="/img/stackyard-wordmark-dark.svg" alt="Stackyard" width="125" height="28">
+      <img src="/img/stackyard-wordmark-dark-4680834d.svg" alt="Stackyard" width="125" height="28">
     </div>
     <div class="nav-right">
       <a class="pill pill-solid" href="/docs/installation/docker/">Install</a>
@@ -148,7 +140,7 @@ const schema = {
             <div class="np">
               <iframe
                 class="np-frame"
-                src="/widgets/nowplaying/index.html?id=w-nowplaying&size=small&lang=en"
+                src="/widgets/nowplaying/index.html?id=np-plex&size=small&lang=en"
                 title="Now Playing widget"
                 aria-label="Now Playing widget"
                 loading="lazy"
@@ -158,39 +150,35 @@ const schema = {
             </div>
 
             <div class="cell">
-              <div class="itile" style="background:#3d1854"><img src="/icons/homebridge.svg" alt=""></div>
+              <div class="itile" style="--tc:#3d1854"><img src="/icons/homebridge.svg" alt=""></div>
               <span class="ilabel">Homebridge</span>
             </div>
             <div class="cell">
-              <div class="itile" style="background:#f2f2f7"><img src="/icons/pi-hole.svg" alt=""></div>
-              <span class="ilabel">Pi-Hole</span>
+              <div class="itile" style="--tc:#123054"><img src="/icons/authelia.svg" alt=""></div>
+              <span class="ilabel">Authelia</span>
             </div>
             <div class="cell">
-              <div class="itile" style="background:#f2f2f7"><img src="/icons/authentik.svg" alt=""></div>
-              <span class="ilabel">Authentik</span>
+              <div class="itile" style="--tc:#1c1c1e"><img src="/icons/filebrowser-quantum.svg" alt=""></div>
+              <span class="ilabel">Filebrowser</span>
             </div>
             <div class="cell">
-              <div class="itile" style="background:#1c1c1e"><img src="/icons/portainer.svg" alt=""></div>
-              <span class="ilabel">Portainer</span>
+              <div class="itile" style="--tc:#1c1c1e"><img src="/icons/w-plex.svg" alt=""></div>
+              <span class="ilabel">Plex</span>
             </div>
 
             <div class="cell">
-              <div class="itile" style="background:#1c1c1e">
-                <img src="/icons/jellyfin.svg" alt="">
-                <span class="badge" style="background:#1d6cf5" data-live-jellyfin>2</span>
-              </div>
-              <span class="ilabel">Jellyfin</span>
-            </div>
-            <div class="cell">
-              <div class="itile" style="background:#1c1c1e">
-                <img src="/icons/seerr.svg" alt="">
+              <div class="itile" style="--tc:#4e38f5"><img src="/icons/seerr-light.svg" alt="">
                 <span class="badge" style="background:#ffcc00;color:#1c1c1e" data-live-seerr>7</span>
               </div>
               <span class="ilabel">Seerr</span>
             </div>
             <div class="cell">
-              <div class="itile" style="background:#1c1c1e"><img src="/icons/npm.svg" alt=""></div>
+              <div class="itile" style="--tc:#cc3737"><img src="/icons/npm.svg" alt=""></div>
               <span class="ilabel">NPM</span>
+            </div>
+            <div class="cell">
+              <div class="itile" style="--tc:#348a7a"><img src="/icons/ntfy.svg" alt=""></div>
+              <span class="ilabel">Ntfy</span>
             </div>
             <div class="cell">
               <div class="folder">
@@ -217,7 +205,7 @@ const schema = {
               <span class="ilabel">Monitoring</span>
             </div>
             <div class="cell">
-              <div class="itile" style="background:#3b4250"><img src="/icons/settings.svg" alt=""></div>
+              <div class="itile" style="--tc:#1c1c1e"><img class="itile-sys" src="/icons/settings-toggles.svg" alt=""></div>
               <span class="ilabel">Settings</span>
             </div>
 
@@ -239,28 +227,28 @@ const schema = {
       <div class="fvis">
         <div class="bdemo">
           <div class="bdemo-item">
-            <div class="banchor" style="background:#3A3A3C"><span class="badge" style="background:#30D158"></span></div>
+            <div class="banchor" style="--tc:#3A3A3C"><span class="badge" style="background:#30D158"></span></div>
             <div class="bmeta">
               <span class="bcap">Health check</span>
               <span class="bsrc">Container health or a ping</span>
             </div>
           </div>
           <div class="bdemo-item">
-            <div class="banchor" style="background:#4A4A6A"><span class="badge" style="background:#0091FF">4K</span></div>
+            <div class="banchor" style="--tc:#4A4A6A"><span class="badge" style="background:#0091FF">4K</span></div>
             <div class="bmeta">
               <span class="bcap">Fixed label</span>
               <span class="bsrc">Text you set</span>
             </div>
           </div>
           <div class="bdemo-item">
-            <div class="banchor" style="background:#5A4636"><span class="badge" style="background:#ffcc00;color:#1c1c1e" data-live-seerr>7</span></div>
+            <div class="banchor" style="--tc:#5A4636"><span class="badge" style="background:#ffcc00;color:#1c1c1e" data-live-seerr>7</span></div>
             <div class="bmeta">
               <span class="bcap">Live activity</span>
               <span class="bsrc">A number from the service API</span>
             </div>
           </div>
           <div class="bdemo-item">
-            <div class="banchor" style="background:#3F4A6B"><span class="badge badge-peek" style="background:#30D158"></span><span class="badge" style="background:#ffcc00;color:#1c1c1e">4</span></div>
+            <div class="banchor" style="--tc:#3F4A6B"><span class="badge badge-peek" style="background:#30D158"></span><span class="badge" style="background:#ffcc00;color:#1c1c1e">4</span></div>
             <div class="bmeta">
               <span class="bcap">Several values</span>
               <span class="bsrc">One poll, each label named in a list</span>
@@ -300,23 +288,25 @@ const schema = {
             <span class="achip">Widgets</span>
             <span class="achip">Folders</span>
           </div>
-          <div class="arow">
-            <svg class="ahandle" viewBox="0 0 24 24" aria-hidden="true"><g><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="6" r="2" fill="currentColor"/><circle cx="9" cy="12" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="9" cy="18" r="2" fill="currentColor"/><circle cx="15" cy="18" r="2" fill="currentColor"/></g><g></g></svg>
-            <span class="aicon" style="background:#1c1c1e"><img src="/icons/w-github.svg" alt=""></span>
-            <span class="aname">GitHub</span>
-            <span class="apills">
-              <span class="apill" style="background:rgba(0,145,255,.20);color:#5CB8FF">Dock</span>
-              <span class="apill" style="background:rgba(219,52,242,.20);color:#EA8DFF">Badge</span>
-              <span class="apill" style="background:rgba(48,209,88,.20);color:#4AD968">Health</span>
-            </span>
-          </div>
-          <div class="arow">
-            <svg class="ahandle" viewBox="0 0 24 24" aria-hidden="true"><g><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="6" r="2" fill="currentColor"/><circle cx="9" cy="12" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="9" cy="18" r="2" fill="currentColor"/><circle cx="15" cy="18" r="2" fill="currentColor"/></g><g></g></svg>
-            <span class="aicon aicon-wg" style="background:#3A3A3C"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="lp-nowplaying-m" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/><path d="M10 8v8l6-4z" fill="#000" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g mask="url(#lp-nowplaying-m)"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor"/></g><g><path d="M10 8v8l6-4z" class="sy-a sy-as" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg></span>
-            <span class="aname">Now Playing</span>
-            <span class="apills">
-              <span class="apill" style="background:rgba(0,210,224,.20);color:#3BDDEC">Widget</span>
-            </span>
+          <div class="arows">
+            <div class="arow">
+              <svg class="ahandle" viewBox="0 0 24 24" aria-hidden="true"><g><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="6" r="2" fill="currentColor"/><circle cx="9" cy="12" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="9" cy="18" r="2" fill="currentColor"/><circle cx="15" cy="18" r="2" fill="currentColor"/></g><g></g></svg>
+              <span class="aicon" style="background:#1c1c1e"><img src="/icons/w-github.svg" alt=""></span>
+              <span class="aname">GitHub</span>
+              <span class="apills">
+                <span class="apill" style="background:rgba(109,124,255,.20);color:#B7B9FF">Dock</span>
+                <span class="apill" style="background:rgba(0,145,255,.20);color:#79C5FF">Badge</span>
+                <span class="apill" style="background:rgba(255,55,95,.20);color:#FF9FCF">Health</span>
+              </span>
+            </div>
+            <div class="arow">
+              <svg class="ahandle" viewBox="0 0 24 24" aria-hidden="true"><g><circle cx="9" cy="6" r="2" fill="currentColor"/><circle cx="15" cy="6" r="2" fill="currentColor"/><circle cx="9" cy="12" r="2" fill="currentColor"/><circle cx="15" cy="12" r="2" fill="currentColor"/><circle cx="9" cy="18" r="2" fill="currentColor"/><circle cx="15" cy="18" r="2" fill="currentColor"/></g><g></g></svg>
+              <span class="aicon aicon-wg" style="background:#3A3A3C"><svg viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="lp-nowplaying-m" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24"><rect width="24" height="24" fill="#fff"/><path d="M10 8v8l6-4z" fill="#000" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></mask></defs><g mask="url(#lp-nowplaying-m)"><rect x="3" y="3" width="18" height="18" rx="4" fill="currentColor"/></g><g><path d="M10 8v8l6-4z" class="sy-a sy-as" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg></span>
+              <span class="aname">Now Playing</span>
+              <span class="apills">
+                <span class="apill" style="background:rgba(48,209,88,.20);color:#6BE083">Widget</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -354,7 +344,7 @@ const schema = {
   <div class="wrap foot-in">
     <div class="foot-l">
       <div class="brand">
-        <img src="/img/stackyard-wordmark-dark.svg" alt="Stackyard" width="125" height="28">
+        <img src="/img/stackyard-wordmark-dark-4680834d.svg" alt="Stackyard" width="125" height="28">
       </div>
       <div class="foot-links">
         <a href="https://github.com/SandObserver/stackyard">GitHub</a><span>·</span>
@@ -411,14 +401,11 @@ if (reduced) {
 }
 
 if (!reduced) {
-  const jellyfin = document.querySelectorAll('[data-live-jellyfin]');
   const seerr = document.querySelectorAll('[data-live-seerr]');
   const jitter = (base) => String(Math.max(1, base + Math.round((Math.random() - 0.5) * 2)));
   let timer = 0;
   const tick = () => {
-    const j = jitter(2);
     const s = jitter(7);
-    jellyfin.forEach((n) => { n.textContent = j; });
     seerr.forEach((n) => { n.textContent = s; });
   };
   const schedule = () => {
@@ -449,10 +436,11 @@ if (!reduced) {
       --success:#30D158;
       --radius-lg:14px;
       --radius-md:10px;
-      --font-ui:'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-ui:-apple-system, BlinkMacSystemFont, system-ui, sans-serif;
       --font-display:var(--font-ui);
       /* Keep the near-black ink. White on --accent measures 1.86:1 and fails WCAG AA. */
-      --on-accent-ink:#06181B;
+      --on-accent-ink:#000000;
+      --fill:rgba(120,120,128,.32);
       --spring:cubic-bezier(.34,1.56,.64,1);
       --gs:1;
     }
@@ -471,11 +459,11 @@ if (!reduced) {
     /* Keep the hit area. The drawn pill is 40px, below the 44px minimum. */
     .pill::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
     .pill-solid{background:var(--label-primary);color:#101012}
-    .pill-ghost{background:rgba(255,255,255,.07);color:var(--label-secondary);border:1px solid var(--separator)}
-    .pill-ghost:hover{color:var(--label-primary)}
+    .pill-ghost{background:var(--fill);color:var(--label-primary)}
+    .pill-ghost:hover{color:var(--label-primary);background:rgba(120,120,128,.42)}
 
     .hero{padding:44px 0 40px}
-    .hero h1{margin:0;font-family:var(--font-display);font-size:74px;line-height:1.02;letter-spacing:-0.035em;
+    .hero h1{margin:0;font-family:var(--font-display);font-size:74px;line-height:1.04;letter-spacing:-0.025em;
       font-weight:700;color:var(--label-primary);max-width:15ch;text-wrap:balance}
     .hero p{margin:26px 0 0;font-size:19px;line-height:1.5;color:var(--a11y-dim);max-width:54ch;text-wrap:pretty}
     .cta-row{display:flex;align-items:center;gap:12px;margin-top:34px}
@@ -483,7 +471,8 @@ if (!reduced) {
       font-size:16px;font-weight:600;letter-spacing:-0.01em}
     .btn-accent{background:var(--accent);color:var(--on-accent-ink)}
     .btn-accent:hover{background:var(--accent-strong);color:var(--on-accent-ink)}
-    .btn-quiet{background:rgba(255,255,255,.08);color:var(--label-primary);border:1px solid var(--separator)}
+    .btn-quiet{background:var(--fill);color:var(--label-primary)}
+    .btn-quiet:hover{background:rgba(120,120,128,.42);color:var(--label-primary)}
 
     /* Metrics come from dashboard.css: 1041px design width, six 152.67px
        columns, 25px column gap, 30px row gap, 152px tile height. */
@@ -500,7 +489,7 @@ if (!reduced) {
       --col:calc(152.67px * var(--gs)); --tile-h:calc(152px * var(--gs));
       --gap-c:calc(25px * var(--gs));   --gap-r:calc(30px * var(--gs));
       --icon:calc(72px * var(--gs));    --art:calc(50px * var(--gs));
-      --ir:calc(16.1px * var(--gs));    --lbl:calc(13px * var(--gs));
+      --ir:calc(19px * var(--gs));    --lbl:calc(13px * var(--gs));
       --lblw:calc(84px * var(--gs));
       padding:calc(34px * var(--gs)) calc(24px * var(--gs)) 0;
       height:368px;overflow:hidden}
@@ -508,33 +497,38 @@ if (!reduced) {
       grid-auto-rows:var(--tile-h);column-gap:var(--gap-c);row-gap:var(--gap-r);
       width:100%;justify-content:center}
 
-    /* Icon geometry follows dashboard.js mkIcon and ICON_R: 72px wrap,
-       50px artwork, radius 72 * 0.2237. */
+    /* Icon geometry follows dashboard.css .plate: 72px wrap, 50px artwork,
+       19px radius. */
     .cell{width:var(--col);height:var(--tile-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:calc(6px * var(--gs))}
-    .itile{position:relative;width:var(--icon);height:var(--icon);border-radius:var(--ir);display:flex;align-items:center;justify-content:center;
-      isolation:isolate;flex-shrink:0}
-    .itile::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;pointer-events:none;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.14)}
-    .itile::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;
-      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 60%)}
+    .itile,.banchor{position:relative;display:flex;align-items:center;justify-content:center;isolation:isolate;flex-shrink:0;
+      background-color:var(--tc);
+      background-image:radial-gradient(46% 2% at 50% 0,rgba(255,255,255,.6),rgba(255,255,255,.25) 45%,transparent),
+        radial-gradient(46% 1.6% at 50% 100%,rgba(255,255,255,.35),rgba(255,255,255,.14) 45%,transparent),
+        radial-gradient(1.2% 25% at 0 50%,rgba(0,0,0,.19),transparent),
+        radial-gradient(1.2% 25% at 100% 50%,rgba(0,0,0,.19),transparent),
+        linear-gradient(oklch(from var(--tc) calc(l + .03 + l * .05) c h) 4%,var(--tc) 50%,oklch(from var(--tc) calc(l - .03 - l * .05) c h) 96%);
+      box-shadow:inset 0 .5px 0 rgba(255,255,255,.18), inset 0 -.5px 0 rgba(255,255,255,.1)}
+    .itile{width:var(--icon);height:var(--icon);border-radius:var(--ir)}
     .itile img{position:relative;z-index:1;width:var(--art);height:var(--art);object-fit:contain;display:block}
+    .itile .itile-sys{width:calc(var(--art) * 1.22);height:calc(var(--art) * 1.22)}
     .ilabel{width:var(--lblw);font-size:var(--lbl);line-height:1.3846;letter-spacing:-0.0062em;font-weight:500;
       color:rgba(255,255,255,.90);text-shadow:0 1px 4px rgba(0,0,0,.7);text-align:center;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .badge{position:absolute;top:calc(-7px * var(--gs));right:calc(-7px * var(--gs));z-index:3;min-width:calc(20px * var(--gs));height:calc(20px * var(--gs));padding:0 calc(5px * var(--gs));border-radius:50px;
-      display:flex;align-items:center;justify-content:center;font-size:calc(11px * var(--gs));line-height:1;font-weight:700;color:#fff;
+    .badge{position:absolute;top:calc(-9px * var(--gs));right:calc(-9px * var(--gs));z-index:3;min-width:calc(22px * var(--gs));height:calc(22px * var(--gs));padding:0 calc(6px * var(--gs));border-radius:50px;
+      display:flex;align-items:center;justify-content:center;font-size:calc(15px * var(--gs));line-height:1;letter-spacing:-0.0153em;font-weight:500;color:#000;
       transform:translateZ(0)}
 
-    .folder{width:var(--icon);height:var(--icon);border-radius:var(--ir);background:rgba(120,130,160,.35);
+    .folder{width:var(--icon);height:var(--icon);border-radius:calc(16px * var(--gs));background:rgba(51,51,51,.33);
       display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:calc(3px * var(--gs));padding:calc(10px * var(--gs));
-      -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
-      box-shadow:inset 1px 1px 0 rgba(255,255,255,.22),inset -1px -1px 0 rgba(0,0,0,.12)}
-    .fmini{border-radius:28%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+      -webkit-backdrop-filter:blur(12px) saturate(180%);backdrop-filter:blur(12px) saturate(180%)}
+    .fmini{border-radius:28%;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.15)}
     .fmini img{width:72%;height:72%;object-fit:contain}
 
     .wcell{width:var(--col);height:var(--tile-h);border-radius:calc(28px * var(--gs));overflow:hidden}
     /* Keep the cell background. The widget document is transparent. */
     .wcell{position:relative;background:#1c1c1e}
+    .wcell::after,.np::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:5;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.05)}
     .wframe{position:absolute;top:0;left:0;display:block;border:0;width:170px;height:170px;
       transform:scale(calc(0.8981 * var(--gs)));transform-origin:top left}
 
@@ -560,13 +554,9 @@ if (!reduced) {
        when a badge has more to report. The stack keeps its outer edge where a
        single badge sits, so the front pill shifts inward instead. */
     .badge-peek{z-index:2;box-shadow:0 0 0 1.5px rgba(0,0,0,.55)}
-    .badge-peek + .badge{right:0}
+    .badge-peek + .badge{right:-3px}
     .bdemo-item{display:flex;flex-direction:column;align-items:center;gap:12px;width:136px;text-align:center}
-    .banchor{position:relative;width:60px;height:60px;border-radius:13.4px;isolation:isolate;flex-shrink:0}
-    .banchor::before{content:"";position:absolute;inset:0;border-radius:inherit;z-index:0;
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(0,0,0,.14)}
-    .banchor::after{content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;pointer-events:none;
-      background:linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,0) 60%)}
+    .banchor{width:60px;height:60px;border-radius:16px}
     .bmeta{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
     .bcap{font-size:14px;font-weight:600;color:var(--label-primary)}
     .bsrc{font-size:12.5px;line-height:1.32;color:var(--a11y-dim);text-wrap:balance}
@@ -597,33 +587,27 @@ if (!reduced) {
     .mrow-a .mname{top:auto;bottom:calc(100% + 3px);transform:translate(-50%,-4px)}
     .mrow-a .mitem:hover .mname{transform:translate(-50%,0)}
 
-    .admin{width:100%;background:var(--bg-elevated-secondary);border:1px solid var(--separator-opaque);
-      border-radius:26px;overflow:hidden}
-    .achips{display:flex;gap:6px;padding:14px 16px 12px}
-    .achip{height:26px;padding:0 11px;border-radius:13px;display:flex;align-items:center;
-      font-size:12px;font-weight:600;color:var(--label-secondary);background:rgba(120,120,128,.18)}
-    .achip.on{background:rgba(0,210,224,.20);color:var(--accent-strong)}
-    .arow{display:flex;align-items:center;gap:11px;height:52px;padding:0 16px;border-top:1px solid var(--separator)}
+    .admin{width:100%;background:#000;border-radius:26px;overflow:hidden;padding:0 0 8px}
+    .achips{display:flex;gap:6px;padding:16px 16px 12px}
+    .achip{height:32px;padding:0 14px;border-radius:999px;display:flex;align-items:center;
+      font-size:13px;font-weight:500;color:#C7C7CC;background:var(--fill)}
+    .achip.on{background:var(--accent);color:var(--on-accent-ink);font-weight:600}
+    .arows{margin:0 8px;background:var(--bg-secondary);border-radius:22px;padding:0 12px}
+    .arow{display:flex;align-items:center;gap:11px;height:58px;padding:0 4px}
+    .arow + .arow{border-top:1px solid var(--separator-opaque)}
     .ahandle{width:13px;height:13px;flex-shrink:0;color:rgba(235,235,245,.34)}
-    .aicon{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
-    .aicon img{width:17px;height:17px;object-fit:contain;display:block}
+    .aicon{width:38px;height:38px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+    .aicon img{width:24px;height:24px;object-fit:contain;display:block}
     .aicon-wg svg{width:20px;height:20px;color:rgba(235,235,245,.82)}
-    .aname{font-size:14px;color:var(--label-primary);flex:1;white-space:nowrap}
+    .aname{font-size:13px;font-weight:600;color:#F2F2F7;flex:1;white-space:nowrap}
     .apills{display:flex;gap:5px}
-    .apill{height:20px;padding:0 8px;border-radius:6px;display:flex;align-items:center;
-      font-size:11px;font-weight:600;letter-spacing:.01em}
+    .apill{padding:3px 10px;border-radius:20px;display:flex;align-items:center;
+      font-size:11px;line-height:13px;font-weight:700;letter-spacing:.0055em}
 
-    .group{width:400px;background:var(--bg-elevated-secondary);border:1px solid var(--separator-opaque);
-      border-radius:26px}
-    .grow{display:flex;align-items:center;justify-content:space-between;height:52px;padding:0 16px}
-    .grow + .grow{border-top:1px solid var(--separator)}
-    .grow-l{font-size:15px;color:var(--label-primary)}
-    .grow-b{height:30px;padding:0 14px;border-radius:10px;border:1px solid var(--separator);
-      color:var(--label-secondary);font-size:13px;font-weight:600;display:flex;align-items:center}
 
     .langs{display:flex;gap:10px;flex-wrap:wrap;width:100%}
-    .lang{height:36px;padding:0 16px;border-radius:18px;border:1px solid var(--separator);
-      display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;color:var(--label-secondary)}
+    .lang{height:36px;padding:0 16px;border-radius:999px;background:var(--fill);
+      display:flex;align-items:center;gap:7px;font-size:15px;font-weight:500;color:#F2F2F7}
     .lang b{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.03em}
 
     .cta{background:var(--bg-elevated-tertiary);padding:58px 0}
@@ -682,20 +666,24 @@ if (!reduced) {
       .screen-inner .dgrid{grid-template-columns:repeat(4,1fr);grid-auto-rows:auto;
         column-gap:var(--gap);row-gap:var(--gap);justify-content:stretch}
       .screen-inner .cell{width:auto;height:auto;aspect-ratio:1;gap:calc(3px * var(--sc))}
-      .screen-inner .itile,.screen-inner .folder{width:74%;height:auto;aspect-ratio:1;border-radius:22.5%}
+      .screen-inner .itile,.screen-inner .folder{width:74%;height:auto;aspect-ratio:1;border-radius:26%}
       .screen-inner .itile img{width:64%;height:64%}
+      .screen-inner .itile img.itile-sys{width:78%;height:78%}
       .screen-inner .folder{gap:4%;padding:13%}
       .screen-inner .ilabel{width:100%;font-size:var(--lbl)}
-      .screen-inner .badge{top:calc(-5px * var(--sc));right:calc(-5px * var(--sc));
-        min-width:calc(15px * var(--sc));height:calc(15px * var(--sc));
-        border-radius:50px;padding:0 calc(4px * var(--sc));
-        font-size:calc(9px * var(--sc))}
+      .screen-inner .badge{top:calc(-8px * var(--sc));right:calc(-8px * var(--sc));
+        min-width:calc(18px * var(--sc));height:calc(18px * var(--sc));
+        border-radius:50px;padding:0 calc(5px * var(--sc));
+        font-size:calc(12px * var(--sc))}
       .screen-inner .wcell,.screen-inner .np{grid-column:span 2;grid-row:span 2;
         width:100%;height:auto;aspect-ratio:1;border-radius:18%;transform:none}
       /* Set by the page script from the measured card. The bordered card
          measures its own inside, so the frame stays within the border. */
       .screen-inner .wframe{transform:scale(var(--ws,.9))}
       .screen-inner .np-frame{transform:scale(var(--nps,var(--ws,.9)))}
+    }
+    @media (max-width:374px){
+      .nav .brand img{width:27px;object-fit:cover;object-position:left center}
     }
     @media (max-width:600px){
       .wrap{padding:0 20px}

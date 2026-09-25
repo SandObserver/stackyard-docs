@@ -112,6 +112,34 @@ const TOGGLES = {
 };
 const CLOUD = 'M6 20h10a4 4 0 0 0 0-8 5 5 0 0 0-9.6 1.2A3.5 3.5 0 0 0 6 20z';
 
+/* Keep the fractions. Whole units drift from the logo files. */
+function logoIcon() {
+  const f = n => +n.toFixed(3);
+  const k = 24 / 1024;
+  const R = 331 * k;
+  const wA = 151 * k;
+  const wB = 158 * k;
+  const at = (deg, r) => [f(12 + r * Math.cos((deg * Math.PI) / 180)), f(12 + r * Math.sin((deg * Math.PI) / 180))];
+  const capsule = end => {
+    const [dx, dy] = [end[0] - 12, end[1] - 12];
+    const n = [f((-dy / R) * (wB / 2)), f((dx / R) * (wB / 2))];
+    const r = f(wB / 2);
+    const d = `M${12 + n[0]} ${12 + n[1]}L${f(end[0] + n[0])} ${f(end[1] + n[1])}A${r} ${r} 0 0 0 ${f(end[0] - n[0])} ${f(end[1] - n[1])}L${12 - n[0]} ${12 - n[1]}A${r} ${r} 0 0 0 ${12 + n[0]} ${12 + n[1]}Z`;
+    return shape(d, 'ink', { lineAlt: { k: 'line', d: `M12 12L${end}` } });
+  };
+  const [ro, ri, h] = [f(R + wA / 2), f(R - wA / 2), f(wA / 2)];
+  const arc = `M${at(-90, ro)}A${ro} ${ro} 0 0 1 ${at(30, ro)}A${h} ${h} 0 0 1 ${at(30, ri)}A${ri} ${ri} 0 0 0 ${at(-90, ri)}A${h} ${h} 0 0 1 ${at(-90, ro)}Z`;
+  return {
+    inkMask: false,
+    shapes: [
+      capsule(at(210, R)),
+      capsule(at(150, R)),
+      capsule(at(90, R)),
+      shape(arc, 'accent', { lineAlt: { k: 'line', d: `M${at(-90, R)}A${f(R)} ${f(R)} 0 0 1 ${at(30, R)}` } }),
+    ],
+  };
+}
+
 function sizeIcon(k) {
   const [x, y, w, h] = { small: [5, 5, 14, 14], medium: [2, 7, 20, 10], large: [3, 3, 18, 18], xlarge: [5, 2, 14, 20] }[
     k
@@ -220,7 +248,14 @@ export const ICONS = {
   'bright-hi': { shapes: [dot(12, 12, 4), line('M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1 1M18 18l1 1M5 19l1-1M18 6l1-1')] },
   external: { shapes: [line('M14 4h6v6M20 4l-9 9'), line('M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4')] },
   docs: { shapes: [rect(4, 2, 16, 20, T.R_MD), bar(7, 7, 6), bar(7, 11, 10), bar(7, 15, 8)] },
-  issue: { shapes: [circle(12, 12, 10), line('M12 7v6', 'cut'), detail(11, 16, 2, 2, 1, 'cut')] },
+  bug: {
+    shapes: [
+      shape('M9 6a3 3 0 0 1 6 0z', 'accent'),
+      shape('M6 14a6 6 0 0 1 12 0v2a6 6 0 0 1-12 0z'),
+      line('M12 11v8', 'cut'),
+      line('M2 9l2 2M2 15h2M2 21l2-2M22 9l-2 2M22 15h-2M22 21l-2-2'),
+    ],
+  },
   info: { shapes: [circle(12, 12, 10), line('M12 11v6', 'cut'), detail(11, 6, 2, 2, 1, 'cut')] },
   heart: { shapes: [shape('M12 21l-8-8a5 5 0 0 1 8-6 5 5 0 0 1 8 6z')] },
   grip: {
@@ -237,6 +272,11 @@ export const ICONS = {
   search: { shapes: [ring(10, 10, 7), line('M15 15l6 6')] },
   'arrow-down': { shapes: [line('M12 4v15M6 13l6 6 6-6')] },
   'arrow-up': { shapes: [line('M12 20V5M6 11l6-6 6 6')] },
+
+  logo: logoIcon(),
+  start: { inkMask: false, shapes: [line('M12 2v9M8 7l4 4 4-4', 'accent'), rect(2, 14, 20, 8, 4), bar(5, 17, 6)] },
+  run: { gap: 0, shapes: [rect(2, 4, 20, 16, 4), line('M6 9l3 3-3 3', 'accent'), bar(12, 14, 6)] },
+  create: { shapes: [rect(3, 5, 16, 16, 4), line('M19 3v4M17 5h4', 'accent'), bar(6, 10, 6), bar(6, 14, 10)] },
 };
 
 export function iconSvg(id, px = 24, variant = 'solid', cls = '') {

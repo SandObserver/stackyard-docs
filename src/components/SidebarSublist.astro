@@ -1,0 +1,59 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+import SidebarRestorePoint from '@astrojs/starlight/components/SidebarRestorePoint.astro';
+import { sidebarIcon } from '../lib/sidebar-icons';
+
+type Entry =
+  | { type: 'link'; label: string; href: string; isCurrent: boolean; attrs: Record<string, string> }
+  | { type: 'group'; label: string; entries: Entry[]; collapsed: boolean };
+
+interface Props {
+  sublist: Entry[];
+  nested?: boolean;
+}
+
+const { sublist, nested } = Astro.props;
+const hasCurrent = (entries: Entry[]): boolean =>
+  entries.some((e) => (e.type === 'link' ? e.isCurrent : hasCurrent(e.entries)));
+---
+
+<ul class:list={{ 'top-level': !nested, 'sy-nav': true }}>
+  {
+    sublist.map((entry) => {
+      const icon = sidebarIcon(entry);
+      return (
+        <li>
+          {entry.type === 'link' ? (
+            <a
+              href={entry.href}
+              aria-current={entry.isCurrent ? 'page' : undefined}
+              class:list={['sy-nl', { large: !nested, 'has-icon': icon }]}
+              {...entry.attrs}
+            >
+              {icon && (
+                <svg class="sy-icon" width="20" height="20" aria-hidden="true" focusable="false">
+                  <use href={`#sy-solid-${icon}`} />
+                </svg>
+              )}
+              <span>{entry.label}</span>
+            </a>
+          ) : (
+            <details open={hasCurrent(entry.entries) || !entry.collapsed}>
+              <summary class:list={['sy-nl', { 'has-icon': icon }]}>
+                {icon && (
+                  <svg class="sy-icon" width="20" height="20" aria-hidden="true" focusable="false">
+                    <use href={`#sy-solid-${icon}`} />
+                  </svg>
+                )}
+                <span class="group-label large">{entry.label}</span>
+                <Icon name="right-caret" class="caret" size="1.125rem" />
+              </summary>
+              <SidebarRestorePoint />
+              <Astro.self sublist={entry.entries} nested />
+            </details>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>

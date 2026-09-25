@@ -1,4 +1,4 @@
-import { toast, ag, ap, reveal, swapContent } from '/js/admin-shared.js?v=52e149f5';
+import { toast, apiGet, apiPost, reveal, swapContent } from '/js/admin-shared.js?v=d2e8b6dc';
 import { pwStrength } from '/js/password-strength.js?v=42f45ac7';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import {
@@ -7,9 +7,11 @@ import {
   clearsStoredPassword,
   createDirtyTracker,
   BLOCK,
-} from '/js/admin-logic.js?v=e3673bd7';
+} from '/js/admin-logic.js?v=cbb7417d';
 import { confirmText } from '/js/modal.js?v=11fa1eff';
-import { el, inp, setUserText } from '/js/utils.js?v=55685187';
+import { el, inp, setUserText } from '/js/utils.js?v=eadafbcd';
+import { renderColorControl } from '/js/admin-color-control.js?v=e963853a';
+import { BACKDROP } from '/js/background.js?v=175d9a7f';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
@@ -52,7 +54,7 @@ const readWallpaperForm = () =>
     _val('bg-col-inp', 'bg-col'),
     _val('bg-url-inp', 'bg-url'),
     _val('bg-fit'),
-    _val('bg-color-inp', 'bg-color'),
+    _val('bg-color-val'),
     _val('bg-apikey-inp', 'bg-apikey'),
   ]);
 
@@ -110,6 +112,15 @@ function syncSessionRows(now = false) {
   reveal(el('revoke-tip-wrap'), canRevoke, now);
 }
 
+/* Rebuild on every load. The control takes its value at render time and has no
+   setter, so reusing one shows a stale colour and saves it. */
+function renderBgColor(value) {
+  const slot = el('bg-color-slot');
+  if (!slot) return;
+  slot.textContent = '';
+  renderColorControl(slot, { value, idPrefix: 'bg-color', label: t('appearance.color') });
+}
+
 export function loadSettings(c) {
   const s = c.settings || {};
   const ld = inp('set-lbl-d');
@@ -141,7 +152,7 @@ export function loadSettings(c) {
   const apiEl = inp('bg-apikey-inp') || inp('bg-apikey');
   if (apiEl) {
     apiEl.placeholder = '●●●●●●●●●● (configured)';
-    ag('/api/settings/unsplash-key')
+    apiGet('/api/settings/unsplash-key')
       .then(d => {
         const vEl = el('ie-apikey-v');
         if (!d.configured) {
@@ -157,19 +168,17 @@ export function loadSettings(c) {
   if (colEl) colEl.value = bg.collection || '';
   const urlEl = inp('bg-url');
   if (urlEl) urlEl.value = bg.url || '';
-  const colorEl = inp('bg-color');
-  if (colorEl) colorEl.value = bg.color || '';
   const brEl = inp('bg-br');
   const brVal = el('bg-br-val');
-  function updateSliderFill(el) {
-    if (!el) return;
-    const min = parseFloat(el.min) || 0.1,
-      max = parseFloat(el.max) || 1.0;
-    const pct = ((parseFloat(el.value) - min) / (max - min)) * 100;
+  function updateSliderFill(slider) {
+    if (!slider) return;
+    const min = parseFloat(slider.min) || 0.1,
+      max = parseFloat(slider.max) || 1.0;
+    const pct = ((parseFloat(slider.value) - min) / (max - min)) * 100;
     /* backgroundImage, never the background shorthand. The shorthand resets
        background-clip, which is what keeps the track thin inside the 44px touch
        target on a phone. */
-    el.style.backgroundImage = `linear-gradient(var(--slider-dir), var(--ac) 0%, var(--ac) ${pct}%, var(--bd-inner) ${pct}%, var(--bd-inner) 100%)`;
+    slider.style.backgroundImage = `linear-gradient(var(--slider-dir), var(--ac) 0%, var(--ac) ${pct}%, var(--bd-inner) ${pct}%, var(--bd-inner) 100%)`;
   }
   if (brEl) {
     brEl.value = bg.brightness ?? 0.62;
@@ -207,9 +216,8 @@ export function loadSettings(c) {
   _si('bg-url-inp', s.background?.url || '');
   _si('bg-fit', s.background?.fit === 'fit' ? 'fit' : 'fill');
   showWallpaperFile(s.background?.url || '');
-  _si('bg-color-inp', s.background?.color || '');
+  renderBgColor(s.background?.color || BACKDROP);
   _sv('ie-bgurl-v', s.background?.url, 'Image URL');
-  _sv('ie-bgcolor-v', s.background?.color, '#rrggbb or any CSS color');
 
   const ipEl = inp('srv-ip');
   if (ipEl) ipEl.value = s.server?.hostIp || '';
@@ -235,7 +243,7 @@ export function loadSettings(c) {
   const secLogout = el('sec-logout');
   const secRevoke = inp('sec-revoke');
   secLogout?.addEventListener('click', async () => {
-    await ap('/api/auth/logout', {}).catch(() => {});
+    await apiPost('/api/auth/logout', {}).catch(() => {});
     location.reload();
   });
   secRevoke?.addEventListener('click', async () => {
@@ -249,7 +257,7 @@ export function loadSettings(c) {
     if (!ok) return;
     secRevoke.disabled = true;
     try {
-      await ap('/api/auth/revoke-sessions', {});
+      await apiPost('/api/auth/revoke-sessions', {});
       toast(t('toast.sessionsRevoked'), 'ok');
     } catch (e) {
       toast(e.message || t('toast.saveFailed'), 'err');
@@ -267,7 +275,7 @@ export function loadSettings(c) {
 async function syncAuthFromServer() {
   let d;
   try {
-    d = await ag('/api/auth/check');
+    d = await apiGet('/api/auth/check');
   } catch {
     return;
   }
@@ -303,12 +311,14 @@ export function showWallpaperFile(url) {
 export function showBgFields(type) {
   const host = el('bg-unsplash-fields')?.parentElement;
   swapContent(host, () => {
-    ['unsplash', 'url', 'color'].forEach(t => {
-      const node = el(`bg-${t}-fields`);
-      if (node) node.classList.toggle('d-none', t !== type);
+    ['unsplash', 'url', 'color'].forEach(kind => {
+      const node = el(`bg-${kind}-fields`);
+      if (node) node.classList.toggle('d-none', kind !== type);
     });
     const brRow = el('bg-brightness-row');
     if (brRow) brRow.classList.toggle('d-none', type === 'color');
+    el('bgcol-hint')?.classList.toggle('d-none', type !== 'unsplash');
+    el('bg-url-hint')?.classList.toggle('d-none', type !== 'url');
   });
 }
 /** @param {Event} [e] */
@@ -316,10 +326,10 @@ async function saveLabels(e) {
   const toggled = /** @type {HTMLInputElement|null} */ (e?.target ?? null);
   const wasChecked = toggled ? toggled.checked : false;
   try {
-    const c = await ag('/api/config');
+    const c = await apiGet('/api/config');
     c.settings = c.settings || {};
     c.settings.showLabels = { desktop: inp('set-lbl-d')?.checked !== false, ios: inp('set-lbl-m')?.checked || false };
-    await ap('/api/config', c);
+    await apiPost('/api/config', c);
     toast(t('toast.saved'));
   } catch (err) {
     /* Put the box back on a failure, or it shows a setting the server was never
@@ -332,10 +342,10 @@ async function saveKeepAwake(e) {
   const toggled = /** @type {HTMLInputElement|null} */ (e?.target ?? null);
   const wasChecked = toggled ? toggled.checked : false;
   try {
-    const c = await ag('/api/config');
+    const c = await apiGet('/api/config');
     c.settings = c.settings || {};
     c.settings.keepAwake = !!inp('set-awake')?.checked;
-    await ap('/api/config', c);
+    await apiPost('/api/config', c);
     toast(t('toast.saved'));
   } catch (err) {
     /* Put the box back on a failure, or it shows a setting the server was never
@@ -355,17 +365,17 @@ async function saveWallpaper() {
       bg.url = (inp('bg-url-inp') || inp('bg-url'))?.value?.trim() || '';
       bg.fit = inp('bg-fit')?.value === 'fit' ? 'fit' : 'fill';
     } else if (type === 'color') {
-      bg.color = (inp('bg-color-inp') || inp('bg-color'))?.value?.trim() || '';
+      bg.color = inp('bg-color-val')?.value?.trim() || '';
     }
-    const c = await ag('/api/config');
+    const c = await apiGet('/api/config');
     c.settings = c.settings || {};
     c.settings.background = bg;
-    await ap('/api/config', c);
+    await apiPost('/api/config', c);
     /* After the main config. GET /api/config strips the key, so a config write
        that follows would overwrite it with nothing. */
     if (type === 'unsplash') {
       const keyVal = (inp('bg-apikey-inp') || inp('bg-apikey'))?.value?.trim() || '';
-      if (keyVal) await ap('/api/settings/unsplash-key', { apiKey: keyVal });
+      if (keyVal) await apiPost('/api/settings/unsplash-key', { apiKey: keyVal });
     }
     _bgTrack?.reset();
     toast(t('toast.saved'));
@@ -401,7 +411,7 @@ async function saveServer() {
     }
     let probe;
     try {
-      probe = await ap('/api/docker/test', { url });
+      probe = await apiPost('/api/docker/test', { url });
     } catch (e) {
       toast(t('toast.saveFailed', { err: e.message }), 'err');
       return;
@@ -436,7 +446,7 @@ async function saveServer() {
   }
 
   try {
-    const c = await ag('/api/config');
+    const c = await apiGet('/api/config');
     c.settings = c.settings || {};
     const prevLang = c.settings.language || 'en';
     const dockerEnabled = inp('srv-docker-en')?.checked || false;
@@ -451,17 +461,17 @@ async function saveServer() {
     c.settings.language = inp('lang-sel')?.value || 'en';
     const langChanged = c.settings.language !== prevLang;
 
-    await ap('/api/config', c);
+    await apiPost('/api/config', c);
 
     if (shouldWritePassword({ enabled, newPassword: pw })) {
-      await ap('/api/auth/set-password', { password: pw });
+      await apiPost('/api/auth/set-password', { password: pw });
       const pwEl = inp('sec-pw');
       if (pwEl) {
         pwEl.value = '';
         pwEl.placeholder = '●●●●●●●●●● (configured)';
       }
     }
-    await ap('/api/auth/toggle', { enabled });
+    await apiPost('/api/auth/toggle', { enabled });
     if (!enabled) {
       const pwEl = inp('sec-pw');
       if (pwEl) {

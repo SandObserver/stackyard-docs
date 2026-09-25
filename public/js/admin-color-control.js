@@ -1,8 +1,8 @@
-import { PE_SVG, initInlineEdit, toast, reveal } from '/js/admin-shared.js?v=52e149f5';
+import { PE_SVG, initInlineEdit, toast, reveal } from '/js/admin-shared.js?v=d2e8b6dc';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { qa, q } from '/js/utils.js?v=55685187';
-import { iconSvg } from '/js/icon-set.js?v=606a68c6';
+import { qa, q } from '/js/utils.js?v=eadafbcd';
+import { iconSvg } from '/js/icon-set.js?v=08b74a28';
 import { HUE_NAMES, ROLE_NAMES, TILE_KEYWORDS, pageTheme, tileColor } from '/js/palette.js?v=3fb8ae43';
 
 const CC_SWATCHES = ['#1c1c1e', '#8e8e93', '#f2f2f7', '#ff393c', '#ffcd00', '#35c759', '#0289ff', '#cb30df'];
@@ -158,8 +158,8 @@ export function renderColorControl(
   const rainbow = html`<button type="button" class="cc-swatch cc-rainbow" data-v="custom" aria-label="${t('appearance.customColor')}"></button>`;
   const swatches = variant ? html`${top.map(kwSwatch)}${rainbow}` : html`${rainbow}${swatchColors.map(swatch)}`;
   const wrap = document.createElement('div');
-  const slider = (label, cls, id, max, val, lo, hi) => html`
-    <div class="row hsb-row"><span class="rl">${label}</span><div class="hsb-track"><span class="hsb-ico">${raw(lo)}</span><input type="range" class="${cls}" id="${id}" min="0" max="${max}" value="${val}" aria-label="${label}"><span class="hsb-ico">${raw(hi)}</span></div></div>`;
+  const slider = (name, cls, id, max, val, lo, hi) => html`
+    <div class="row hsb-row"><span class="rl">${name}</span><div class="hsb-track"><span class="hsb-ico">${raw(lo)}</span><input type="range" class="${cls}" id="${id}" min="0" max="${max}" value="${val}" aria-label="${name}"><span class="hsb-ico">${raw(hi)}</span></div></div>`;
   const hueRow = hues.length
     ? html`<div class="row cc-row cc-hues"><span class="rl">${t('color.system')}</span><div class="cc-sw">${hues.map(kwSwatch)}</div></div>`
     : '';
@@ -228,11 +228,6 @@ export function renderColorControl(
        target on a phone. */
     sEl.style.backgroundImage = `linear-gradient(var(--slider-dir), ${_hsvToHex(h, 0, v)}, ${_hsvToHex(h, 100, v)})`;
     vEl.style.backgroundImage = `linear-gradient(var(--slider-dir), #000, ${_hsvToHex(h, 100, 100)})`;
-    /* Each knob previews what its own slider is set to: the hue on its own, the
-       resulting colour for the other two. */
-    hEl.style.setProperty('--knob-fill', _hsvToHex(h, 100, 100));
-    sEl.style.setProperty('--knob-fill', hex);
-    vEl.style.setProperty('--knob-fill', hex);
     qa('.cc-swatch', container).forEach(b => {
       let on = false;
       if (mode !== 'color') on = b.dataset.v === mode;
@@ -288,12 +283,12 @@ export function renderColorControl(
     placeholder: '#rrggbb or any CSS color',
     onCommit(val) {
       if (mode !== 'color' && val === kwName(mode)) return;
-      const { value, ok } = normalizeColorInput(val);
-      const hv = ok ? _hexToHsv(value) : null;
+      const { value: parsed, ok } = normalizeColorInput(val);
+      const hv = ok ? _hexToHsv(parsed) : null;
       if (hv) {
         mode = 'color';
         showTune = true;
-        setSliders(value);
+        setSliders(parsed);
       } else if (val) toast(t('toast.colorInvalid'), 'err');
       commit();
     },

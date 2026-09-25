@@ -11,6 +11,7 @@ import {
 } from '/js/widget-types.js?v=9264dee5';
 import {
   el,
+  ICON_R,
   isDashboardEmpty,
   mk,
   mkWrap as _mkWrap,
@@ -20,13 +21,12 @@ import {
   q,
   qa,
   qi,
-  sanitizeCssUrl,
   setUserText,
   teardownWidgets,
   titleWhenTruncated,
-} from '/js/utils.js?v=55685187';
+} from '/js/utils.js?v=eadafbcd';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
-import { initSpotlight } from '/js/spotlight.js?v=f050b4e5';
+import { initSpotlight } from '/js/spotlight.js?v=9056fab5';
 import { html, setHtml, raw } from '/js/html.js?v=c71f8903';
 import { initI18n, t, currentLang } from '/js/i18n.js?v=1f1ea9c1';
 import { pwStrength, passwordMismatch } from '/js/password-strength.js?v=42f45ac7';
@@ -40,8 +40,8 @@ import {
   buildMobile,
   resetMobileChrome,
   mkFolderGlyph,
-} from '/js/ui.js?v=d8363297';
-import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=ad283693';
+} from '/js/ui.js?v=cdfe7685';
+import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=9e6d9d4b';
 import { formatNumber } from '/js/format-number.js?v=4a5ccef4';
 import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=aa52b1a3';
 import { observeGlass } from '/js/glass-rim.js?v=3faec233';
@@ -52,14 +52,14 @@ import {
   landingAfterSetup,
   restorePage,
 } from '/js/dashboard-logic.js?v=0d519f8b';
-import { loadWallpaper, saveWallpaper } from '/js/wallpaper-cache.js?v=c5f8a3e6';
+import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=175d9a7f';
 import { jitter } from '/js/jitter.js?v=4eeef4c9';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
 import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=606a68c6';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=08b74a28';
 import { pageTheme, paletteColor } from '/js/palette.js?v=3fb8ae43';
-import { THEME_KEY, applyTheme, prefersDark, readMode, resolveTheme } from '/js/theme.js?v=787bfdff';
+import { THEME_KEY, applyTheme, prefersDark, readMode, resolveTheme } from '/js/theme.js?v=eeafa4b5';
 
 ensureSprite();
 
@@ -69,10 +69,6 @@ let MOB = isMobileLayout();
 const wCols = { d: WIDGET_COLS.desktop, m: WIDGET_COLS.mobile };
 const wRows = { d: WIDGET_ROWS.desktop, m: WIDGET_ROWS.mobile };
 const WH = { d: WIDGET_HEIGHTS };
-/* An app icon's corner is 22.37% of its width. A fixed radius only lands on that
-   at one icon size, and the grid draws two: 72 with a label under it, 78
-   without. */
-const ICON_R = 0.2237;
 /* A widget tile's corner, at design size. WIDGET_DESIGN's small is 170 square
    against the reference's 165, so this is its 28 unchanged. */
 const WIDGET_R = 28;
@@ -166,16 +162,16 @@ const BEL = new Map();
 /* Last painted appearance per badge element. Without it the same values are
    rewritten thousands of times a session. */
 const BSIG = new WeakMap();
-function breg(id, el) {
+function breg(id, badge) {
   if (!BEL.has(id)) BEL.set(id, new Set());
-  BEL.get(id).add(el);
+  BEL.get(id).add(badge);
   /* Paint on registration. A poll only reaches ids it returns, so a fixed label
      alone stays invisible, and a rebuild blanks every badge until the next
      poll. */
   bupd(id);
 }
-function bunreg(id, el) {
-  if (BEL.has(id)) BEL.get(id).delete(el);
+function bunreg(id, badge) {
+  if (BEL.has(id)) BEL.get(id).delete(badge);
 }
 function bupd(id) {
   const els = BEL.get(id);
@@ -209,18 +205,18 @@ function bupd(id) {
 
   const sig = badgeSignature({ cls, txt, unit, bg, aria, color, nextColor, rows });
 
-  els.forEach(el => {
-    if (BSIG.get(el) === sig) return;
-    BSIG.set(el, sig);
-    el.className = cls;
-    let txtEl = el.firstElementChild;
+  els.forEach(badge => {
+    if (BSIG.get(badge) === sig) return;
+    BSIG.set(badge, sig);
+    badge.className = cls;
+    let txtEl = badge.firstElementChild;
     let unitEl = txtEl?.nextElementSibling;
     if (!txtEl) {
       txtEl = document.createElement('span');
       txtEl.className = 'badge-txt';
       unitEl = document.createElement('span');
       unitEl.className = 'badge-unit';
-      el.append(txtEl, unitEl);
+      badge.append(txtEl, unitEl);
     }
     txtEl.textContent = num;
     unitEl.textContent = unit ? ' ' + unit : '';
@@ -229,24 +225,24 @@ function bupd(id) {
        badge left to speak for itself is never reached by a reader moving from
        tile to tile. A name change is silent, which is what a figure on a timer
        needs. */
-    el.setAttribute('aria-hidden', 'true');
-    el.removeAttribute('role');
-    el.removeAttribute('aria-label');
-    const tile = /** @type {HTMLElement|null} */ (el.closest('a, button, [role="button"]'));
+    badge.setAttribute('aria-hidden', 'true');
+    badge.removeAttribute('role');
+    badge.removeAttribute('aria-label');
+    const tile = /** @type {HTMLElement|null} */ (badge.closest('a, button, [role="button"]'));
     const tileName = tile?.dataset.tileName;
     if (tile && tileName) tile.setAttribute('aria-label', aria ? `${tileName}, ${aria}` : tileName);
     /* Never the `background` shorthand. It resets background-clip, and the
        pill behind is painted from this same value. */
-    if (bg) el.style.setProperty('--badge-bg', bg);
-    else el.style.removeProperty('--badge-bg');
-    el.style.color = color;
-    if (nextColor) el.style.setProperty('--badge-next', nextColor);
-    else el.style.removeProperty('--badge-next');
+    if (bg) badge.style.setProperty('--badge-bg', bg);
+    else badge.style.removeProperty('--badge-bg');
+    badge.style.color = color;
+    if (nextColor) badge.style.setProperty('--badge-next', nextColor);
+    else badge.style.removeProperty('--badge-next');
     /* No title attribute. The popover carries the reason, and a badge that can
        be hovered would otherwise draw the browser's own tooltip beside it.
        Removed rather than skipped: one set by an earlier paint would persist. */
-    el.removeAttribute('title');
-    wireBadgePopover(el, popover ? rows : null);
+    badge.removeAttribute('title');
+    wireBadgePopover(badge, popover ? rows : null);
   });
 }
 
@@ -428,7 +424,7 @@ function buildDesktop() {
   dk.replaceChildren();
   dock.forEach(item => dk.appendChild(mkDock(item)));
   dk.hidden = !dock.length;
-  observeGlass(dk, 45, 0.2);
+  observeGlass(dk, 38, 0.6);
 }
 
 /* Every page is mounted at once, so widgets the user has swiped away from keep
@@ -489,8 +485,8 @@ function goTo(n, dotEls, announce = true) {
   storeSet(PAGE_STORE, String(pg));
   const strip = el('pages');
   syncPageInert(pg);
-  const t = `translateX(${-pageDir() * pg * 100}vw)`;
-  strip.style.transform = strip.style.webkitTransform = t;
+  const shift = `translateX(${-pageDir() * pg * 100}vw)`;
+  strip.style.transform = strip.style.webkitTransform = shift;
   strip.style.willChange = 'transform';
   strip.addEventListener(
     'transitionend',
@@ -537,7 +533,6 @@ function syncMobPages() {
 
 /* Matches --bg-base in tokens.css. It shows wherever a fitted wallpaper does
    not reach. */
-const WALLPAPER_BACKDROP = '#0d1117';
 
 /* A sampled wallpaper grid, or one tone for a solid colour. Null on both leaves
    the labels as they are. */
@@ -574,7 +569,7 @@ function resampleBg() {
       window.innerHeight,
       _bgSample.brightness,
       _bgSample.fit,
-      WALLPAPER_BACKDROP,
+      BACKDROP,
     ),
     tone: themeTone(),
   };
@@ -585,48 +580,15 @@ async function applyBg() {
   const root = document.documentElement;
   bgTone = { grid: null, tone: themeTone() };
   retone();
-  try {
-    const bg = S.background || {};
-    if (bg.type === 'color' && bg.color) {
-      const safeColor = String(bg.color).replace(/[^a-zA-Z0-9#(),.\s%]/g, '');
-      root.style.setProperty('--bg-image', 'none');
-      root.style.setProperty('--bg-color', safeColor);
-      root.style.setProperty('--bg-brightness', '1');
-      root.style.setProperty('--bg-size', 'cover');
-      bgTone = { grid: null, tone: toneForColor(safeColor) ?? themeTone() };
-      retone();
-    } else if (bg.type === 'url' && bg.url) {
-      const url = sanitizeCssUrl(bg.url);
-      const brightness = Number(bg.brightness ?? 0.62);
-      const fit = bg.fit === 'fit' ? 'fit' : 'fill';
-      root.style.setProperty('--bg-image', `url('${url}')`);
-      root.style.setProperty('--bg-color', WALLPAPER_BACKDROP);
-      root.style.setProperty('--bg-brightness', String(brightness));
-      root.style.setProperty('--bg-size', fit === 'fit' ? 'contain' : 'cover');
-      sampleWallpaper(url, brightness, fit);
-    } else if (bg.type === 'unsplash') {
-      let url = loadWallpaper(bg);
-      if (!url) {
-        const r = await fetch('/api/wallpaper', { cache: 'no-store' });
-        const d = await r.json();
-        url = d.url || null;
-        if (url) saveWallpaper(url, bg);
-      }
-      if (url) {
-        const shown = url;
-        const brightness = Number(bg.brightness ?? 0.62);
-        const img = new Image();
-        img.onload = () => {
-          root.style.setProperty('--bg-image', `url('${sanitizeCssUrl(shown)}')`);
-          root.style.setProperty('--bg-color', WALLPAPER_BACKDROP);
-          root.style.setProperty('--bg-brightness', String(brightness));
-          root.style.setProperty('--bg-size', 'cover');
-          sampleWallpaper(sanitizeCssUrl(shown), brightness, 'fill');
-        };
-        img.src = shown;
-      }
-    }
-  } catch {}
+  const bg = await resolveBackground(S.background || {});
+  if (!bg) return;
+  applyBackground(root, bg);
+  if (bg.url) {
+    sampleWallpaper(bg.url, Number(bg.brightness), bg.fit);
+    return;
+  }
+  bgTone = { grid: null, tone: toneForColor(bg.color) ?? themeTone() };
+  retone();
 }
 
 function refreshBadges() {

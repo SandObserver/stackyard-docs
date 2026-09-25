@@ -1,20 +1,20 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
-import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=e3673bd7';
-import { el, q } from '/js/utils.js?v=55685187';
+import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=cbb7417d';
+import { el, q } from '/js/utils.js?v=eadafbcd';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { iconChain } from '/js/icons.js?v=9c8c550c';
-import { iconSvg } from '/js/icon-set.js?v=606a68c6';
+import { iconSvg } from '/js/icon-set.js?v=08b74a28';
 
 export const API = '';
 
 let tt;
 let _toastWired = false;
 
-/** @param {string} m @param {'ok'|'err'} [t] @returns {void} */
-export const toast = (m, t = 'ok') => {
+/** @param {string} m @param {'ok'|'err'} [tone] @returns {void} */
+export const toast = (m, tone = 'ok') => {
   const e = el('toast');
   e.textContent = m;
-  e.className = `show ${t}`;
+  e.className = `show ${tone}`;
   clearTimeout(tt);
   if (!_toastWired) {
     _toastWired = true;
@@ -33,20 +33,23 @@ export const toast = (m, t = 'ok') => {
       e.className = '';
     });
   }
-  const ms = toastHoldMs(t, m, 'show');
+  const ms = toastHoldMs(tone, m, 'show');
   if (ms != null) tt = setTimeout(() => (e.className = ''), ms);
 };
 
-/* Carry `kind` and `detail`, so callers branch on data, never on message
-   text. */
+/* Carry `kind`, `code` and `detail`, so callers branch on data, never on
+   message text. Dropping a field here fails silently: the advice falls back to
+   the kind and the screen says something true but never the specific sentence. */
 /** An error carrying the API's structured fields.
-    @typedef {Error & { status?: number, kind?: string, detail?: Record<string, unknown> }} ApiError */
+    @typedef {Error & { status?: number, kind?: string, code?: string,
+                        detail?: Record<string, unknown> }} ApiError */
 
 /** @param {number} status @param {any} body @returns {ApiError} */
 function tagged(status, body) {
   const e = /** @type {ApiError} */ (new Error((body && body.error) || 'HTTP ' + status));
   e.status = status;
   if (body && typeof body.kind === 'string') e.kind = body.kind;
+  if (body && typeof body.code === 'string') e.code = body.code;
   if (body && body.detail && typeof body.detail === 'object') e.detail = body.detail;
   return e;
 }
@@ -75,22 +78,22 @@ function reauthenticate() {
 
 /* Retried once only. A second 401 after a successful sign-in is the server
    refusing the request itself. */
-export const ag = async (p, recover = true) => {
+export const apiGet = async (p, recover = true) => {
   const r = await fetch(API + p, { cache: 'no-store' });
-  if (recover && recoversSession(p, r.status) && (await reauthenticate())) return ag(p, false);
+  if (recover && recoversSession(p, r.status) && (await reauthenticate())) return apiGet(p, false);
   if (!r.ok) {
     const d = r.status === 401 ? null : await r.json().catch(() => null);
     throw tagged(r.status, d || (r.status === 401 ? { error: 'Unauthorised', kind: 'auth' } : null));
   }
   return r.json();
 };
-export const ap = async (p, b, recover = true) => {
+export const apiPost = async (p, b, recover = true) => {
   const r = await fetch(API + p, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(b),
   });
-  if (recover && recoversSession(p, r.status) && (await reauthenticate())) return ap(p, b, false);
+  if (recover && recoversSession(p, r.status) && (await reauthenticate())) return apiPost(p, b, false);
   if (!r.ok) {
     const d = await r.json().catch(() => null);
     throw tagged(r.status, d || (r.status === 401 ? { error: 'Unauthorised', kind: 'auth' } : null));

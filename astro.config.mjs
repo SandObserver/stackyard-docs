@@ -27,34 +27,27 @@ export default defineConfig({
       description:
         'A calm, customizable dashboard for your services, designed to be useful without becoming another wall of data.',
       logo: {
-        light: './public/img/stackyard-wordmark-light.svg',
-        dark: './public/img/stackyard-wordmark-dark.svg',
+        light: './public/img/stackyard-wordmark-light-b3140d1e.svg',
+        dark: './public/img/stackyard-wordmark-dark-4680834d.svg',
         alt: '',
         replacesTitle: true,
       },
       favicon: '/favicon.svg',
-      components: { Head: './src/components/Head.astro' },
-      customCss: ['./src/styles/fonts.css', './src/styles/docs.css'],
+      components: {
+        Head: './src/components/Head.astro',
+        Sidebar: './src/components/Sidebar.astro',
+      },
+      customCss: ['./src/styles/docs.css'],
       head: [
-        {
-          tag: 'link',
-          attrs: {
-            rel: 'preload',
-            as: 'font',
-            type: 'font/woff2',
-            href: '/fonts/inter-latin.woff2',
-            crossorigin: true,
-          },
-        },
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: '#0d1117' } },
-        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-64722d2b.jpg` } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-48fdebbd.jpg` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
         { tag: 'meta', attrs: { property: 'og:site_name', content: 'Stackyard' } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og-64722d2b.jpg` } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og-48fdebbd.jpg` } },
       ],
 
       expressiveCode: {

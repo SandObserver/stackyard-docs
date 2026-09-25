@@ -1,7 +1,7 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=442d8e7d';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=9efdedbe';
-import { initList, render, syncFilterUI } from '/js/admin-list.js?v=15bd26cd';
-import { resolveAdminSection } from '/js/admin-logic.js?v=e3673bd7';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=58e2b685';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=2bd61e6c';
+import { initList, render, syncFilterUI } from '/js/admin-list.js?v=4e82ea4a';
+import { resolveAdminSection } from '/js/admin-logic.js?v=cbb7417d';
 import {
   buildAppItem,
   claimFolderChildren,
@@ -9,18 +9,26 @@ import {
   saveWithRevert,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=858f3f84';
-import { loadSettings, settingsDirty, showBgFields, showWallpaperFile } from '/js/admin-settings.js?v=4aed22e2';
-import { ag, ap, initInlineEdit, paintIcon, reveal, setReauthHandler, toast } from '/js/admin-shared.js?v=52e149f5';
+} from '/js/admin-save-logic.js?v=60a82419';
+import { loadSettings, settingsDirty, showBgFields, showWallpaperFile } from '/js/admin-settings.js?v=23cfe19f';
+import {
+  apiGet,
+  apiPost,
+  initInlineEdit,
+  paintIcon,
+  reveal,
+  setReauthHandler,
+  toast,
+} from '/js/admin-shared.js?v=d2e8b6dc';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=831e219e';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=17a37df4';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=fd3dcc6c';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=32f787c3';
+import { createListbox } from '/js/listbox.js?v=f057351d';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=1f1ea9c1';
 import { loadLocalIcons } from '/js/icons.js?v=9c8c550c';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=606a68c6';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=08b74a28';
 import {
   clearSkipTls,
   convert,
@@ -29,7 +37,7 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=d154ca56';
+} from '/js/import-foreign.js?v=f9c0a120';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=11fa1eff';
 import {
@@ -40,11 +48,10 @@ import {
   resolveTheme,
   watchSystemTheme,
   writeMode,
-} from '/js/theme.js?v=787bfdff';
-import { el, inp, q, qa, clr as rc, sanitizeCssUrl, setUserText, tgt } from '/js/utils.js?v=55685187';
-import { normalizeColorInput } from '/js/admin-color-control.js?v=42c11a9b';
+} from '/js/theme.js?v=eeafa4b5';
+import { el, inp, q, qa, clr, setUserText, tgt } from '/js/utils.js?v=eadafbcd';
+import { applyBackground, resolveBackground } from '/js/background.js?v=175d9a7f';
 import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=6ebb564c';
-import { loadWallpaper, saveWallpaper } from '/js/wallpaper-cache.js?v=c5f8a3e6';
 
 ensureSprite();
 
@@ -63,7 +70,7 @@ onLayoutChange(_syncMobile, _mobileAtLoad);
 
 async function load() {
   await loadLocalIcons();
-  const c = await ag('/api/config');
+  const c = await apiGet('/api/config');
   state.items = c.items || [];
   state._settings = c.settings || {};
   await initI18n(c.settings?.language || 'en');
@@ -71,7 +78,7 @@ async function load() {
   initVersion();
   syncPickerLabels();
   try {
-    const wr = await ag('/api/widgets');
+    const wr = await apiGet('/api/widgets');
     state._widgetReg = Object.create(null);
     (wr.widgets || []).forEach(w => {
       state._widgetReg[w.name] = w;
@@ -92,40 +99,13 @@ async function load() {
 }
 
 async function applyBg() {
-  const root = document.documentElement;
+  const s = (state._settings && state._settings.background) || {};
+  let bg = null;
   try {
-    const bg = (state._settings && state._settings.background) || {};
-    if (bg.type === 'color' && bg.color) {
-      root.style.setProperty('--bg-image', 'none');
-      root.style.setProperty('--bg-color', String(bg.color).replace(/[^a-zA-Z0-9#(),.\s%]/g, ''));
-      root.style.setProperty('--bg-brightness', '1');
-      root.style.setProperty('--bg-size', 'cover');
-    } else if (bg.type === 'url' && bg.url) {
-      root.style.setProperty('--bg-image', `url('${sanitizeCssUrl(bg.url)}')`);
-      root.style.setProperty('--bg-color', '#0d1117');
-      root.style.setProperty('--bg-brightness', String(bg.brightness ?? 0.62));
-      root.style.setProperty('--bg-size', bg.fit === 'fit' ? 'contain' : 'cover');
-    } else if (bg.type === 'unsplash') {
-      let url = loadWallpaper(bg);
-      if (!url) {
-        const r = await fetch('/api/wallpaper', { cache: 'no-store' });
-        const d = await r.json();
-        url = d.url || null;
-        if (url) saveWallpaper(url, bg);
-      }
-      if (url) {
-        const shown = url;
-        const img = new Image();
-        img.onload = () => {
-          root.style.setProperty('--bg-image', `url('${sanitizeCssUrl(shown)}')`);
-          root.style.setProperty('--bg-color', '#0d1117');
-          root.style.setProperty('--bg-brightness', String(bg.brightness ?? 0.62));
-          root.style.setProperty('--bg-size', 'cover');
-        };
-        img.src = shown;
-      }
-    }
+    bg = await resolveBackground(s);
   } catch {}
+  if (bg) applyBackground(document.documentElement, bg);
+  else if (s.type === 'unsplash') toast(t('toast.wallpaperUnavailable'), 'err');
 }
 /** Returns whether the write reached the server. */
 async function save() {
@@ -133,9 +113,9 @@ async function save() {
   state.saving = true;
   let ok = false;
   try {
-    const full = await ag('/api/config');
+    const full = await apiGet('/api/config');
     full.items = state.items;
-    await ap('/api/config', full);
+    await apiPost('/api/config', full);
     _savedItems = JSON.stringify(state.items);
     toast(t('toast.saved'));
     ok = true;
@@ -157,14 +137,14 @@ async function appendAndSave(newItems) {
   if (state.saving) throw new Error('A save is already in progress');
   state.saving = true;
   try {
-    const full = await ag('/api/config');
+    const full = await apiGet('/api/config');
     const current = Array.isArray(full.items) ? full.items : [];
     /* Ids were allocated against the list the preview was built from. */
     const taken = new Set(current.map(i => i && i.id));
     const clash = newItems.find(i => taken.has(i.id));
     if (clash) throw new Error(`${clash.label}: this id already exists. Reload and import again.`);
     full.items = [...current, ...newItems];
-    await ap('/api/config', full);
+    await apiPost('/api/config', full);
     state.items = full.items;
     _savedItems = JSON.stringify(state.items);
     syncDashSave();
@@ -409,7 +389,7 @@ function openFolderPicker(appId, targetFolderId = null) {
       });
       const ri = document.createElement('span');
       ri.className = 'fp-ic';
-      ri.style.background = rc(app.color);
+      ri.style.background = clr(app.color);
       paintIcon(ri, app.iconUrl, (app.label || '?')[0]);
       const nm = document.createElement('span');
       nm.className = 'fp-nm';
@@ -598,8 +578,8 @@ async function doSave(orig) {
         orig,
         state.items.map(i => i.id),
       );
-      if (res.error) {
-        toast(res.error, 'err');
+      if (res.errorKey) {
+        toast(t(res.errorKey), 'err');
         return;
       }
       item = res.item;
@@ -689,26 +669,11 @@ function initAllInlineEdits() {
       fetchWallpaperLink(v.trim());
     },
   });
-
-  const colorInp = document.createElement('input');
-  colorInp.id = 'bg-color-inp';
-  document.body.appendChild(colorInp);
-  initInlineEdit('ie-bgcolor', 'bg-color-inp', {
-    placeholder: '#0d1117',
-    onCommit(val) {
-      if (!val) return;
-      const { value, ok } = normalizeColorInput(val);
-      if (!ok) return toast(t('toast.colorInvalid'), 'err');
-      colorInp.value = value;
-      const rv = q('#ie-bgcolor .rv');
-      if (rv) rv.textContent = value;
-    },
-  });
 }
 
 async function initVersion() {
   try {
-    const d = await ag('/api/version');
+    const d = await apiGet('/api/version');
     const v = (d.current || d.version || '').replace(/^v/i, '');
     if (v) {
       const vEl = el('sidebar-version');
@@ -766,10 +731,6 @@ function initBgType() {
   const apply = val => {
     hidden.value = val;
     showBgFields(val);
-    const hint = el('bgcol-hint');
-    if (hint) hint.style.display = val === 'unsplash' ? '' : 'none';
-    const imgHint = el('bg-url-hint');
-    if (imgHint) imgHint.style.display = val === 'url' ? '' : 'none';
   };
   const box = createListbox({
     id: 'bg-type',
@@ -1027,7 +988,7 @@ addEventListener('beforeunload', e => {
 el('btn-exp').onclick = async () => {
   let url;
   try {
-    const config = await ag('/api/config/export');
+    const config = await apiGet('/api/config/export');
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
     url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1084,8 +1045,8 @@ el('imp').onchange = async e => {
     const before = snapshotItems(state.items);
     state.items = d.items;
     if (await saveOrRevert(before)) toast(t('toast.imported'));
-  } catch (e) {
-    toast(t('toast.importFailed', { err: e.message }), 'err');
+  } catch (err) {
+    toast(t('toast.importFailed', { err: err.message }), 'err');
   }
   tgt(e).value = '';
 };

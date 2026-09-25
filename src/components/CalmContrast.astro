@@ -1,40 +1,45 @@
 ---
+import { manifestCard } from '../lib/widget-manifest';
+
 /* Left: the shape most dashboards take, a widget per service, each one a box of
    labelled counts. Generic, not a copy of any product. Right: the real Stackyard
    widgets, served from public/widgets, on the product's own surface. Geometry
    mirrors WidgetPreview.astro and must stay in step with it. */
 
 const CARDS = [
-  { name: 'Jellyfin', sub: 'Media server', state: 'RUNNING',
+  { name: 'Plex', sub: 'Media server', state: 'RUNNING',
     stats: [['412', 'MOVIES'], ['38', 'SERIES'], ['1,204', 'EPISODES'], ['0', 'SONGS']] },
   { name: 'Homebridge', sub: 'HomeKit bridge', state: 'RUNNING',
     stats: [['0', 'UPDATES'], ['0', 'ERRORS'], ['1', 'PAIRED'], ['1/1', 'BRIDGES']] },
-  { name: 'AdGuard Home', sub: 'DNS filter', state: 'HEALTHY',
-    stats: [['12,059', 'QUERIES'], ['3,742', 'BLOCKED'], ['0', 'PARENTAL'], ['0', 'MALWARE']] },
+  { name: 'Ntfy', sub: 'Push notifications', state: 'HEALTHY',
+    stats: [['3', 'UNREAD'], ['214', 'SENT'], ['6', 'TOPICS'], ['2', 'CLIENTS']] },
   { name: 'Kopia', sub: 'Backup and snapshots', state: 'HEALTHY',
     stats: [['OK', 'STATUS'], ['128 GB', 'SIZE'], ['02:15', 'LAST RUN'], ['02:15', 'NEXT RUN']] },
   { name: 'Seerr', sub: 'Request manager', state: 'RUNNING',
     stats: [['7', 'PENDING'], ['112', 'APPROVED'], ['964', 'AVAILABLE'], ['88', 'COMPLETED']] },
   { name: 'Proxy Manager', sub: 'Reverse proxy', state: 'UNHEALTHY', bad: true,
     stats: [['-', 'ENABLED'], ['-', 'DISABLED'], ['-', 'TOTAL'], ['-', 'ERRORS']] },
-  { name: 'Portainer', sub: 'Container manager', state: 'RUNNING',
-    stats: [['38', 'RUNNING'], ['0', 'STOPPED'], ['38', 'TOTAL'], ['11%', 'CPU']] },
-  { name: 'Immich', sub: 'Photo and video library', state: 'RUNNING',
-    stats: [['1', 'USERS'], ['2,182', 'PHOTOS'], ['213', 'VIDEOS'], ['94 GB', 'STORAGE']] },
+  { name: 'Filebrowser', sub: 'File manager', state: 'RUNNING',
+    stats: [['4', 'USERS'], ['12', 'SHARES'], ['1.2 TB', 'USED'], ['0', 'ERRORS']] },
+  { name: 'Radarr', sub: 'Movie manager', state: 'RUNNING',
+    stats: [['412', 'MOVIES'], ['9', 'WANTED'], ['0', 'QUEUE'], ['2.8 TB', 'SIZE']] },
 ];
 
 /* Every badge points at a count the left panel prints. */
 const ROW_1 = [
   { name: 'Homebridge', icon: '/icons/homebridge.svg', bg: '#3d1854' },
-  { name: 'AdGuard', icon: '/icons/w-adguard-home.svg', bg: '#1c1c1e', badge: '31%', badgeBg: '#0091ff', badgeInk: '#ffffff' },
-  { name: 'Portainer', icon: '/icons/portainer.svg', bg: '#1c1c1e' },
+  { name: 'Ntfy', icon: '/icons/ntfy.svg', bg: '#348a7a', badge: '3', badgeBg: '#0091ff', badgeInk: '#000000' },
+  { name: 'Filebrowser', icon: '/icons/filebrowser-quantum.svg', bg: '#1c1c1e' },
 ];
 
 const ROW_2 = [
-  { name: 'Seerr', icon: '/icons/seerr.svg', bg: '#1c1c1e', badge: '7', badgeBg: '#ffcc00', badgeInk: '#1c1c1e' },
-  { name: 'Proxy', icon: '/icons/npm.svg', bg: '#1c1c1e', badge: '!', badgeBg: '#ff4245', badgeInk: '#ffffff' },
-  { name: 'Immich', icon: '/icons/immich.svg', bg: '#f2f2f7' },
+  { name: 'Seerr', icon: '/icons/seerr-light.svg', bg: '#4e38f5', badge: '7', badgeBg: '#ffcc00', badgeInk: '#1c1c1e' },
+  { name: 'NPM', icon: '/icons/npm.svg', bg: '#cc3737', badge: '!', badgeBg: '#ff4245', badgeInk: '#ffffff' },
+  { name: 'Radarr', icon: '/icons/radarr.svg', bg: '#f2f2f7' },
 ];
+
+const np = manifestCard('nowplaying', 'index.html');
+const backup = manifestCard('backup', 'backup.html');
 
 const DESIGN = 170;
 const CARD_W = 110;
@@ -80,7 +85,7 @@ const cardStyle = `width:${CARD_W}px;height:${CARD_H}px;border-radius:${RADIUS}p
       <p class="sy-cc__title">Stackyard</p>
       <div class="sy-cc__screen sy-cc__screen--calm">
         <div class="sy-cc__grid">
-          <div class="wpv__card sy-cc__wcell" data-card="dark" style={cardStyle}>
+          <div class="wpv__card sy-cc__wcell" data-card={np.card ?? undefined} data-appearance={np.appearance} style={cardStyle}>
             <iframe
               data-np
               src="/widgets/nowplaying/index.html?id=cc-np-a&size=small&lang=en"
@@ -105,7 +110,7 @@ const cardStyle = `width:${CARD_W}px;height:${CARD_H}px;border-radius:${RADIUS}p
               <span class="sy-cc__name">{t.name}</span>
             </span>
           ))}
-          <div class="wpv__card sy-cc__wcell" data-card="dark" style={cardStyle}>
+          <div class="wpv__card sy-cc__wcell" data-card={backup.card ?? undefined} data-appearance={backup.appearance} style={cardStyle}>
             <iframe
               src="/widgets/backup/backup.html?id=cc-backup&size=small&lang=en"
               title="Backup widget"
@@ -137,8 +142,8 @@ const cardStyle = `width:${CARD_W}px;height:${CARD_H}px;border-radius:${RADIUS}p
 
   <figcaption class="sy-cc__figcap">
     The same facts either way: what is playing, last night's backup, seven
-    pending requests, thirty-one percent of queries blocked and a proxy that
-    needs attention.
+    pending requests, three unread notifications and a proxy that needs
+    attention.
   </figcaption>
 </figure>
 

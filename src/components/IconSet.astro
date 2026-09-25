@@ -1,25 +1,15 @@
 ---
-import { readRepoFile } from '../lib/repo';
+import { iconSprite, loadIconSet } from '../lib/icon-set';
+import { SIDEBAR_ICON_IDS } from '../lib/sidebar-icons';
 
-const source = readRepoFile('ui/js/icon-set.js');
-let sprite = '';
-let ids: string[] = [];
-if (source) {
-  const mod = await import(/* @vite-ignore */ `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
-  let defs = '';
-  let syms = '';
-  ids = Object.keys(mod.ICONS);
-  for (const id of ids) {
-    const s = mod.symbol(id, mod.ICONS[id]);
-    defs += s.defs;
-    syms += s.sym;
-  }
-  sprite = `<svg class="sy-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>${defs}</defs>${syms}</svg>`;
-}
+const mod = await loadIconSet();
+const ids = mod ? Object.keys(mod.ICONS) : [];
+/* The sidebar sprite defines these ids on every docs page. Repeating them duplicates ids. */
+const sprite = await iconSprite(ids.filter((id) => !SIDEBAR_ICON_IDS.includes(id)));
 ---
 
 {
-  source ? (
+  mod ? (
     <div class="sy-iconset not-content">
       <Fragment set:html={sprite} />
       {ids.map(id => (

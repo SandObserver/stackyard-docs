@@ -3,12 +3,12 @@ import { toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
 import { SETTINGS_ICON, SETTINGS_ICON_LIGHT } from '/js/settings-icon.js?v=4079b66a';
 import { mkGlassRim } from '/js/glass-rim.js?v=3faec233';
 import { smoothRectPath } from '/js/smooth-corner.js?v=b7dda7e1';
-import { BRAND_MARK } from '/js/brand-mark.js?v=1dcbf1ac';
+import { BRAND_MARK } from '/js/brand-mark.js?v=e363e477';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { pageTheme, tileColor } from '/js/palette.js?v=3fb8ae43';
 
-export const mk = (t, a = {}) => {
-  const e = document.createElement(t);
+export const mk = (tag, a = {}) => {
+  const e = document.createElement(tag);
   Object.assign(e, a);
   return e;
 };
@@ -17,16 +17,24 @@ export const mk = (t, a = {}) => {
    url() fetches from whatever host it names. */
 const SAFE_COLOR = /^(#[0-9a-f]{3,8}|(?:rgb|hsl)a?\([0-9a-z%.,\s/+-]*\)|[a-z]{3,20})$/i;
 const DEFAULT_TILE_COLOR = '#1C1C1E';
+
+/** Reject an invalid colour. Repairing one by deleting characters paints a
+    colour nobody chose.
+    @param {unknown} c @param {string} fallback @returns {string} */
+export const cssColor = (c, fallback) => {
+  const v = String(c ?? '').trim();
+  return v && SAFE_COLOR.test(v) ? v : fallback;
+};
+
 export const clr = c => {
   if (!c) return DEFAULT_TILE_COLOR;
   const named = tileColor(c, pageTheme());
   if (named) return named;
-  const v = String(c).trim();
-  return SAFE_COLOR.test(v) ? v : DEFAULT_TILE_COLOR;
+  return cssColor(c, DEFAULT_TILE_COLOR);
 };
 /* The plate is a colour the user chose, so the ink has to be measured from it.
    White on the palette's own yellow reads at 1.5:1. */
-export const fb = (l, sz, plate) => {
+export const letterTile = (l, sz, plate) => {
   const e = mk('span');
   e.className = 'fb';
   const tone = toneForColor(plate) ?? (pageTheme() === 'light' ? 'dark' : 'light');
@@ -113,6 +121,8 @@ export const qa = (sel, root = document) => /** @type {HTMLElement[]} */ ([...ro
     @param {Event} e @returns {HTMLInputElement} */
 export const tgt = e => /** @type {HTMLInputElement} */ (e.target);
 
+export const ICON_R = 0.26;
+
 /* breg is passed in to avoid a circular import. */
 export function mkWrap(item, sz, r, isz, cls, breg) {
   const w = mk('div');
@@ -134,7 +144,7 @@ export function mkWrap(item, sz, r, isz, cls, breg) {
     });
     img.setAttribute('aria-hidden', 'true');
     img.style.cssText = `width:${si}px;height:${si}px;object-fit:contain;position:relative;z-index:3;`;
-    img.onerror = () => img.replaceWith(fb(item.label, sz, wrapBg));
+    img.onerror = () => img.replaceWith(letterTile(item.label, sz, wrapBg));
     w.appendChild(img);
   } else if (rawIcon) {
     const chain = iconChain(rawIcon);
@@ -146,7 +156,7 @@ export function mkWrap(item, sz, r, isz, cls, breg) {
       const tryNext = () => {
         step++;
         if (step < chain.length) img.src = chain[step];
-        else img.replaceWith(fb(item.label, sz, wrapBg));
+        else img.replaceWith(letterTile(item.label, sz, wrapBg));
       };
       img.onerror = tryNext;
       /* A 403 fires load, not onerror. A blocked image has zero dimensions. */
@@ -154,8 +164,8 @@ export function mkWrap(item, sz, r, isz, cls, breg) {
         if (img.naturalWidth === 0) tryNext();
       };
       w.appendChild(img);
-    } else w.appendChild(fb(item.label, sz, wrapBg));
-  } else w.appendChild(fb(item.label, sz, wrapBg));
+    } else w.appendChild(letterTile(item.label, sz, wrapBg));
+  } else w.appendChild(letterTile(item.label, sz, wrapBg));
   if (
     breg &&
     (item.monitoring?.healthcheck?.enabled ||
@@ -320,10 +330,10 @@ export function mountScaledWidget(card, { src, title, design, iframeOpts, overla
       doc.addEventListener(
         'touchstart',
         e => {
-          const t = e.touches[0];
-          if (!t) return;
-          sx = t.clientX;
-          sy = t.clientY;
+          const touch = e.touches[0];
+          if (!touch) return;
+          sx = touch.clientX;
+          sy = touch.clientY;
           moved = false;
         },
         { passive: true },
@@ -331,19 +341,19 @@ export function mountScaledWidget(card, { src, title, design, iframeOpts, overla
       doc.addEventListener(
         'touchmove',
         e => {
-          const t = e.touches[0];
-          if (!t) return;
-          if (Math.abs(t.clientX - sx) > 8 || Math.abs(t.clientY - sy) > 8) moved = true;
+          const touch = e.touches[0];
+          if (!touch) return;
+          if (Math.abs(touch.clientX - sx) > 8 || Math.abs(touch.clientY - sy) > 8) moved = true;
         },
         { passive: true },
       );
       doc.addEventListener(
         'touchend',
         e => {
-          const t = e.changedTouches[0];
-          if (!t) return;
-          const dx = t.clientX - sx,
-            dy = t.clientY - sy;
+          const touch = e.changedTouches[0];
+          if (!touch) return;
+          const dx = touch.clientX - sx,
+            dy = touch.clientY - sy;
           if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy) * 1.4) {
             /* horizontal swipe → page */
             if (typeof onSwipe === 'function') onSwipe(dx < 0 ? 1 : -1);
@@ -351,11 +361,11 @@ export function mountScaledWidget(card, { src, title, design, iframeOpts, overla
           }
           if (!moved && overlayHref) {
             /* tap on non-interactive area → open link */
-            const tgt = e.target;
+            const target = e.target;
             const interactive =
-              tgt &&
-              tgt.closest &&
-              tgt.closest(
+              target &&
+              target.closest &&
+              target.closest(
                 'a,button,[role="button"],[onclick],.clickable,.bay,.val-row,.chart-wrap,input,select,textarea',
               );
             if (!interactive) window.open(overlayHref, '_blank', 'noopener,noreferrer');

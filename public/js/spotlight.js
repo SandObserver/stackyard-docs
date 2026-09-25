@@ -1,5 +1,5 @@
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
-import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=55685187';
+import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=eadafbcd';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 
 /* Attached to the window so a re-open can undo the previous one. */
@@ -28,10 +28,10 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
   res.setAttribute('role', 'listbox');
   res.setAttribute('aria-label', t('home.searchResults'));
 
-  const render = q => {
+  const render = query => {
     res.replaceChildren();
     const apps = getItems().filter(i => i.type === 'app' || i.type === 'folder');
-    const qq = q.toLowerCase().trim();
+    const qq = query.toLowerCase().trim();
     cur = qq ? apps.filter(a => (a.label || a.id).toLowerCase().includes(qq)) : apps;
     si = 0;
     if (!cur.length) {
@@ -65,7 +65,8 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
       a.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
       a.style.cssText =
         'display:flex;align-items:center;gap:18px;padding:14px 20px;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;';
-      const doOpen = () => {
+      /* A click also follows the link. Opening here as well opens two tabs. */
+      const doOpen = viaTouch => {
         close();
         if (isFolder) {
           if (MOB()) {
@@ -74,15 +75,15 @@ export function initSpotlight({ getItems, isMob, CB, iconChain, openFolderDeskto
           } else openFolderDesktop(app);
         } else if (app.system === 'settings' && app.href) {
           window.location.href = app.href;
-        } else if (app.href) {
+        } else if (viaTouch && app.href) {
           window.open(app.href, '_blank', 'noreferrer,noopener');
         }
       };
       a.addEventListener('touchend', e => {
         e.preventDefault();
-        doOpen();
+        doOpen(true);
       });
-      a.onclick = doOpen;
+      a.onclick = () => doOpen(false);
 
       const ic = mk('div');
       ic.className = 'sri';

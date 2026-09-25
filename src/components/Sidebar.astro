@@ -1,0 +1,19 @@
+---
+import MobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
+import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro';
+import SidebarSublist from './SidebarSublist.astro';
+import { iconSprite } from '../lib/icon-set';
+import { SIDEBAR_ICON_IDS } from '../lib/sidebar-icons';
+
+const { sidebar } = Astro.locals.starlightRoute;
+const sprite = await iconSprite(SIDEBAR_ICON_IDS);
+---
+
+<Fragment set:html={sprite} />
+<SidebarPersister>
+  <SidebarSublist sublist={sidebar} />
+</SidebarPersister>
+
+<div class="md:sl-hidden">
+  <MobileMenuFooter />
+</div>

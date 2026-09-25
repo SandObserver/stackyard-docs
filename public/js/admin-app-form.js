@@ -1,4 +1,4 @@
-import { clr as rc, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=55685187';
+import { clr, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=eadafbcd';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { loadLocalIcons, resolveIcon, iconChain, cdnIconRef, splitIconRef } from '/js/icons.js?v=9c8c550c';
 import { state } from '/js/admin-state.js?v=831e219e';
@@ -10,24 +10,24 @@ import {
   failureIsMissingApiPath,
   nextActiveIndex,
   sameIconName,
-} from '/js/admin-logic.js?v=e3673bd7';
+} from '/js/admin-logic.js?v=cbb7417d';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import {
   toast,
-  ag,
-  ap,
+  apiGet,
+  apiPost,
   PE_SVG,
   initInlineEdit,
   reveal,
   setTogDisabled,
   swapContent,
-} from '/js/admin-shared.js?v=52e149f5';
-import { createListbox } from '/js/listbox.js?v=32f787c3';
-import { MAX_LABELS } from '/js/badge-logic.js?v=ad283693';
-import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=42c11a9b';
-import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=10f3cdb1';
+} from '/js/admin-shared.js?v=d2e8b6dc';
+import { createListbox } from '/js/listbox.js?v=f057351d';
+import { MAX_LABELS } from '/js/badge-logic.js?v=9e6d9d4b';
+import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=e963853a';
+import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=e4ea7820';
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
-import { iconSvg } from '/js/icon-set.js?v=606a68c6';
+import { iconSvg } from '/js/icon-set.js?v=08b74a28';
 
 export function buildFolderForm(body, item) {
   const children = item?.children || [];
@@ -208,7 +208,7 @@ export function buildAppForm(body, item) {
 
   /* The markup carries no style attribute, so the preview is painted here. */
   const pv0 = el('ipv');
-  if (pv0) pv0.style.background = rc(state.scol);
+  if (pv0) pv0.style.background = clr(state.scol);
   renderColorControl(el('icon-color-slot'), {
     value: state.scol || 'auto',
     idPrefix: 'icon-col',
@@ -217,7 +217,7 @@ export function buildAppForm(body, item) {
     onChange(v) {
       state.scol = v;
       const pv = el('ipv');
-      if (pv) pv.style.background = rc(state.scol);
+      if (pv) pv.style.background = clr(state.scol);
     },
   });
   renderColorControl(el('static-color-slot'), {
@@ -621,7 +621,7 @@ function renderIconVariants(variants) {
 async function loadIconVariants(ref) {
   if (!ref || ref.startsWith('http://') || ref.startsWith('https://') || ref.includes('/')) return;
   try {
-    const d = await ag(`/api/icons/variants?ref=${encodeURIComponent(ref)}`);
+    const d = await apiGet(`/api/icons/variants?ref=${encodeURIComponent(ref)}`);
     if (inpById('ip-in')?.value !== ref) return;
     const variants = d.variants || [];
     /* The catalogue lists this name but holds no file under it. */
@@ -642,7 +642,7 @@ function wireIcon() {
     const mine = ++run;
     const q = v.replace(/\.(svg|png|ico)$/i, '');
     try {
-      const d = await ag(`/api/icons/search?q=${encodeURIComponent(q)}`);
+      const d = await apiGet(`/api/icons/search?q=${encodeURIComponent(q)}`);
       if (mine !== run) return;
       showIPRes(d.results || [], v);
     } catch {
@@ -827,7 +827,7 @@ function updPrev(explicit) {
   const p = el('ipv');
   if (!p) return;
   const run = ++prevRun;
-  p.style.background = rc(state.scol);
+  p.style.background = clr(state.scol);
   if (!state.siurl) {
     setInitialGlyph(p);
     return;
@@ -863,7 +863,7 @@ async function testPing() {
   st.textContent = t('app.testing');
   const skipTls = inpById('f-skip-tls')?.checked || false;
   try {
-    const r = await ap('/api/ping', { url, skipTls });
+    const r = await apiPost('/api/ping', { url, skipTls });
     st.textContent = r.ok
       ? '✓ ' + t('app.reachable', { status: r.status })
       : '✗ ' + t('app.httpError', { status: r.status });
@@ -920,21 +920,21 @@ function renderKvRows(host, rows, ph) {
 const defaultValuePlaceholder = ph => ph.split('=')[1] || 'value';
 
 function kvRowEl(host, rows, row, ph) {
-  const el = document.createElement('div');
-  el.className = 'kv-row';
+  const rowEl = document.createElement('div');
+  rowEl.className = 'kv-row';
   const valPh = row.secret && row.valueSet && row.value === '' ? 'Configured' : defaultValuePlaceholder(ph);
   setHtml(
-    el,
+    rowEl,
     html`
     <input class="kv-k" type="text" placeholder="${t('app.headerKeyPh')}" value="${row.key}" aria-label="${t('app.headerKey')}">
     <input class="kv-v" type="${row.secret ? 'password' : 'text'}" placeholder="${valPh}" value="${row.value}" autocomplete="off" aria-label="${t('app.headerValue')}">
     <label class="kv-cred" title="${t('app.secretTip')}"><input type="checkbox" ${row.secret ? 'checked' : ''} aria-label="${t('app.secret')}"><span class="kv-box"></span><span class="kv-cred-lbl">${t('app.secret')}</span></label>
     <button class="kv-del" type="button" aria-label="${t('widgetCfg.remove')}">✕</button>`,
   );
-  const kEl = qi('.kv-k', el),
-    vEl = qi('.kv-v', el),
-    cEl = qi('.kv-cred input', el),
-    dEl = qSel('.kv-del', el);
+  const kEl = qi('.kv-k', rowEl),
+    vEl = qi('.kv-v', rowEl),
+    cEl = qi('.kv-cred input', rowEl),
+    dEl = qSel('.kv-del', rowEl);
   kEl.oninput = () => {
     row.key = kEl.value;
   };
@@ -959,7 +959,7 @@ function kvRowEl(host, rows, row, ph) {
     if (idx >= 0) rows.splice(idx, 1);
     renderKvRows(host, rows, ph);
   };
-  return el;
+  return rowEl;
 }
 
 async function fetchBadge() {
@@ -980,7 +980,7 @@ async function fetchBadge() {
     const params = serializeKvRows(state._bpar);
     const headers = serializeKvRows(state._bhdr);
     const skipTls = inpById('f-skip-tls')?.checked || false;
-    const r = await ap('/api/badge-proxy', {
+    const r = await apiPost('/api/badge-proxy', {
       url,
       params,
       headers,
@@ -1007,7 +1007,7 @@ async function fetchBadge() {
       const tone = missingPath || advice.tone === TONE.WARN ? 'var(--warning)' : 'var(--danger)';
       st.style.cssText = 'margin-top:4px;color:' + tone;
       if (missingPath) st.textContent = t('app.needsApiPathError');
-      else st.textContent = advice.tone === TONE.WARN ? advice.message : '✗ ' + advice.message;
+      else st.textContent = (advice.tone === TONE.WARN ? '' : '✗ ') + t(advice.key, advice.vars);
     }
     if (advice.openAuth && !missingPath) {
       const authCb = inpById('auth-en');

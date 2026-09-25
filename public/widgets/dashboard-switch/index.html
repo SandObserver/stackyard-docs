@@ -32,6 +32,7 @@
   .rail { fill:rgba(255,255,255,.07); stroke:rgba(255,255,255,.10) }
   html[data-theme="light"] .rail { fill:rgba(0,0,0,.07); stroke:rgba(0,0,0,.14) }
   html[data-theme="light"],html[data-theme="light"] body { background:#ffffff; color:#000000 }
+  html[data-theme="light"] .nm { fill:#3a3a3c }
   html[data-theme="light"] .kc:hover .nm,html[data-theme="light"] .kc:focus-visible .nm,html[data-theme="light"] .kc.cur .nm { fill:#000000 }
   html[data-theme="light"] .kc:hover .chain,html[data-theme="light"] .kc:focus-visible .chain { filter:drop-shadow(0 3px 4px rgba(0,0,0,0.175)) }
 </style>
@@ -39,7 +40,7 @@
 <body>
 <div id="root"></div>
 <script type="module">
-  import { widgetId, getConfig, loadStrings, wt } from '/js/widget-toolbox.js?v=18ff4820';
+  import { widgetId, getConfig, loadStrings, wt } from '/js/widget-toolbox.js?v=22640314';
   await loadStrings();
   import { buildModel } from '/js/dashboard-switch-model.js?v=b1e85478';
 

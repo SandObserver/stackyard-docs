@@ -8,6 +8,7 @@ interface Item {
   id: string;
   size?: 'small' | 'medium';
   card?: 'dark' | 'graphite' | 'light' | 'translucent' | null;
+  appearance?: 'dark';
   title: string;
   label?: string;
 }
@@ -53,7 +54,7 @@ const built = items.map((it) => {
             <div
               class="wpv__card"
               data-card={b.card ?? b.declared.card ?? undefined}
-              data-appearance={b.declared.appearance}
+              data-appearance={b.appearance ?? b.declared.appearance}
               style={`width:${b.w}px;height:${CARD_H}px;border-radius:${RADIUS}px;`}
             >
               <iframe

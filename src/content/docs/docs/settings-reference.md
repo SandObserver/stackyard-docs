@@ -78,7 +78,7 @@ How the dashboard looks. Every change applies immediately. Explained in full on 
 | Collection ID | Unsplash only. Leave blank for a random photo. See [Finding a Collection ID](/docs/customization/#finding-a-collection-id). |
 | Image | Upload a file, or link one by URL. Both are stored on your own server. |
 | Fit | Fill crops to cover the screen. Fit shows the whole image. |
-| Color | A solid background colour, as `#rrggbb` or a CSS colour name. |
+| Color | A solid background colour. Pick a swatch, or tune hue, saturation and brightness. Color Code takes `#rrggbb` or a CSS colour name. |
 | Brightness | Dims the wallpaper so tiles and labels stay readable. |
 
 Choosing Image or Solid color means Unsplash is never contacted.

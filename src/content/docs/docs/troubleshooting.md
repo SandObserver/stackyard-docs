@@ -239,9 +239,12 @@ Messages shown in the admin, and what each one means.
 | `This address has no API path. Enter the service's full API URL.` | The Live Activity address names a host only. Badges read a value from an API response, so the address needs the service's API path. |
 | `Connected, but this address has no API path. Enter the service's full API URL.` | The address answered, but nothing numeric was found in the response. Same cause as above. |
 | `The address answered with a redirect (HTTP <status>). Enter the address it points to.` | Redirects are not followed. Use the final address, which is often a login page when the API path is missing. |
+| `The service answered, but nothing is at that address (HTTP <status>).` | The host answered with 404. The API path is wrong. |
+| `The service answered with an error (HTTP <status>).` | The service returned an error status. 404, 405, 407 and 5xx errors have their own messages. |
 | `Ping failed` / `Ping returned <status>` | The URL was reached but did not answer as expected. |
 | `That image is too large for the server to accept.` | Over the 2 MB upload limit. |
 | `That is not a color. Use #rrggbb or a CSS color name.` | The wallpaper colour field rejects anything else. |
+| `The wallpaper could not be loaded.` | Settings could not get the Unsplash photo. Check the API key and the Collection ID. |
 | `Wallpaper failed: <reason>` | The image was not stored. The link was unreachable, the file is not a JPEG, PNG, WebP, AVIF or GIF, or it is over 16 MB. |
 | `Set a password before turning authentication on.` | Authentication needs a password to exist first. |
 | `<id>: children point at items that are not here: ...` | A folder in the config lists apps that are not in the same file. The named entries are missing. Usually a hand-edited or partly merged export. |

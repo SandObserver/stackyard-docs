@@ -141,5 +141,6 @@ The wording comes from the failure kind, not the upstream message. `errorLine(er
 - `sparkline(values, opts?)` returns an `<svg>` area and line chart.
 - `barFill(percent, opts?)` returns a track and fill bar. It skips its transition under reduced motion.
 - `smoothPath(points)` returns a smoothed SVG path through `[[x, y], ...]`.
+- `setCardAppearance(dark)` gives the card the dark card's edge and border. Call it when the widget paints its own dark background, for example at night.
 
 Check the toolbox before drawing a visual by hand.

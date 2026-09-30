@@ -228,6 +228,9 @@ Messages shown in the admin, and what each one means.
 | Message | Meaning |
 | --- | --- |
 | `Could not connect to dashboard API` | The UI loaded but the API did not answer. See [above](#could-not-connect-to-dashboard-api). |
+| `The current password is incorrect.` | The current password typed to change or remove the password did not match. Nothing was saved. |
+| `The password was changed elsewhere. Reload the page and try again.` | The password changed on another device while this save ran. Nothing was saved. |
+| `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
 | `Enter the credential again for: ...` | The request a secret belonged to changed, so the secret was cleared. Re-enter and save. |
 | `Nothing at that address answered.` | The socket proxy address is unreachable from inside the container. Usually a proxy published on the host's loopback. |
 | `That name is resolved by Docker, which answers only for containers on a shared network.` | The socket proxy service name is not on a network Stackyard shares. |

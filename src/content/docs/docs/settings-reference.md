@@ -40,6 +40,7 @@ If every app suddenly shows as unhealthy, the socket proxy address is the usual 
 | --- | --- |
 | Password Protection | Sets or changes the dashboard password. Between 8 and 1024 characters. Leave blank to keep the existing one. Changing the password, or turning protection off, asks for the current password. |
 | Sign out all devices | Ends every session everywhere, including the one you are using. Use it if you think a session may be compromised. |
+| Allowed Addresses | Host names Stackyard answers on while no password is set, separated by commas. IP addresses and local names such as `nas` or `nas.local` always work and need no entry. The first address used to open Stackyard is added for you. See [Security](/docs/security/#addresses-without-a-password). |
 
 Locked out? See [password recovery](/docs/troubleshooting/#i-forgot-the-password-and-i-am-locked-out).
 

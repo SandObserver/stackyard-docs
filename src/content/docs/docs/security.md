@@ -28,6 +28,12 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 
 Authentication is only in force once a password is stored. Until then, the endpoint that sets one accepts the first caller. See [First setup](/docs/first-setup/).
 
+### Addresses without a password
+
+While no password is set, Stackyard answers only on IP addresses, `localhost`, single-label names, names under `.local`, `.home.arpa`, `.internal` and `.localhost`, and the names in **Allowed Addresses**. Any other address gets a 403. This stops a web page on another site from pointing its own name at your server (DNS rebinding) and changing your settings.
+
+The first page load after install or upgrade sets the list. A host name is trusted and saved. An IP address or local name saves an empty list. With a password set, every address works and the list is not checked.
+
 ## Secrets
 
 Stored secrets are stripped from the config before it reaches the browser. A populated field reports as set without returning its value, in config responses and in exports alike.

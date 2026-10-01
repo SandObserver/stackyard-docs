@@ -60,6 +60,15 @@ To fix it, on the server:
 
 The container log shows `config file cannot be used; sign-in and saving are refused until it is fixed`, with the reason and the copy's name.
 
+### Stackyard does not answer on this address
+
+No password is set, and the address in your browser is not an IP address, a local name, or an entry in **Allowed Addresses**. Stackyard refuses it so a web page on another site cannot reach your settings. See [Security](/docs/security/#addresses-without-a-password).
+
+1. Open Stackyard by its IP address, or by an address you already allowed.
+2. In **General**, add the address to **Allowed Addresses** and save.
+3. Or set a password. With a password, every address works.
+4. Choose **Check again**.
+
 ### My dashboard is empty after a restart
 
 Confirm both volumes are mounted. Without `./data` nothing persists.
@@ -248,6 +257,8 @@ Messages shown in the admin, and what each one means.
 | `The password was changed elsewhere. Reload the page and try again.` | The password changed on another device while this save ran. Nothing was saved. |
 | `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
 | `Stackyard cannot use its settings file` | The config file is damaged or cannot be read. Sign-in and saving are off until it is fixed. See [above](#stackyard-cannot-read-its-settings-file). |
+| `Stackyard does not answer on this address` | No password is set and this address is not allowed. See [above](#stackyard-does-not-answer-on-this-address). |
+| `Keep ... in Allowed Addresses, or this page stops working.` | The save would drop the address this page is open on while no password is set. Remove it from another address. |
 | `Enter the credential again for: ...` | The request a secret belonged to changed, so the secret was cleared. Re-enter and save. |
 | `Nothing at that address answered.` | The socket proxy address is unreachable from inside the container. Usually a proxy published on the host's loopback. |
 | `That name is resolved by Docker, which answers only for containers on a shared network.` | The socket proxy service name is not on a network Stackyard shares. |

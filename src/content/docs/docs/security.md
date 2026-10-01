@@ -24,6 +24,7 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 - Sessions expire after an idle lifetime, 12 hours by default. A session in use is reissued past the halfway mark.
 - Login is rate-limited to 5 attempts per IP per 15 minutes. Counters are in memory, so a restart clears them and they are not shared across replicas. Run a single instance behind any proxy.
 - Changing the password rotates the session secret, signing out every other device. Sign out all devices does the same without changing the password.
+- Changing the password, or turning protection off, needs the current password as well as a session. Wrong attempts count toward the login limit of 5 per IP per 15 minutes.
 
 Authentication is only in force once a password is stored. Until then, the endpoint that sets one accepts the first caller. See [First setup](/docs/first-setup/).
 

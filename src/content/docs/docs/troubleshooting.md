@@ -255,6 +255,7 @@ Messages shown in the admin, and what each one means.
 | `Could not connect to dashboard API` | The UI loaded but the API did not answer. See [above](#could-not-connect-to-dashboard-api). |
 | `The current password is incorrect.` | The current password typed to change or remove the password did not match. Nothing was saved. |
 | `The password was changed elsewhere. Reload the page and try again.` | The password changed on another device while this save ran. Nothing was saved. |
+| `The dashboard was changed elsewhere. Reload the page and try again.` | Another tab or device changed the dashboard after this page loaded it. Nothing was saved. |
 | `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
 | `Stackyard cannot use its settings file` | The config file is damaged or cannot be read. Sign-in and saving are off until it is fixed. See [above](#stackyard-cannot-read-its-settings-file). |
 | `Stackyard does not answer on this address` | No password is set and this address is not allowed. See [above](#stackyard-does-not-answer-on-this-address). |

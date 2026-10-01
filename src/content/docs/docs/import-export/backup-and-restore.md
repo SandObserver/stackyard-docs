@@ -25,9 +25,9 @@ The config file lives on `/data`. Uploaded icons and stored wallpapers live on `
 
 ## A corrupt config
 
-If the config fails to parse, or parses with the wrong shape, Stackyard copies it to `apps.json.corrupt-<timestamp>` and starts empty rather than overwriting the broken one. Each distinct breakage keeps its own backup.
+If the config fails to parse, or parses with the wrong shape, Stackyard copies it to `apps.json.corrupt-<timestamp>` and never overwrites the broken one. Each distinct breakage keeps its own backup. Sign-in and saving stay off until the file is fixed, and the dashboard shows the steps to fix it. See [Stackyard cannot read its settings file](/docs/troubleshooting/#stackyard-cannot-read-its-settings-file).
 
-If your dashboard is empty after a restart, look for an `apps.json.corrupt-*` file before making changes.
+Restoring an export brings back everything except the password. Set it again in **General**, **Password Protection** straight away.
 
 ## Coming from another dashboard
 

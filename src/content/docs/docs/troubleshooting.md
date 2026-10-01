@@ -42,11 +42,27 @@ The page loaded but the API behind it did not answer. The UI is served by nginx 
 
 Check `docker logs <container>` for either process failing to start. A data volume that the container's `node` user cannot write to is a common cause.
 
+### Stackyard cannot read its settings file
+
+The dashboard and Settings show this screen when `apps.json` is damaged or cannot be read. Stackyard does not change the file. Sign-in and saving stay off until the file is fixed, so no one can replace your settings or your password.
+
+There are two causes:
+
+- **Damaged.** The file is not valid JSON, or it has the wrong shape. Stackyard copies it to `apps.json.corrupt-<timestamp>` in the same folder. Each distinct breakage keeps its own copy.
+- **Cannot be read.** The file exists, but the container's `node` user is not allowed to read it.
+
+To fix it, on the server:
+
+1. If the file is damaged, open the copy the screen names, fix the error, and save it as `apps.json`. The container log gives the error and its position. You can instead replace `apps.json` with a file you saved with **Export**. An export holds no password, so set one again in **General**, **Password Protection** straight away.
+2. If the file cannot be read, give the `node` user read and write access to `apps.json` in the `data` volume.
+3. To start again with no settings, delete `apps.json`. First-time setup then runs.
+4. Choose **Check again**.
+
+The container log shows `config file cannot be used; sign-in and saving are refused until it is fixed`, with the reason and the copy's name.
+
 ### My dashboard is empty after a restart
 
-Look in the data volume for a file named `apps.json.corrupt-<timestamp>`. If the config fails to parse on startup, Stackyard copies it aside and starts empty rather than overwriting it. Your previous config is in that file.
-
-Otherwise confirm both volumes are mounted. Without `./data` nothing persists.
+Confirm both volumes are mounted. Without `./data` nothing persists.
 
 ### I updated the image but the UI looks the same
 
@@ -231,6 +247,7 @@ Messages shown in the admin, and what each one means.
 | `The current password is incorrect.` | The current password typed to change or remove the password did not match. Nothing was saved. |
 | `The password was changed elsewhere. Reload the page and try again.` | The password changed on another device while this save ran. Nothing was saved. |
 | `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
+| `Stackyard cannot use its settings file` | The config file is damaged or cannot be read. Sign-in and saving are off until it is fixed. See [above](#stackyard-cannot-read-its-settings-file). |
 | `Enter the credential again for: ...` | The request a secret belonged to changed, so the secret was cleared. Re-enter and save. |
 | `Nothing at that address answered.` | The socket proxy address is unreachable from inside the container. Usually a proxy published on the host's loopback. |
 | `That name is resolved by Docker, which answers only for containers on a shared network.` | The socket proxy service name is not on a network Stackyard shares. |

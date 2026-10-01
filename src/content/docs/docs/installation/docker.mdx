@@ -55,7 +55,7 @@ All optional.
 ]} />
 
 <SettingList title="Sessions and logs" items={[
-  { name: '`SESSION_MAX_AGE_DAYS`', text: 'Idle session lifetime. Default `0.5`, 12 hours.' },
+  { name: '`SESSION_MAX_AGE_DAYS`', text: 'Idle session lifetime. Default `0.5`, 12 hours. A session in use ends 30 days after sign-in, or after this lifetime if longer.' },
   { name: '`PASSWORD_HASH_MEMORY`', text: 'Memory per password hash: `8mib` to `128mib`. Default `16mib`.' },
   { name: '`LOG_LEVEL`', text: '`debug`, `info`, `warn` or `error`. Default `info`. The General setting overrides it.' },
 ]} />

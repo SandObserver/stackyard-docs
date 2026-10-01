@@ -22,6 +22,8 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 - Passwords are hashed with scrypt and a per-password salt, stored in PHC string format.
 - Session tokens are HMAC-signed and verified with a constant-time comparison.
 - Sessions expire after an idle lifetime, 12 hours by default. A session in use is reissued past the halfway mark.
+- A session ends 30 days after sign-in even while in use, or after the idle lifetime if that is longer.
+- Signing out ends the session on the server. A copy of its cookie stops working too.
 - Login is rate-limited to 5 attempts per IP per 15 minutes. Counters are in memory, so a restart clears them and they are not shared across replicas. Run a single instance behind any proxy.
 - Changing the password rotates the session secret, signing out every other device. Sign out all devices does the same without changing the password.
 - Changing the password, or turning protection off, needs the current password as well as a session. Wrong attempts count toward the login limit of 5 per IP per 15 minutes.

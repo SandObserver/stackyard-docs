@@ -49,15 +49,18 @@ module.exports = async function (ctx) {
     headers: apiKey ? { 'X-Api-Key': apiKey } : {},
     timeout: 8000,
   });
+  if (r.status === 401 || r.status === 403) ctx.fail('Auth failed (check API key)', { kind: ctx.KIND.AUTH });
+  if (r.status >= 400) ctx.fail('HTTP ' + r.status);
+  if (!r.data || !Array.isArray(r.data.items)) ctx.fail('Reply has no items');
 
   return {
-    items: (r.data.items || []).slice(0, 10).map(i => ({ name: i.name })),
-    total: r.data.total ?? 0,
+    items: r.data.items.slice(0, 10).map(i => ({ name: i.name })),
+    total: r.data.total ?? r.data.items.length,
   };
 };
 ```
 
-The return value is served at `/api/widget-data/<id>`. The template returns `{ error }` when the URL is missing. Use `ctx.fail` as shown, so the widget shows its failure state. See [Data](/docs/create-a-widget/data/).
+The return value is served at `/api/widget-data/<id>`. Report every failure through `ctx.fail`, as the template does, so the widget shows its failure state. See [Data](/docs/create-a-widget/data/).
 
 ## 4. Page
 

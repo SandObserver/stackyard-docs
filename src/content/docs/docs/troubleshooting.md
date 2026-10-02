@@ -283,6 +283,7 @@ Messages shown in the admin, and what each one means.
 | `Nothing to import. The file matches your current config.` | The imported file is identical to what is already stored. |
 | `Icon catalogues could not be reached` | No catalogue answered while searching. The field still takes a full URL or an upload. |
 | `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Import](/docs/import-export/migrating/). |
+| `<file> has too many entries to import.` | The file expands to more than 5,000 entries, usually through repeated YAML aliases. Split it or remove the aliases. |
 | `(may be out of date)` | A stale reading. The last poll failed and the previous value is shown. |
 
 ## Not actually broken

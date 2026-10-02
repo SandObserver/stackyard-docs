@@ -3,7 +3,7 @@
 
 import { esc, html, setHtml } from '/js/html.js?v=c71f8903';
 import { isSafeLinkUrl } from '/js/link-url.js?v=54adb40f';
-import { jitter } from '/js/jitter.js?v=4eeef4c9';
+import { jitter } from '/js/jitter.js?v=087a1fcf';
 import { errorState as _errorState, errorKind, errorCopy } from '/js/widget-error.js?v=7da9754b';
 
 export { esc, html, setHtml };
@@ -344,6 +344,7 @@ export function poll(opts = {}) {
     lastData = null,
     timer = null;
   let paused = false;
+  let inFlight = false;
   let lastTick = 0;
 
   async function tick() {
@@ -376,7 +377,13 @@ export function poll(opts = {}) {
 
   /* setTimeout, not setInterval. A slow fetch must not overlap the next one. */
   async function loop() {
-    await tick();
+    timer = null;
+    inFlight = true;
+    try {
+      await tick();
+    } finally {
+      inFlight = false;
+    }
     if (stopped) return;
     /* Schedule nothing while hidden. Each tick reaches the user's own service,
        and browser throttling only slows that. */
@@ -396,12 +403,8 @@ export function poll(opts = {}) {
     if (stopped || paused || timer === null) return;
     clearTimeout(timer);
     const due = lastTick + intervalFor(lastData) * rate - Date.now();
-    if (due <= 0) {
-      timer = null;
-      loop();
-    } else {
-      timer = setTimeout(loop, jitter(due));
-    }
+    if (due <= 0) loop();
+    else timer = setTimeout(loop, jitter(due));
   }
   _polls.add(onRate);
 
@@ -415,7 +418,9 @@ export function poll(opts = {}) {
     }
     if (!paused) return;
     paused = false;
-    loop();
+    /* A tick still in flight schedules the next one when it lands. A second
+       loop here would double the poll rate for good. */
+    if (!inFlight) loop();
   }
   /* poll() is unit-tested outside a browser, where there is no document. */
   const canObserve = typeof document !== 'undefined' && typeof document.addEventListener === 'function';

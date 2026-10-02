@@ -1,7 +1,7 @@
-import { clr, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=b1cfbd45';
+import { clr, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=c5766a9d';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { loadLocalIcons, resolveIcon, iconChain, cdnIconRef, splitIconRef } from '/js/icons.js?v=9c8c550c';
-import { state } from '/js/admin-state.js?v=831e219e';
+import { state } from '/js/admin-state.js?v=af772a1b';
 import { DOCK_MAX } from '/js/limits.js?v=31048a24';
 import {
   isDockBlocked,
@@ -10,10 +10,11 @@ import {
   failureIsMissingApiPath,
   nextActiveIndex,
   sameIconName,
-} from '/js/admin-logic.js?v=cbb7417d';
+} from '/js/admin-logic.js?v=fc7f0836';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import {
   toast,
+  responseError,
   apiGet,
   apiPost,
   PE_SVG,
@@ -21,10 +22,10 @@ import {
   reveal,
   setTogDisabled,
   swapContent,
-} from '/js/admin-shared.js?v=3870d0d0';
-import { createListbox } from '/js/listbox.js?v=6e7b7060';
+} from '/js/admin-shared.js?v=a81b9cbe';
+import { createListbox } from '/js/listbox.js?v=9a8ae607';
 import { MAX_LABELS } from '/js/badge-logic.js?v=9e6d9d4b';
-import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=844bdeb2';
+import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=0d4d1038';
 import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=f82486b2';
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
@@ -707,8 +708,8 @@ function wireIcon() {
         const form = new FormData();
         form.append('icon', file, file.name);
         const r = await fetch('/api/icons/upload', { method: 'POST', body: form });
+        if (!r.ok) throw new Error(await responseError(r));
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
         await loadLocalIcons();
         state.siurl = d.filename;
         const ipIn = inpById('ip-in');
@@ -985,7 +986,7 @@ async function fetchBadge() {
       params,
       headers,
       skipTls,
-      itemId: state.eid !== null ? state.items[state.eid]?.id : undefined,
+      itemId: state.eid ?? undefined,
     });
     state.fnums = r.numbers || [];
     if (st) {

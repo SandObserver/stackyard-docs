@@ -1,17 +1,19 @@
-import { toast, apiGet, apiPost, reveal, swapContent } from '/js/admin-shared.js?v=3870d0d0';
-import { pwStrength } from '/js/password-strength.js?v=42f45ac7';
+import { toast, apiGet, apiPost, reveal, swapContent } from '/js/admin-shared.js?v=a81b9cbe';
+import { pwStrength } from '/js/password-strength.js?v=389e0ed0';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import {
   shouldWritePassword,
   settingsSaveBlocker,
   clearsStoredPassword,
+  needsCurrentPassword,
   createDirtyTracker,
   BLOCK,
-} from '/js/admin-logic.js?v=cbb7417d';
-import { confirmText } from '/js/modal.js?v=11fa1eff';
-import { el, inp, setUserText } from '/js/utils.js?v=b1cfbd45';
-import { renderColorControl } from '/js/admin-color-control.js?v=844bdeb2';
-import { BACKDROP } from '/js/background.js?v=cd1cc453';
+} from '/js/admin-logic.js?v=fc7f0836';
+import { confirmText, promptModal } from '/js/modal.js?v=6b0320bd';
+import { el, inp, setUserText } from '/js/utils.js?v=c5766a9d';
+import { renderColorControl } from '/js/admin-color-control.js?v=0d4d1038';
+import { BACKDROP } from '/js/background.js?v=5f478ebf';
+import { firstBadHost, hostnameOf, isLocalAddress, parseHostList } from '/js/host-names.js?v=842f96ca';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
@@ -21,6 +23,10 @@ let _authEnabled = false;
 let _srvTrack = null;
 /** @type {{ dirty: () => boolean, reset: (force?: boolean) => void } | null} */
 let _bgTrack = null;
+let _savedWallpaperUrl = '';
+
+/** The wallpaper link the server holds, for undoing a link that failed. */
+export const savedWallpaperUrl = () => _savedWallpaperUrl;
 
 const _val = (...ids) => {
   for (const id of ids) {
@@ -42,6 +48,7 @@ const readServerForm = () =>
     _val('srv-docker-en'),
     _val('srv-socket'),
     _val('srv-hide-healthy'),
+    _val('srv-hosts'),
     _val('log-level'),
     _val('lang-sel'),
     _val('sec-en'),
@@ -139,6 +146,7 @@ export function loadSettings(c) {
     aw.addEventListener('change', saveKeepAwake);
   }
   const bg = s.background || { type: 'unsplash', brightness: 0.62 };
+  _savedWallpaperUrl = bg.url || '';
   const typeEl = inp('bg-type');
   if (typeEl) {
     typeEl.value = bg.type || 'unsplash';
@@ -204,6 +212,7 @@ export function loadSettings(c) {
   };
   _sv('ie-ip-v', s.server?.hostIp, '192.168.1.100');
   _sv('ie-socket-v', s.server?.socketProxyUrl, 'http://socket-proxy:2375');
+  _sv('ie-hosts-v', (s.server?.allowedHosts || []).join(', '), t('general.allowedHostsNone'));
   _sv('ie-pw-v', '', t('common.notSet')); /* set below after auth check */
   const _si = (id, v) => {
     const node = inp(id);
@@ -211,6 +220,7 @@ export function loadSettings(c) {
   };
   _si('srv-ip', s.server?.hostIp || '');
   _si('srv-socket', s.server?.socketProxyUrl || '');
+  _si('srv-hosts', (s.server?.allowedHosts || []).join(', '));
   _sv('ie-bgcol-v', s.background?.collection, 'Collection ID');
   _si('bg-col-inp', s.background?.collection || '');
   _si('bg-url-inp', s.background?.url || '');
@@ -371,6 +381,7 @@ async function saveWallpaper() {
     c.settings = c.settings || {};
     c.settings.background = bg;
     await apiPost('/api/config', c);
+    _savedWallpaperUrl = bg.url || '';
     /* After the main config. GET /api/config strips the key, so a config write
        that follows would overwrite it with nothing. */
     if (type === 'unsplash') {
@@ -383,6 +394,12 @@ async function saveWallpaper() {
     toast(t('toast.saveFailed', { err: e.message }), 'err');
   }
 }
+const PASSWORD_ERROR_KEYS = Object.freeze({
+  'invalid.current-password': 'toast.currentPasswordWrong',
+  'invalid.password-changed': 'toast.passwordChangedElsewhere',
+  'blocked.rate-limit': 'toast.tooManyAttempts',
+});
+
 async function saveServer() {
   const pw = inp('sec-pw')?.value || '';
   const enabled = inp('sec-en')?.checked || false;
@@ -398,6 +415,19 @@ async function saveServer() {
   if (blocker) {
     if (blocker.reason === BLOCK.NEEDS_PASSWORD) toast(t('toast.authNeedsPassword'), 'err');
     else toast(t('toast.pwWeak', { label: t(blocker.labelKey) }), 'err');
+    return;
+  }
+
+  const hostsText = inp('srv-hosts')?.value || '';
+  const badHost = firstBadHost(hostsText);
+  if (badHost) {
+    toast(t('toast.allowedHostInvalid', { host: badHost }), 'err');
+    return;
+  }
+  const allowedHosts = parseHostList(hostsText);
+  const here = hostnameOf(location.host);
+  if (!enabled && here && !isLocalAddress(here) && !allowedHosts.includes(here)) {
+    toast(t('toast.allowedHostsKeepCurrent', { host: here }), 'err');
     return;
   }
 
@@ -431,21 +461,40 @@ async function saveServer() {
 
   /* Switching protection off deletes the stored password. Ask before anything
      is written. */
-  if (clearsStoredPassword({ enabled, wasEnabled: _authEnabled, passwordSet: _passwordSet })) {
-    const ok = await confirmText({
+  /** @type {string|undefined} */
+  let currentPassword;
+  const was = { enabled, wasEnabled: _authEnabled, passwordSet: _passwordSet };
+  if (needsCurrentPassword({ ...was, newPassword: pw })) {
+    const clearing = clearsStoredPassword(was);
+    const answer = await promptModal({
       title: t('general.passwordProtection'),
-      text: t('confirm.clearPassword'),
-      confirmLabel: t('common.delete'),
+      text: t(clearing ? 'confirm.clearPassword' : 'confirm.changePassword'),
+      label: t('general.currentPassword'),
+      password: true,
+      destructive: clearing,
+      confirmLabel: t(clearing ? 'common.delete' : 'common.save'),
       cancelLabel: t('common.cancel'),
-      destructive: true,
     });
-    if (!ok) {
-      await syncAuthFromServer();
+    if (answer === null) {
+      if (clearing) await syncAuthFromServer();
       return;
     }
+    currentPassword = answer;
   }
 
   try {
+    /* Keep before the config read. These writes bump the config revision, and
+       a config save built on an earlier read is refused as stale. */
+    if (shouldWritePassword({ enabled, newPassword: pw })) {
+      await apiPost('/api/auth/set-password', { password: pw, currentPassword });
+      const pwEl = inp('sec-pw');
+      if (pwEl) {
+        pwEl.value = '';
+        pwEl.placeholder = '●●●●●●●●●● (configured)';
+      }
+    }
+    await apiPost('/api/auth/toggle', { enabled, currentPassword, allowedHosts });
+
     const c = await apiGet('/api/config');
     c.settings = c.settings || {};
     const prevLang = c.settings.language || 'en';
@@ -456,22 +505,13 @@ async function saveServer() {
       hostIp: inp('srv-ip')?.value?.trim() || '',
       socketProxyUrl: dockerEnabled ? socketUrl : '',
       hideHealthyBadge: inp('srv-hide-healthy')?.checked !== false,
+      allowedHosts,
     };
     c.settings.logLevel = inp('log-level')?.value || 'info';
     c.settings.language = inp('lang-sel')?.value || 'en';
     const langChanged = c.settings.language !== prevLang;
 
     await apiPost('/api/config', c);
-
-    if (shouldWritePassword({ enabled, newPassword: pw })) {
-      await apiPost('/api/auth/set-password', { password: pw });
-      const pwEl = inp('sec-pw');
-      if (pwEl) {
-        pwEl.value = '';
-        pwEl.placeholder = '●●●●●●●●●● (configured)';
-      }
-    }
-    await apiPost('/api/auth/toggle', { enabled });
     if (!enabled) {
       const pwEl = inp('sec-pw');
       if (pwEl) {
@@ -489,7 +529,9 @@ async function saveServer() {
     /* Read back from the server, never inferred from what was asked for. */
     await syncAuthFromServer();
   } catch (e) {
-    toast(t('toast.saveFailed', { err: e.message }), 'err');
+    const key = PASSWORD_ERROR_KEYS[/** @type {any} */ (e).code];
+    if (key) toast(t(key), 'err');
+    else toast(t('toast.saveFailed', { err: e.message }), 'err');
     await syncAuthFromServer();
   }
 }

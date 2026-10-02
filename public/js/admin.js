@@ -1,30 +1,39 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=e203674f';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=a3a03ef9';
-import { initList, render, syncFilterUI } from '/js/admin-list.js?v=fc772edc';
-import { resolveAdminSection } from '/js/admin-logic.js?v=cbb7417d';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=7949fa07';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=9035d41b';
+import { recoveryShown } from '/js/config-recovery.js?v=706fc9a7';
+import { initList, render, syncFilterUI } from '/js/admin-list.js?v=f868b68c';
+import { resolveAdminSection } from '/js/admin-logic.js?v=fc7f0836';
 import {
   buildAppItem,
   claimFolderChildren,
   newItemId,
   saveWithRevert,
+  serialWrites,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=60a82419';
-import { loadSettings, settingsDirty, showBgFields, showWallpaperFile } from '/js/admin-settings.js?v=ac7685df';
+} from '/js/admin-save-logic.js?v=8389782f';
+import {
+  loadSettings,
+  savedWallpaperUrl,
+  settingsDirty,
+  showBgFields,
+  showWallpaperFile,
+} from '/js/admin-settings.js?v=4354171b';
 import {
   apiGet,
   apiPost,
   initInlineEdit,
   paintIcon,
   reveal,
+  responseError,
   setReauthHandler,
   toast,
-} from '/js/admin-shared.js?v=3870d0d0';
-import { collapsedFolders, filter, state } from '/js/admin-state.js?v=831e219e';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=bcfb87e2';
+} from '/js/admin-shared.js?v=a81b9cbe';
+import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=ef53bce9';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=6e7b7060';
+import { createListbox } from '/js/listbox.js?v=9a8ae607';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=1f1ea9c1';
 import { loadLocalIcons } from '/js/icons.js?v=9c8c550c';
@@ -37,9 +46,9 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=f9c0a120';
+} from '/js/import-foreign.js?v=2aa3bf02';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
-import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=11fa1eff';
+import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6b0320bd';
 import {
   THEME_KEY,
   applyTheme,
@@ -49,8 +58,8 @@ import {
   watchSystemTheme,
   writeMode,
 } from '/js/theme.js?v=eeafa4b5';
-import { el, inp, q, qa, clr, setUserText, tgt } from '/js/utils.js?v=b1cfbd45';
-import { applyBackground, resolveBackground } from '/js/background.js?v=cd1cc453';
+import { el, inp, q, qa, clr, setUserText, tgt } from '/js/utils.js?v=c5766a9d';
+import { applyBackground, resolveBackground } from '/js/background.js?v=5f478ebf';
 import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=6ebb564c';
 
 ensureSprite();
@@ -71,6 +80,7 @@ onLayoutChange(_syncMobile, _mobileAtLoad);
 async function load() {
   await loadLocalIcons();
   const c = await apiGet('/api/config');
+  _serverItems = JSON.stringify(c.items || []);
   state.items = c.items || [];
   state._settings = c.settings || {};
   await initI18n(c.settings?.language || 'en');
@@ -107,22 +117,31 @@ async function applyBg() {
   if (bg) applyBackground(document.documentElement, bg);
   else if (s.type === 'unsplash') toast(t('toast.wallpaperUnavailable'), 'err');
 }
+/* The list as the server last returned it to this page. A save that finds a
+   different list on the server would delete what another tab or device added. */
+let _serverItems = '';
+const saves = serialWrites();
+
 /** Returns whether the write reached the server. */
-async function save() {
-  if (state.saving) return false;
-  state.saving = true;
+function save() {
+  return saves.run(writeItems);
+}
+
+async function writeItems() {
   let ok = false;
   try {
     const full = await apiGet('/api/config');
+    if (JSON.stringify(full.items || []) !== _serverItems) throw Object.assign(new Error('stale'), { status: 409 });
+    const sent = JSON.stringify(state.items);
     full.items = state.items;
-    await apiPost('/api/config', full);
-    _savedItems = JSON.stringify(state.items);
+    const r = await apiPost('/api/config', full);
+    _serverItems = JSON.stringify(r.items);
+    _savedItems = sent;
     toast(t('toast.saved'));
     ok = true;
   } catch (e) {
-    toast(t('toast.saveFailed', { err: e.message }), 'err');
+    toast(e.status === 409 ? t('toast.dashboardChangedElsewhere') : t('toast.saveFailed', { err: e.message }), 'err');
   }
-  state.saving = false;
   render();
   syncDashSave();
   return ok;
@@ -133,9 +152,12 @@ async function save() {
     tab while the preview was open.
 
     @param {any[]} newItems */
-async function appendAndSave(newItems) {
-  if (state.saving) throw new Error('A save is already in progress');
-  state.saving = true;
+function appendAndSave(newItems) {
+  return saves.run(() => appendItems(newItems));
+}
+
+/** @param {any[]} newItems */
+async function appendItems(newItems) {
   try {
     const full = await apiGet('/api/config');
     const current = Array.isArray(full.items) ? full.items : [];
@@ -144,12 +166,12 @@ async function appendAndSave(newItems) {
     const clash = newItems.find(i => taken.has(i.id));
     if (clash) throw new Error(`${clash.label}: this id already exists. Reload and import again.`);
     full.items = [...current, ...newItems];
-    await apiPost('/api/config', full);
+    const r = await apiPost('/api/config', full);
+    _serverItems = JSON.stringify(r.items);
     state.items = full.items;
     _savedItems = JSON.stringify(state.items);
     syncDashSave();
   } finally {
-    state.saving = false;
     render();
   }
 }
@@ -164,6 +186,7 @@ async function saveOrRevert(before) {
         state.items = items;
         render();
       },
+      superseded: () => saves.pending() > 0,
     });
   } catch {
     return false;
@@ -174,9 +197,7 @@ function showListView() {
   el('dash-list-view').classList.remove('d-none');
   el('dash-edit-view').classList.add('d-none');
 }
-/* Keep both. The pane scrolls on a wide window, the document on a phone. */
 function scrollSettingsTop() {
-  q('.cp')?.scrollTo?.(0, 0);
   scrollTo(0, 0);
 }
 
@@ -471,7 +492,12 @@ function openFolderPicker(appId, targetFolderId = null) {
   dlg.focus(q('button', list));
 }
 
+/* A second press during the write would add a new item a second time. */
+let _editorSaving = false;
+
 async function doSave(orig) {
+  if (_editorSaving) return;
+  _editorSaving = true;
   try {
     /** @type {Record<string, any>} */
     let item;
@@ -593,6 +619,8 @@ async function doSave(orig) {
     toast(t(replaced ? 'toast.updated' : 'toast.added'));
   } catch (e) {
     toast(t('toast.error', { err: e.message }), 'err');
+  } finally {
+    _editorSaving = false;
   }
 }
 
@@ -623,6 +651,7 @@ function initNav() {
 function initAllInlineEdits() {
   initInlineEdit('ie-ip', 'srv-ip', { placeholder: '192.168.1.100' });
   initInlineEdit('ie-socket', 'srv-socket', { placeholder: 'http://socket-proxy:2375' });
+  initInlineEdit('ie-hosts', 'srv-hosts', { placeholder: () => t('general.allowedHostsNone') });
 
   initInlineEdit('ie-pw', 'sec-pw', {
     type: 'password',
@@ -789,19 +818,6 @@ function initBgFit() {
   apply(hidden.value || 'fill');
 }
 
-/** A body that is not JSON is the web server answering on its own.
-
-    @param {Response} r @returns {Promise<string>} */
-async function responseError(r) {
-  const text = await r.text().catch(() => '');
-  try {
-    const d = JSON.parse(text);
-    if (d && d.error) return String(d.error);
-  } catch {}
-  if (r.status === 413) return t('toast.imageTooLarge');
-  return `HTTP ${r.status}`;
-}
-
 /** @param {string} url an image this server holds @returns {void} */
 function setWallpaperUrl(url) {
   const urlInp = inp('bg-url-inp');
@@ -859,7 +875,7 @@ async function fetchWallpaperLink(url) {
     toast(t('toast.wallpaperStored'));
   } catch (e) {
     /* A link that failed must not replace the wallpaper already saved. */
-    setWallpaperUrl(state._settings?.background?.url || '');
+    setWallpaperUrl(savedWallpaperUrl());
     toast(t('toast.wallpaperFailed', { err: e.message }), 'err');
   }
 }
@@ -978,6 +994,7 @@ function syncDashSave() {
   if (dashSaveEl) dashSaveEl.disabled = JSON.stringify(state.items) === _savedItems;
 }
 addEventListener('beforeunload', e => {
+  if (recoveryShown()) return;
   if (!settingsDirty() && JSON.stringify(state.items) === _savedItems) return;
   e.preventDefault();
   e.returnValue = '';
@@ -1242,8 +1259,7 @@ initTheme();
 
 setReauthHandler(requireLogin);
 
-checkAuth(load).then(ok => {
-  if (!ok) return;
+const loadOrShowFailure = () =>
   load().catch(e => {
     toast(t('toast.configLoadFailed', { err: e.message }), 'err');
     const al = el('al');
@@ -1254,6 +1270,10 @@ checkAuth(load).then(ok => {
         html`<div class="dash-load-fail">${t('home.loadFailed')}<br><br><button class="retry-btn" type="button">${t('home.retry')}</button></div>`,
       );
       q('.retry-btn', al)?.addEventListener('click', () => location.reload());
+      el('al-grp')?.classList.remove('d-none');
     }
   });
+
+checkAuth(loadOrShowFailure).then(ok => {
+  if (ok) loadOrShowFailure();
 });

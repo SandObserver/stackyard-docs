@@ -14,7 +14,7 @@ import {
   q,
   qa,
   setUserText,
-} from '/js/utils.js?v=b1cfbd45';
+} from '/js/utils.js?v=c5766a9d';
 import { t, currentLang } from '/js/i18n.js?v=1f1ea9c1';
 import { toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
 import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=349f4300';
@@ -484,7 +484,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
     dotsEl.className = 'folder-dots dyn-dots-row';
     css(dotsEl, {
       padding: `${Math.max(0, Math.round(18 * ptScale) - badgeOvh)}px 0 ${Math.round(4 * ptScale)}px`,
-      gap: Math.round(7 * ptScale) + 'px',
+      gap: Math.max(dotSz + 2, Math.min(24, Math.floor(pageW / pages.length))) - dotSz + 'px',
     });
     dotEls = pages.map((_, i) => {
       const d = mk('div');

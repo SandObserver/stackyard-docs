@@ -182,6 +182,10 @@ export function clearsStoredPassword({ enabled, wasEnabled, passwordSet }) {
   return !enabled && !!wasEnabled && !!passwordSet;
 }
 
+export function needsCurrentPassword({ enabled, wasEnabled, passwordSet, newPassword }) {
+  return !!wasEnabled && !!passwordSet && (!enabled || !!(newPassword || '').length);
+}
+
 /* 'unavailable' must not fall through to the custom editor. The server
    withholds that widget's config, so empty fields read as lost settings. */
 export function widgetConfigMode(type, reg) {

@@ -1,11 +1,11 @@
-import { state } from '/js/admin-state.js?v=831e219e';
-import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=3870d0d0';
-import { createListbox } from '/js/listbox.js?v=6e7b7060';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=1dcd31e2';
+import { state } from '/js/admin-state.js?v=af772a1b';
+import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=a81b9cbe';
+import { createListbox } from '/js/listbox.js?v=9a8ae607';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=d95ac911';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=cbb7417d';
+import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=fc7f0836';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
-import { q, qi, qa } from '/js/utils.js?v=b1cfbd45';
+import { q, qi, qa } from '/js/utils.js?v=c5766a9d';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
 
 const SIZES_WITH_ICONS = new Set(['small', 'medium', 'large', 'xlarge']);
@@ -117,11 +117,9 @@ function _renderWidgetForm(body) {
   if (_mode === 'registry') {
     const d = document.createElement('div');
     body.appendChild(d);
-    const _wid =
-      state.eid !== null && state.items[state.eid] && state.items[state.eid].id ? state.items[state.eid].id : null;
     const _vf = state._widgetReg[state._wtype].viewField;
     state._autoForm = renderWidgetConfigForm(d, state._widgetReg[state._wtype].fields || [], state._wAutoCfg, {
-      widgetId: _wid,
+      widgetId: state.eid,
       widgetType: state._wtype,
       size: state._wsize,
       /* A view switch can change which sizes are offered, and the tiles are

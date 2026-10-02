@@ -1,9 +1,10 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
-import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=cbb7417d';
-import { el, q } from '/js/utils.js?v=b1cfbd45';
+import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=fc7f0836';
+import { el, q } from '/js/utils.js?v=c5766a9d';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { iconChain } from '/js/icons.js?v=9c8c550c';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
+import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=706fc9a7';
 
 export const API = '';
 
@@ -13,6 +14,7 @@ let _toastWired = false;
 /** @param {string} m @param {'ok'|'err'} [tone] @returns {void} */
 export const toast = (m, tone = 'ok') => {
   const e = el('toast');
+  if (!e) return;
   e.textContent = m;
   e.className = `show ${tone}`;
   clearTimeout(tt);
@@ -46,6 +48,8 @@ export const toast = (m, tone = 'ok') => {
 
 /** @param {number} status @param {any} body @returns {ApiError} */
 function tagged(status, body) {
+  const screen = status === 403 || status === 503 ? blockingScreenFor(body) : null;
+  if (screen && !recoveryShown()) showBlockingScreen(screen);
   const e = /** @type {ApiError} */ (new Error((body && body.error) || 'HTTP ' + status));
   e.status = status;
   if (body && typeof body.kind === 'string') e.kind = body.kind;
@@ -53,6 +57,20 @@ function tagged(status, body) {
   if (body && body.detail && typeof body.detail === 'object') e.detail = body.detail;
   return e;
 }
+
+/** A body that is not JSON is the web server answering on its own.
+
+    @param {Response} r @returns {Promise<string>} */
+export async function responseError(r) {
+  const text = await r.text().catch(() => '');
+  try {
+    const d = JSON.parse(text);
+    if (d && d.error) return String(d.error);
+  } catch {}
+  if (r.status === 413) return t('toast.imageTooLarge');
+  return `HTTP ${r.status}`;
+}
+
 /* Set by the admin entry point, never imported. The sign-in screen imports this
    module, so importing it back is a cycle. */
 /** @type {(() => Promise<boolean>) | null} */

@@ -9,7 +9,7 @@ import SettingList from '../../../../components/SettingList.astro';
 
 One tile per drive bay, coloured by SMART status.
 
-<WidgetGroup caption="Small, a three drive chassis, all healthy. Medium, an eight bay chassis with a failed drive, an age alert and one empty bay."
+<WidgetGroup caption="Small, a three drive chassis, all healthy. Medium, an eight bay chassis with a failed drive, a drive with no SMART data and one empty bay."
   items={[
     { type: 'disk-health', file: 'index.html', id: 'gh-diskhealth',    title: 'Disk health widget, small',  label: 'Small' },
     { type: 'disk-health', file: 'index.html', id: 'gh-diskhealth-md', size: 'medium', title: 'Disk health widget, medium', label: 'Medium' },
@@ -50,6 +50,6 @@ Small holds four bays. Medium holds ten.
 
 ## Drive states
 
-A bay shows Healthy, Warning, Failed or Age Alert. A drive with no SMART data reports that. It is never shown as healthy.
+A bay shows Healthy or Failed. Any failed check in Scrutiny counts as Failed. A drive with no SMART data reports that. It is never shown as healthy.
 
 A bay shows `Not reporting` when its drive is no longer in the monitoring service list. The other bays are unaffected.

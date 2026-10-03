@@ -279,7 +279,17 @@ Messages shown in the admin, and what each one means.
 | `The wallpaper could not be loaded.` | Settings could not get the Unsplash photo. Check the API key and the Collection ID. |
 | `Wallpaper failed: <reason>` | The image was not stored. The link was unreachable, the file is not a JPEG, PNG, WebP, AVIF or GIF, or it is over 16 MB. |
 | `Set a password before turning authentication on.` | Authentication needs a password to exist first. |
-| `<id>: children point at items that are not here: ...` | A folder in the config lists apps that are not in the same file. The named entries are missing. Usually a hand-edited or partly merged export. |
+| `Some items in the folder <id> are not in the file.` | A folder in the imported config lists apps that are not in the same file. Usually a hand-edited or partly merged export. |
+| `Two items share the id <id>. Each item needs its own id.` | The imported config has two entries with the same id. Nothing was saved. |
+| `The item <id> has a link that is not allowed. Links must use http or https.` | A link in the imported config uses a scheme such as `javascript:` or `data:`. Nothing was saved. |
+| `That file is not a Stackyard export.` | The imported file is not JSON, or has no `items` list. |
+| `<name> is already on the dashboard. Reload the page and import again.` | An item with the same id was added from another tab while the import preview was open. |
+| `<file>: the importer cannot read the YAML on line <line>.` | The file uses YAML the importer does not support, such as tab indentation or more than one document. |
+| `That file type is not supported.` | Icons must be SVG, PNG or ICO. Wallpapers must be JPEG, PNG, WebP, AVIF or GIF. |
+| `That is not a valid http or https address.` | The address is not an http or https URL. |
+| `The socket proxy refused the request.` | The socket proxy answered its `/version` endpoint with 401 or 403. |
+| `Something answered there, but it is not a Docker socket proxy.` | The address answered, but not with a Docker API version. |
+| `Saving is turned off in the live demo.` | The public demo is read-only. |
 | `Nothing to import. The file matches your current config.` | The imported file is identical to what is already stored. |
 | `Icon catalogues could not be reached` | No catalogue answered while searching. The field still takes a full URL or an upload. |
 | `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Import](/docs/import-export/migrating/). |

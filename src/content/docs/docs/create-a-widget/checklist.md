@@ -8,6 +8,8 @@ CI validates every manifest. Run the same check locally with `cd api && node --t
 ## Files
 
 - `widget.json` with `name` matching the folder, `label`, `sizes` and `fields`.
+- A `glyph` no other widget uses. Add one to `ui/js/widget-glyphs.js` when none is free.
+- A line under Widgets in the app `README.md`.
 - `data.js`, unless the widget runs entirely in the browser.
 - `index.html`.
 - `i18n/en.json`, plus one catalog per shipped language.

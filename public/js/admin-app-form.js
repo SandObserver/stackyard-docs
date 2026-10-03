@@ -1,4 +1,4 @@
-import { clr, el, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=c5766a9d';
+import { clr, el, focusFirst, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=9a9bfb54';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { loadLocalIcons, resolveIcon, iconChain, cdnIconRef, splitIconRef } from '/js/icons.js?v=9c8c550c';
 import { state } from '/js/admin-state.js?v=af772a1b';
@@ -22,10 +22,10 @@ import {
   reveal,
   setTogDisabled,
   swapContent,
-} from '/js/admin-shared.js?v=a81b9cbe';
-import { createListbox } from '/js/listbox.js?v=9a8ae607';
+} from '/js/admin-shared.js?v=f5551857';
+import { createListbox } from '/js/listbox.js?v=30c1b9d1';
 import { MAX_LABELS } from '/js/badge-logic.js?v=9e6d9d4b';
-import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=0d4d1038';
+import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=233683ad';
 import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=f82486b2';
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
@@ -65,7 +65,7 @@ function _wireFolderApps(apps, children) {
   const row = el('folder-apps-row');
   if (!row) return;
   const box = createListbox({
-    label: t('folder.appsInFolder'),
+    label: t('folder.addApps'),
     multiple: true,
     options: apps.map(a => ({ value: a.id, label: a.label || a.id })),
     value: children,
@@ -115,14 +115,14 @@ export function buildAppForm(body, item) {
       ${ier('ie-url', t('app.url'), 'f-href', item?.href, t('app.urlPh'), 'url')}
     </div>
 
-    <p class="grp-hdr">${t('app.icon')}</p>
+    <p class="grp-hdr" role="heading" aria-level="2">${t('app.icon')}</p>
     <div class="grp" id="ipw">
       <div class="icon-src-anchor">
       <div class="row icon-src-row">
         <span class="icon-prev" id="ipv">${state.siurl ? html`<img src="${resolveIcon(state.siurl)}" alt="" id="ipv-img">` : html`<span>${(item?.label || '?')[0]?.toUpperCase() || '?'}</span>`}</span>
         <input class="icon-srch" id="ip-in" type="text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="iprs" aria-autocomplete="list" aria-describedby="ip-status" aria-label="${t('app.icon')}" placeholder="${t('app.iconPh')}" value="${state.siurl}">
         <button type="button" class="row-btn" id="ip-upload-lbl">${t('app.upload')}</button>
-        <input type="file" id="ip-upload" class="file-hidden" aria-label="${t('app.upload')}" accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon">
+        <input type="file" id="ip-upload" class="file-hidden" tabindex="-1" aria-hidden="true" accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon">
       </div>
       <div class="iprs" id="iprs" role="listbox" aria-label="${t('app.iconResults')}"></div>
       </div>
@@ -136,18 +136,18 @@ export function buildAppForm(body, item) {
     </div>
     ${dockBlocked ? html`<p class="grp-tip" id="dock-full-tip">${t('app.dockFull', { max: DOCK_MAX })}</p>` : ''}
 
-    <p class="grp-hdr">${t('app.badge')}</p>
+    <p class="grp-hdr" role="heading" aria-level="2">${t('app.badge')}</p>
     <div class="grp">
       <div class="row"><span class="rl">${t('app.healthCheck')}</span>${tog('hc-en', hc.enabled, t('app.healthCheck'))}</div>
       <div id="hc-sub" class="reveal${hc.enabled ? ' open' : ''}"><div class="reveal-in">
-        <div class="row"><span class="rl">${t('app.type')}</span><div class="segr">
+        <div class="row"><span class="rl" id="hc-type-lbl">${t('app.type')}</span><div class="segr" role="group" aria-labelledby="hc-type-lbl">
           <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-con" ${isPing ? '' : 'checked'}><span class="segr-dot"></span><span>${t('app.container')}</span></label>
           <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-ping" ${isPing ? 'checked' : ''}><span class="segr-dot"></span><span>${t('app.ping')}</span></label>
         </div></div>
         <div id="hc-con-row" ${isPing ? 'hidden' : ''}>${ier('ie-hc-con', t('app.container'), 'hc-con', hc.container, t('app.containerPh'))}</div>
         <div id="hc-ping-row" ${isPing ? '' : 'hidden'}>
           ${ier('ie-hc-ping', t('app.pingUrl'), 'hc-ping', hc.pingUrl, t('app.pingUrlPh'), 'url')}
-          <div class="row"><span class="rl"></span><span id="hc-ping-status" class="row-status"></span><button type="button" class="row-btn" id="hc-ping-test">${t('app.test')}</button></div>
+          <div class="row"><span class="rl"></span><span id="hc-ping-status" class="row-status" role="status"></span><button type="button" class="row-btn" id="hc-ping-test">${t('app.test')}</button></div>
         </div>
       </div></div>
     </div>
@@ -165,7 +165,7 @@ export function buildAppForm(body, item) {
       <div class="row"><span class="rl">${t('app.liveActivity')}</span>${tog('act-en', act.enabled, t('app.liveActivity'))}</div>
       <div id="act-sub" class="reveal${act.enabled ? ' open' : ''}"><div class="reveal-in">
         ${ier('ie-burl', t('app.apiUrl'), 'f-burl', act.url, t('app.apiUrlPh'), 'url')}
-        <div class="row"><span class="rl"></span><span id="bst" class="row-status"></span><button type="button" class="row-btn" id="bfetch">${t('app.fetch')}</button></div>
+        <div class="row"><span class="rl"></span><span id="bst" class="row-status" role="status"></span><button type="button" class="row-btn" id="bfetch">${t('app.fetch')}</button></div>
         <div id="auth-row-wrap">
           <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', !!(act.params || act.headers), t('app.authentication'))}</div>
           <div id="auth-sub" class="reveal${act.params?.length || act.headers?.length ? ' open' : ''}"><div class="reveal-in">
@@ -366,7 +366,7 @@ function renderActLabels(host) {
     hdr.dataset.idx = String(i);
     setHtml(
       hdr,
-      html`<span class="albl-grip" aria-hidden="true">${raw(GRIP_SVG)}</span><span>${t('app.labelN', { n: i + 1 })}</span>`,
+      html`<span class="albl-grip" aria-hidden="true">${raw(GRIP_SVG)}</span><span role="heading" aria-level="3">${t('app.labelN', { n: i + 1 })}</span>`,
     );
     const ctl = document.createElement('span');
     ctl.className = 'albl-ctl';
@@ -388,6 +388,12 @@ function renderActLabels(host) {
         captureActLabels();
         state.spaths.splice(i, 1);
         syncActMode();
+        focusFirst(
+          actLabelBtns(i, '.grp-hdr-rm')[0],
+          actLabelBtns(i - 1, '.grp-hdr-rm')[0],
+          el('act-add-label'),
+          el('bfetch'),
+        );
       }),
     );
     hdr.appendChild(ctl);
@@ -453,17 +459,29 @@ function addActLabel() {
     toast(t('app.noValuesLeft'), 'err');
     return;
   }
+  const add = el('act-add-label');
+  const hadFocus = document.activeElement === add;
   state.spaths.push(free.path);
   syncActMode();
+  if (hadFocus && add?.hidden) focusFirst(actLabelBtns(state.spaths.length - 1, '.grp-hdr-rm')[0]);
 }
 
 function moveActLabel(from, delta) {
   const to = from + delta;
   if (to < 0 || to >= state.spaths.length) return;
   captureActLabels();
+  const hadFocus = !!el('act-labels')?.contains(document.activeElement);
   const [p] = state.spaths.splice(from, 1);
   state.spaths.splice(to, 0, p);
   syncActMode();
+  if (!hadFocus) return;
+  const [up, down] = actLabelBtns(to, '.albl-move');
+  focusFirst(delta < 0 ? up : down, delta < 0 ? down : up);
+}
+
+function actLabelBtns(i, sel) {
+  const hdr = el('act-labels')?.querySelector(`.albl-hdr[data-idx="${i}"]`);
+  return hdr ? qa(sel, hdr) : [];
 }
 
 /** Drag a label header to reorder. Keep the arrows: a pointer drag is
@@ -523,6 +541,7 @@ const VARIANT_LABEL = { base: 'app.iconVariantBase', light: 'app.iconVariantLigh
 
 let ipList = [];
 let ipActive = -1;
+let ipOutsideWired = false;
 
 function ipClose() {
   const rs = el('iprs');
@@ -727,9 +746,12 @@ function wireIcon() {
     };
   }
 
-  document.addEventListener('click', e => {
-    if (!el('ipw')?.contains(/** @type {Node} */ (e.target))) ipClose();
-  });
+  if (!ipOutsideWired) {
+    ipOutsideWired = true;
+    document.addEventListener('click', e => {
+      if (!el('ipw')?.contains(/** @type {Node} */ (e.target))) ipClose();
+    });
+  }
   loadIconVariants(state.siurl);
 }
 
@@ -914,6 +936,7 @@ function renderKvRows(host, rows, ph) {
   add.onclick = () => {
     rows.push({ key: '', value: '', secret: false, valueSet: false });
     renderKvRows(host, rows, ph);
+    focusFirst(qa('.kv-row .kv-k', host).at(-1));
   };
   host.appendChild(add);
 }
@@ -959,6 +982,8 @@ function kvRowEl(host, rows, row, ph) {
     const idx = rows.indexOf(row);
     if (idx >= 0) rows.splice(idx, 1);
     renderKvRows(host, rows, ph);
+    const dels = qa('.kv-del', host);
+    focusFirst(dels[idx], dels[idx - 1], qSel('.kv-add', host));
   };
   return rowEl;
 }

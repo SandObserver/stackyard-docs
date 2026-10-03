@@ -11,6 +11,8 @@ Turning titles off gives a denser grid of icons alone.
 
 Display Mode sets light or dark for the dashboard and the Settings pages. System follows the device and changes with it, so a device that switches at sunset switches Stackyard too. The choice is stored in the browser, so each device has its own.
 
+Type to Search opens search when you type a letter anywhere on the dashboard. Turn it off if search opens by accident, for example with voice control. The search button still opens search.
+
 Widget cards are white in light mode and near-black in dark mode. A few widgets are drawn only in dark and keep a dark card in both. The Weather widget follows its own day and night, never the display mode.
 
 Increased contrast and reduced motion are honoured. Reduced transparency drops the blur behind cards and keeps the motion.

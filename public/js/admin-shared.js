@@ -1,6 +1,6 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
 import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=fc7f0836';
-import { el, q } from '/js/utils.js?v=c5766a9d';
+import { el, q } from '/js/utils.js?v=9a9bfb54';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { iconChain } from '/js/icons.js?v=9c8c550c';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
@@ -237,6 +237,14 @@ export function initInlineEdit(rowId, inputId, { type = 'text', placeholder = ''
   wireInlineEdit(row, inp, { type, placeholder, onCommit });
 }
 
+/** Name a row's pencil after its label. Call again once the catalog loads.
+    @param {Element} row */
+export function nameEditPen(row) {
+  const labelEl = q('.rl', row);
+  const pen = q('.pe', row);
+  if (labelEl && pen) pen.setAttribute('aria-label', t('common.editNamed', { name: labelEl.textContent.trim() }));
+}
+
 /** The same row behaviour for elements a caller already holds. `row` needs an id.
     `fill: false` keeps the input's own value on open. `render` replaces how the
     committed value is shown.
@@ -260,10 +268,7 @@ export function wireInlineEdit(row, inp, { type = 'text', placeholder = '', onCo
   if (labelEl) {
     if (!labelEl.id) labelEl.id = `${row.id}-rl`;
     inp.setAttribute('aria-labelledby', labelEl.id);
-    /* The pencil opens this row, so it is named after this row. Taking the name
-       from the label keeps the two in one language, and in step when either
-       changes. */
-    pen.setAttribute('aria-label', t('common.editNamed', { name: labelEl.textContent.trim() }));
+    nameEditPen(row);
   }
   row.insertBefore(inp, pen);
 
@@ -301,11 +306,13 @@ export function wireInlineEdit(row, inp, { type = 'text', placeholder = '', onCo
       if (e.key === 'Enter') {
         e.preventDefault();
         commit();
+        pen.focus();
       }
       if (e.key === 'Escape') {
         e.preventDefault();
         inp.value = before;
         row.classList.remove('editing');
+        pen.focus();
       }
     },
   );

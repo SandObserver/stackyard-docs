@@ -1,7 +1,7 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=7949fa07';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=9035d41b';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=5703fb88';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=276069af';
 import { recoveryShown } from '/js/config-recovery.js?v=706fc9a7';
-import { initList, render, syncFilterUI } from '/js/admin-list.js?v=f868b68c';
+import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=fc1559fb';
 import { resolveAdminSection } from '/js/admin-logic.js?v=fc7f0836';
 import {
   buildAppItem,
@@ -18,22 +18,23 @@ import {
   settingsDirty,
   showBgFields,
   showWallpaperFile,
-} from '/js/admin-settings.js?v=4354171b';
+} from '/js/admin-settings.js?v=88b89f37';
 import {
   apiGet,
   apiPost,
   initInlineEdit,
+  nameEditPen,
   paintIcon,
   reveal,
   responseError,
   setReauthHandler,
   toast,
-} from '/js/admin-shared.js?v=a81b9cbe';
+} from '/js/admin-shared.js?v=f5551857';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=ef53bce9';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=53ceafd3';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=9a8ae607';
+import { createListbox } from '/js/listbox.js?v=30c1b9d1';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=1f1ea9c1';
 import { loadLocalIcons } from '/js/icons.js?v=9c8c550c';
@@ -42,11 +43,12 @@ import {
   clearSkipTls,
   convert,
   detectSource,
+  ImportTooLargeError,
   insecureApps,
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=2aa3bf02';
+} from '/js/import-foreign.js?v=dda5296a';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6b0320bd';
 import {
@@ -58,8 +60,8 @@ import {
   watchSystemTheme,
   writeMode,
 } from '/js/theme.js?v=eeafa4b5';
-import { el, inp, q, qa, clr, setUserText, tgt } from '/js/utils.js?v=c5766a9d';
-import { applyBackground, resolveBackground } from '/js/background.js?v=5f478ebf';
+import { el, focusFirst, inp, q, qa, clr, setUserText, storeGet, storeSet, tgt } from '/js/utils.js?v=9a9bfb54';
+import { applyBackground, resolveBackground } from '/js/background.js?v=43a04bdb';
 import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=6ebb564c';
 
 ensureSprite();
@@ -84,6 +86,7 @@ async function load() {
   state.items = c.items || [];
   state._settings = c.settings || {};
   await initI18n(c.settings?.language || 'en');
+  qa('.ie-row').forEach(nameEditPen);
   document.title = t('nav.pageTitle');
   initVersion();
   syncPickerLabels();
@@ -193,9 +196,11 @@ async function saveOrRevert(before) {
   }
 }
 
-function showListView() {
+/** @param {string|null} [focusId] the item whose row takes focus */
+function showListView(focusId = null) {
   el('dash-list-view').classList.remove('d-none');
   el('dash-edit-view').classList.add('d-none');
+  if (!focusRow(focusId)) focusFirst(el('btn-add'));
 }
 function scrollSettingsTop() {
   scrollTo(0, 0);
@@ -230,7 +235,7 @@ function buildAddNewCard() {
     b.onclick = () => {
       if (state.ctype === kind) return;
       state.ctype = kind;
-      _renderEditBody();
+      _renderEditBody(kind);
     };
     grpTiles.appendChild(b);
   });
@@ -240,7 +245,8 @@ function buildAddNewCard() {
 }
 
 /* Prepended after the builder runs, so the builder's reset cannot wipe it. */
-function _renderEditBody() {
+/** @param {string} [focusKind] the type tile that keeps focus */
+function _renderEditBody(focusKind) {
   const body = el('ev-body');
   body.replaceChildren();
   if (state.ctype === 'widget') buildWidgetForm(body, state._evItem);
@@ -248,9 +254,9 @@ function _renderEditBody() {
   else buildAppForm(body, state._evItem);
   if (!state._evIsEdit) body.insertBefore(buildAddNewCard(), body.firstChild);
   setTimeout(() => {
-    try {
-      q('input,select,textarea', body)?.focus();
-    } catch {}
+    if (el('dash-edit-view').contains(document.activeElement)) return;
+    const tile = focusKind ? qa('.tile-opt', body).find(b => b.dataset.ctype === focusKind) : null;
+    focusFirst(tile, ...qa('input,select,textarea,button', body));
   }, 50);
 }
 
@@ -356,8 +362,8 @@ async function _evDelete(item, idx) {
 }
 
 el('btn-add').onclick = () => openModal(null);
-function closeModal() {
-  showListView();
+function closeModal(focusId = state.eid) {
+  showListView(focusId);
   state.eid = null;
   state._wtype = 'custom';
   state._wsize = 'medium';
@@ -615,7 +621,7 @@ async function doSave(orig) {
     const { replaced } = upsertItem(state.items, state.eid, item);
     /* The editor stays open on a failed write, with the form intact. */
     if (!(await saveOrRevert(before))) return;
-    closeModal();
+    closeModal(item.id);
     toast(t(replaced ? 'toast.updated' : 'toast.added'));
   } catch (e) {
     toast(t('toast.error', { err: e.message }), 'err');
@@ -637,14 +643,19 @@ function initNav() {
     qa('.sec', document).forEach(s => {
       s.hidden = s.id !== 'sec-' + id;
     });
-    links.forEach(l => l.classList.toggle('active', l.dataset.sec === id));
+    links.forEach(l => {
+      const on = l.dataset.sec === id;
+      l.classList.toggle('active', on);
+      if (on) l.setAttribute('aria-current', 'page');
+      else l.removeAttribute('aria-current');
+    });
     syncGlideSelect();
-    localStorage.setItem(STORE, id);
+    storeSet(STORE, id);
     if (picked) scrollSettingsTop();
   }
   links.forEach(l => l.addEventListener('click', () => show(l.dataset.sec, true)));
   addEventListener('hashchange', () => show(location.hash.slice(1), true));
-  show(location.hash.slice(1) || localStorage.getItem(STORE));
+  show(location.hash.slice(1) || storeGet(STORE));
   initGlideSelect();
 }
 
@@ -763,7 +774,7 @@ function initBgType() {
   };
   const box = createListbox({
     id: 'bg-type',
-    label: t('appearance.wallpaperSource'),
+    label: t('appearance.source'),
     options: [
       { value: 'unsplash', label: t('appearance.sourceUnsplash') },
       { value: 'url', label: t('appearance.sourceUrl') },
@@ -774,7 +785,7 @@ function initBgType() {
   });
   slot.appendChild(box.el);
   relabel(() => {
-    box.setLabel(t('appearance.wallpaperSource'));
+    box.setLabel(t('appearance.source'));
     box.setOptions(
       [
         { value: 'unsplash', label: t('appearance.sourceUnsplash') },
@@ -1140,7 +1151,13 @@ el('imp-foreign').onchange = async e => {
       }
       const kind = detectSource(doc);
       if (!kind) throw new Error(t('toast.importUnknownFormat', { file: file.name }));
-      const out = convert(kind, doc, taken, t('importForeign.untitledFolder'));
+      let out;
+      try {
+        out = convert(kind, doc, taken, t('importForeign.untitledFolder'));
+      } catch (err) {
+        if (err instanceof ImportTooLargeError) throw new Error(t('toast.importTooLarge', { file: file.name }));
+        throw err;
+      }
       items.push(...out.items);
       skipped.push(...parseErrorsAsSkipped(parseErrors, file.name), ...out.skipped);
       notes.push(...out.notes);

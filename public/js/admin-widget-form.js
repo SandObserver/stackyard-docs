@@ -1,11 +1,11 @@
 import { state } from '/js/admin-state.js?v=af772a1b';
-import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=a81b9cbe';
-import { createListbox } from '/js/listbox.js?v=9a8ae607';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=d95ac911';
+import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=f5551857';
+import { createListbox } from '/js/listbox.js?v=30c1b9d1';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=c458cf42';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=fc7f0836';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
-import { q, qi, qa } from '/js/utils.js?v=c5766a9d';
+import { focusFirst, q, qi, qa } from '/js/utils.js?v=9a9bfb54';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
 
 const SIZES_WITH_ICONS = new Set(['small', 'medium', 'large', 'xlarge']);
@@ -94,6 +94,8 @@ function _renderWidgetForm(body) {
   if (!_sizeOpts.includes(state._wsize)) state._wsize = _sizeOpts.includes('medium') ? 'medium' : _sizeOpts[0];
   const sizeHdr = document.createElement('p');
   sizeHdr.className = 'grp-hdr';
+  sizeHdr.setAttribute('role', 'heading');
+  sizeHdr.setAttribute('aria-level', '2');
   sizeHdr.textContent = t('widgetCfg.size');
   body.appendChild(sizeHdr);
   const scard = document.createElement('div');
@@ -107,6 +109,7 @@ function _renderWidgetForm(body) {
     b.addEventListener('click', () => {
       state._wsize = b.dataset.size;
       _renderWidgetForm(body);
+      focusFirst(q(`.tile-opt[data-size="${state._wsize}"]`, body));
     }),
   );
 
@@ -125,7 +128,12 @@ function _renderWidgetForm(body) {
       /* A view switch can change which sizes are offered, and the tiles are
          drawn above this form. */
       onChange(key) {
-        if (_vf && key === _vf) swapContent(body, () => _renderWidgetForm(body));
+        if (!_vf || key !== _vf || !d.isConnected) return;
+        const hadFocus = d.contains(document.activeElement);
+        swapContent(body, () => _renderWidgetForm(body));
+        if (!hadFocus) return;
+        const row = qa('[data-field]', body).find(r => r.dataset.field === key);
+        focusFirst(row?.querySelector('input:checked'), row?.querySelector('button'));
       },
     });
     state._autoFormType = state._wtype;
@@ -189,6 +197,8 @@ function _renderCustomConfig(body) {
   const o = state._iframeOpts || {};
   const advHdr = document.createElement('p');
   advHdr.className = 'grp-hdr';
+  advHdr.setAttribute('role', 'heading');
+  advHdr.setAttribute('aria-level', '2');
   advHdr.textContent = t('widgetCfg.advanced');
   body.appendChild(advHdr);
   const adv = document.createElement('div');
@@ -210,7 +220,7 @@ function _renderCustomConfig(body) {
     html`
     <div class="row" id="if-referrer-row"><span class="rl">${t('widgetCfg.referrerPolicy')}</span></div>
     <div class="row ie-row" id="if-allow-row"><span class="rl">${t('widgetCfg.allowFeaturePolicy')}</span><span class="rv${o.allow ? '' : ' is-ph'}">${o.allow ? o.allow : 'autoplay; fullscreen'}</span><input id="if-allow" type="text" value="${o.allow || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>
-    <div class="row"><span class="rl">${t('widgetCfg.allowFullscreen')}</span><label class="tog"><input type="checkbox" id="if-fs" ${o.allowFullscreen !== false ? 'checked' : ''}><div class="tr"></div></label></div>
+    <div class="row"><span class="rl">${t('widgetCfg.allowFullscreen')}</span><label class="tog"><input type="checkbox" id="if-fs" aria-label="${t('widgetCfg.allowFullscreen')}" ${o.allowFullscreen !== false ? 'checked' : ''}><div class="tr"></div></label></div>
     <div class="row ie-row" id="if-refresh-row"><span class="rl">${t('widgetCfg.refreshInterval')} <span class="opt-span">(ms)</span></span><span class="rv${o.refreshInterval ? '' : ' is-ph'}">${o.refreshInterval ? o.refreshInterval : 'e.g. 2000'}</span><input id="if-refresh" type="number" min="250" step="250" value="${o.refreshInterval || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
   );
   const refBox = createListbox({

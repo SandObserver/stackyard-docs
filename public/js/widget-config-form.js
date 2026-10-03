@@ -3,9 +3,9 @@
 
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=a81b9cbe';
-import { createListbox } from '/js/listbox.js?v=9a8ae607';
-import { renderColorControl } from '/js/admin-color-control.js?v=0d4d1038';
+import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=f5551857';
+import { createListbox } from '/js/listbox.js?v=30c1b9d1';
+import { renderColorControl } from '/js/admin-color-control.js?v=233683ad';
 import {
   seedCarried,
   applyOptionSet,
@@ -15,7 +15,7 @@ import {
   visibleFieldFlags,
 } from '/js/admin-logic.js?v=fc7f0836';
 import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=f82486b2';
-import { qi } from '/js/utils.js?v=c5766a9d';
+import { qi } from '/js/utils.js?v=9a9bfb54';
 
 const PE =
   '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M18.4 2.6a1.85 1.85 0 0 1 2.6 2.6l-9.1 9.1-3.4 1 1-3.4z"/></svg>';
@@ -174,6 +174,8 @@ function _picklist(field, value, ctx, size) {
   wrap.className = 'wcf-group';
   const hdr = document.createElement('p');
   hdr.className = 'grp-hdr';
+  hdr.setAttribute('role', 'heading');
+  hdr.setAttribute('aria-level', '2');
   hdr.textContent = field.label;
   wrap.appendChild(hdr);
   const card = document.createElement('div');
@@ -184,6 +186,7 @@ function _picklist(field, value, ctx, size) {
   fr.className = 'row';
   const status = document.createElement('span');
   status.className = 'row-status';
+  status.setAttribute('role', 'status');
   status.textContent = field.hint || '';
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -298,6 +301,7 @@ function _select(field, value, ctx, config = {}) {
     fr.className = 'row';
     const status = document.createElement('span');
     status.className = 'row-status';
+    status.setAttribute('role', 'status');
     status.textContent = field.hint || '';
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -341,6 +345,7 @@ function _pills(field, value) {
   const wrap = document.createElement('div');
   const row = document.createElement('div');
   row.className = 'row';
+  row.dataset.field = field.key;
   const opts = Array.isArray(field.options) ? field.options : [];
   let sel = value != null ? value : field.default != null ? field.default : opts[0] ? opts[0].value : '';
   const name = uniqueId('wcf-' + field.key);
@@ -379,7 +384,9 @@ function _pills(field, value) {
           wrap.dispatchEvent(new Event('change'));
         },
       });
+      const hadFocus = group.contains(document.activeElement);
       group.replaceWith(box.el);
+      if (hadFocus) box.el.querySelector('button')?.focus();
     });
     ro.observe(row);
   }
@@ -530,6 +537,8 @@ function _object(field, value, ctx) {
   const wrap = document.createElement('div');
   const hdr = document.createElement('p');
   hdr.className = 'grp-hdr';
+  hdr.setAttribute('role', 'heading');
+  hdr.setAttribute('aria-level', '2');
   hdr.textContent = field.label;
   wrap.appendChild(hdr);
   const card = document.createElement('div');
@@ -601,7 +610,7 @@ function _group(field, rows, size, ctx) {
     data.forEach((rowData, idx) => {
       const hdr = document.createElement('p');
       hdr.className = 'grp-hdr grp-hdr-row';
-      setHtml(hdr, html`<span>${field.label} ${idx + 1}</span>`);
+      setHtml(hdr, html`<span role="heading" aria-level="2">${field.label} ${idx + 1}</span>`);
       const rm = document.createElement('button');
       rm.type = 'button';
       rm.className = 'grp-hdr-rm';

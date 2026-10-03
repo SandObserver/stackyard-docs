@@ -1,7 +1,7 @@
-import { PE_SVG, initInlineEdit, toast, reveal } from '/js/admin-shared.js?v=a81b9cbe';
+import { PE_SVG, initInlineEdit, toast, reveal } from '/js/admin-shared.js?v=f5551857';
 import { t } from '/js/i18n.js?v=1f1ea9c1';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { qa, q } from '/js/utils.js?v=c5766a9d';
+import { qa, q } from '/js/utils.js?v=9a9bfb54';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
 import { HUE_NAMES, ROLE_NAMES, TILE_KEYWORDS, pageTheme, tileColor } from '/js/palette.js?v=3fb8ae43';
 
@@ -236,6 +236,12 @@ export function renderColorControl(
     });
     const rb = q('.cc-rainbow', container);
     if (rb) rb.classList.toggle('on', showTune && (mode === 'color' || hues.includes(mode)));
+    const sw = qa('.cc-swatch', container);
+    const preset = sw.some(b => b !== rb && b.classList.contains('on'));
+    sw.forEach(b =>
+      b.setAttribute('aria-pressed', String(b === rb ? mode === 'color' && !preset : b.classList.contains('on'))),
+    );
+    rb?.setAttribute('aria-expanded', String(showTune));
     reveal(tune, showTune, !_painted);
     if (!codeRv.closest('.editing')) {
       codeRv.textContent = mode === 'color' ? hex : kwName(mode);

@@ -11,6 +11,23 @@ export const mk = (tag, a = {}) => {
   Object.assign(e, a);
   return e;
 };
+/* Site storage blocked by the browser throws on every access. */
+/** @param {string} key @returns {string|null} */
+export function storeGet(key) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+/** @param {string} key @param {string} value */
+export function storeSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {}
+}
+
 /* Every colour an item renders with passes through here, and the value can
    arrive in an imported config. It is assigned to a background, where a CSS
    url() fetches from whatever host it names. */
@@ -119,6 +136,18 @@ export const qa = (sel, root = document) => /** @type {HTMLElement[]} */ ([...ro
 /** The form control an event came from.
     @param {Event} e @returns {HTMLInputElement} */
 export const tgt = e => /** @type {HTMLInputElement} */ (e.target);
+
+/** Focus the first candidate that is attached, enabled and rendered.
+    @param {...(Element|null|undefined)} els @returns {boolean} whether one took focus */
+export function focusFirst(...els) {
+  for (const e of els) {
+    const h = /** @type {HTMLElement & { disabled?: boolean }} */ (e);
+    if (!h?.isConnected || h.disabled || h.hidden || !h.getClientRects().length) continue;
+    h.focus();
+    if (document.activeElement === h) return true;
+  }
+  return false;
+}
 
 export const ICON_R = 0.26;
 

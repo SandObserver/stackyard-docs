@@ -137,6 +137,7 @@ The wording comes from the failure kind, not the upstream message. `errorLine(er
 ### Links, markup and visuals
 
 - `openUrl(href)` opens a link in a new tab. Use it instead of `window.open`, which the sandbox can block.
+- `linkTo(el, href)` makes `el` a link to `href`: a tab stop that opens on click and on Enter. Call it again to change the link. An empty `href` removes it. Keep buttons out of `el`.
 - `esc(value)` HTML-escapes a value for `innerHTML`. Use it for anything from config or upstream.
 - `sparkline(values, opts?)` returns an `<svg>` area and line chart.
 - `barFill(percent, opts?)` returns a track and fill bar. It skips its transition under reduced motion.

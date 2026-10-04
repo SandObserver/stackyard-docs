@@ -23,7 +23,7 @@
   .face { display: block; }
   .face text {
     font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    font-weight: 500; text-transform: uppercase;
   }
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;animation:none !important} }
@@ -38,19 +38,11 @@ const id  = new URLSearchParams(location.search).get('id') || '';
 const API = '/api';
 const NS  = 'http://www.w3.org/2000/svg';
 
-/* Day and month names come from the browser, never from a catalog. */
 const _lang = new URLSearchParams(location.search).get('lang') || 'en';
-const _dateFmt = (() => {
-  try { return new Intl.DateTimeFormat(_lang, { weekday: 'long', month: 'long', day: 'numeric' }); }
-  catch { return new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric' }); }
-})();
-const _dateShortFmt = (() => {
-  try { return new Intl.DateTimeFormat(_lang, { weekday: 'short', month: 'short', day: 'numeric' }); }
-  catch { return new Intl.DateTimeFormat('en', { weekday: 'short', month: 'short', day: 'numeric' }); }
-})();
+let _dateLong = null, _dateShort = null;
 function _a11yLabel(now){
   const hh=String(now.getHours()).padStart(2,'0'), mm=String(now.getMinutes()).padStart(2,'0');
-  return `${hh}:${mm}, ${_dateFmt.format(now)}`;
+  return `${hh}:${mm}, ${_dateLong(now)}`;
 }
 
 const _reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -75,7 +67,7 @@ const DIAL = {
 };
 
 let _mode='dark', _timezone='', _showDate=true, _zoneBad=false;
-let _groups=null, _dateTexts=[], _rafId=null, _running=false, _vb=0;
+let _groups=null, _dateTexts=[], _dateShown='', _rafId=null, _running=false, _vb=0;
 
 function _now(){
   if(!_timezone) return new Date();
@@ -96,7 +88,7 @@ function zoneOk(z){
 async function showZoneError(){
   const w=document.getElementById('widget');
   w.className='widget mode-'+_mode;
-  const { errorState, loadStrings, wt } = await import('/js/widget-toolbox.js?v=f23ad458');
+  const { errorState, loadStrings, wt } = await import('/js/widget-toolbox.js?v=5ecee136');
   await loadStrings();
   const line=wt('ui.unknownZone','Unknown timezone');
   errorState({ root: w, place: 'center' }).empty(line);
@@ -132,13 +124,18 @@ function buildShell(){
   }
 
   _dateTexts=[];
+  _dateShown='';
+  /* Two text elements, not two tspans. Safari reorders right-to-left text
+     across tspans and scrambles a Persian date. */
   const dateOf=clip=>{
     if(!_showDate) return;
-    const n=el('text',{ x:cx, y:V-V*0.085, 'text-anchor':'middle',
-      'font-size':V*0.072, fill:dial.date });
-    if(clip) n.setAttribute('clip-path', clip);
-    _dateTexts.push(n);
-    face.appendChild(n);
+    const y=V-V*0.085;
+    const line=dy=>{
+      const n=el('text',{ x:cx, y:y-dy, 'text-anchor':'middle', fill:dial.date });
+      if(clip) n.setAttribute('clip-path', clip);
+      return face.appendChild(n);
+    };
+    _dateTexts.push({ date:line(0), weekday:line(V*DATE_SIZE*DATE_LINE_GAP) });
   };
   dateOf(null);
 
@@ -218,9 +215,30 @@ function render(smoothSeconds){
 
   document.getElementById('widget').setAttribute('aria-label', _a11yLabel(now));
   if(_showDate && _dateTexts.length){
-    const d=_dateShortFmt.format(now);
-    for(const n of _dateTexts) n.textContent=d;
+    const d=_dateShort(now);
+    if(d.full!==_dateShown) showDate(d);
   }
+}
+
+/* Wider than the dial chord at the date's baseline, the date runs off the face. */
+const DATE_SIZE=0.072, DATE_MAX_WIDTH=0.46, DATE_LINE_GAP=1.15;
+function showDate(d){
+  const size=_vb*DATE_SIZE, max=_vb*DATE_MAX_WIDTH;
+  const set=(key, text, px)=>{
+    for(const t of _dateTexts){ t[key].textContent=text; t[key].setAttribute('font-size', px); }
+  };
+  set('weekday', '', size);
+  set('date', d.full, size);
+  const w=_dateTexts[0].date.getComputedTextLength();
+  if(!w) return;
+  _dateShown=d.full;
+  if(w<=max) return;
+  set('weekday', d.weekday, size);
+  set('date', d.date, size);
+  const widest=Math.max(_dateTexts[0].weekday.getComputedTextLength(), _dateTexts[0].date.getComputedTextLength());
+  if(widest<=max) return;
+  set('weekday', d.weekday, size*max/widest);
+  set('date', d.date, size*max/widest);
 }
 
 function _loop(){
@@ -266,7 +284,7 @@ function watchVisibility(){
 let _rzId=null;
 addEventListener('resize', ()=>{
   clearTimeout(_rzId);
-  _rzId=setTimeout(()=>{ if(_zoneBad) return; const run=_running; stop(); buildShell(); render(!_reduceMotion); if(run) start(); }, 150);
+  _rzId=setTimeout(()=>{ if(_zoneBad || !_dateShort) return; const run=_running; stop(); buildShell(); render(!_reduceMotion); if(run) start(); }, 150);
 });
 
 function hostTheme(){ return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark'; }
@@ -280,6 +298,9 @@ async function boot(){
     }
   }catch{}
   if(!zoneOk(_timezone)){ _zoneBad=true; return showZoneError(); }
+  const { clockDateFormatter, clockDateParts } = await import('/js/clock-date.js?v=978eaa4f');
+  _dateLong = clockDateFormatter(_lang, 'long');
+  _dateShort = clockDateParts(_lang, 'short');
   buildShell();
   render(!_reduceMotion);
   watchVisibility();

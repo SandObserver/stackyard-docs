@@ -4,6 +4,7 @@
 
 import { setHtml } from '/js/html.js?v=c71f8903';
 import { i18nMarkup } from '/js/i18n-markup.js?v=8c90e1dd';
+import { formatNumber, setNumberLanguage } from '/js/format-number.js?v=349a741d';
 
 /* The locale registry: the one place a supported language is defined.
 
@@ -83,7 +84,7 @@ function flatten(obj, prefix, out) {
 
 async function fetchCatalog(code) {
   try {
-    const r = await fetch(`/i18n/${code}.json`, { cache: 'no-store' });
+    const r = await fetch(`/i18n/${code}.json`, { cache: 'no-cache' });
     if (!r.ok) return null;
     return flatten(await r.json(), '', Object.create(null));
   } catch {
@@ -131,6 +132,7 @@ function devLocale() {
 export async function initI18n(code) {
   code = code || 'en';
   const dev = devLocale();
+  const wanted = !dev && code !== 'en' ? fetchCatalog(code) : null;
   base = (await fetchCatalog('en')) || Object.create(null);
 
   if (dev === KEY_LANG) {
@@ -144,11 +146,12 @@ export async function initI18n(code) {
     active = mapped;
     current = PSEUDO_LANG;
   } else {
-    const loaded = code === 'en' ? base : await fetchCatalog(code);
+    const loaded = wanted ? await wanted : base;
     active = loaded || base;
     current = loaded && code !== 'en' ? code : 'en';
   }
 
+  setNumberLanguage(current);
   const el = document.documentElement;
   el.setAttribute('lang', current);
   el.setAttribute('dir', dirFor(current));
@@ -224,7 +227,8 @@ function lookupPlural(key, count) {
 }
 
 /** Translate a key. Pass a numeric `count` for a counted message: it selects
-    the plural form and fills `{count}`.
+    the plural form and fills `{count}` in the reader's digits. Other
+    placeholders are inserted as given.
     @param {string} key @param {Record<string, unknown>} [vars]
     @returns {string} */
 export function t(key, vars) {
@@ -232,6 +236,9 @@ export function t(key, vars) {
   let s = /** @type {string|null} */ (null);
   if (typeof count === 'number' && Number.isFinite(count)) s = lookupPlural(key, count);
   if (s == null) s = active[key] != null ? active[key] : base[key] != null ? base[key] : key;
-  if (vars) s = String(s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
+  if (vars)
+    s = String(s).replace(/\{(\w+)\}/g, (m, k) =>
+      vars[k] == null ? m : k === 'count' && typeof vars[k] === 'number' ? formatNumber(vars[k]) : String(vars[k]),
+    );
   return s;
 }

@@ -1,24 +1,25 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=5703fb88';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=276069af';
-import { recoveryShown } from '/js/config-recovery.js?v=706fc9a7';
-import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=fc1559fb';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=a707f78e';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=df3c72ef';
+import { recoveryShown } from '/js/config-recovery.js?v=dbe542e1';
+import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=6d020ac7';
 import { resolveAdminSection } from '/js/admin-logic.js?v=fc7f0836';
 import {
+  afterImport,
   buildAppItem,
   claimFolderChildren,
   newItemId,
-  saveWithRevert,
+  revertingSaves,
   serialWrites,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=8389782f';
+} from '/js/admin-save-logic.js?v=ae65f9c8';
 import {
   loadSettings,
   savedWallpaperUrl,
   settingsDirty,
   showBgFields,
   showWallpaperFile,
-} from '/js/admin-settings.js?v=88b89f37';
+} from '/js/admin-settings.js?v=7fbd9499';
 import {
   apiGet,
   apiPost,
@@ -26,18 +27,21 @@ import {
   nameEditPen,
   paintIcon,
   reveal,
+  errorText,
   responseError,
+  ShownError,
   setReauthHandler,
   toast,
-} from '/js/admin-shared.js?v=f5551857';
+} from '/js/admin-shared.js?v=81ab2f92';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=53ceafd3';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=b05766fe';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
+import { formatNumber } from '/js/format-number.js?v=349a741d';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=30c1b9d1';
+import { createListbox } from '/js/listbox.js?v=11c869c4';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=1f1ea9c1';
-import { loadLocalIcons } from '/js/icons.js?v=9c8c550c';
+import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=5579776a';
+import { loadLocalIcons } from '/js/icons.js?v=9c7b5111';
 import { ensureSprite, iconSvg } from '/js/icon-set.js?v=34af798f';
 import {
   clearSkipTls,
@@ -48,7 +52,7 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=dda5296a';
+} from '/js/import-foreign.js?v=9efb127f';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6b0320bd';
 import {
@@ -60,8 +64,21 @@ import {
   watchSystemTheme,
   writeMode,
 } from '/js/theme.js?v=eeafa4b5';
-import { el, focusFirst, inp, q, qa, clr, setUserText, storeGet, storeSet, tgt } from '/js/utils.js?v=9a9bfb54';
-import { applyBackground, resolveBackground } from '/js/background.js?v=43a04bdb';
+import {
+  el,
+  focusFirst,
+  initial,
+  inp,
+  isolate,
+  q,
+  qa,
+  clr,
+  setUserText,
+  storeGet,
+  storeSet,
+  tgt,
+} from '/js/utils.js?v=fdc0243f';
+import { applyBackground, resolveBackground } from '/js/background.js?v=abd33088';
 import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=6ebb564c';
 
 ensureSprite();
@@ -125,25 +142,37 @@ async function applyBg() {
 let _serverItems = '';
 const saves = serialWrites();
 
+/* Counts imports that replaced a stale list. Refuse a save asked for before
+   one: its change was made on the replaced list. */
+let _replaced = 0;
+
 /** Returns whether the write reached the server. */
 function save() {
-  return saves.run(writeItems);
+  const asked = _replaced;
+  return saves.run(() => writeItems(asked));
 }
 
-async function writeItems() {
+/** @param {number} asked */
+async function writeItems(asked) {
   let ok = false;
   try {
     const full = await apiGet('/api/config');
-    if (JSON.stringify(full.items || []) !== _serverItems) throw Object.assign(new Error('stale'), { status: 409 });
+    if (asked !== _replaced || JSON.stringify(full.items || []) !== _serverItems) {
+      throw Object.assign(new Error('stale'), { status: 409 });
+    }
     const sent = JSON.stringify(state.items);
-    full.items = state.items;
+    full.items = JSON.parse(sent);
     const r = await apiPost('/api/config', full);
     _serverItems = JSON.stringify(r.items);
     _savedItems = sent;
+    saveOrRestore.landed(JSON.parse(sent));
     toast(t('toast.saved'));
     ok = true;
   } catch (e) {
-    toast(e.status === 409 ? t('toast.dashboardChangedElsewhere') : t('toast.saveFailed', { err: e.message }), 'err');
+    toast(
+      e.status === 409 ? t('toast.dashboardChangedElsewhere') : t('toast.saveFailed', { err: errorText(e) }),
+      'err',
+    );
   }
   render();
   syncDashSave();
@@ -167,30 +196,39 @@ async function appendItems(newItems) {
     /* Ids were allocated against the list the preview was built from. */
     const taken = new Set(current.map(i => i && i.id));
     const clash = newItems.find(i => taken.has(i.id));
-    if (clash) throw new Error(`${clash.label}: this id already exists. Reload and import again.`);
+    if (clash) throw new ShownError(t('toast.importIdTaken', { name: isolate(clash.label || clash.id) }));
     full.items = [...current, ...newItems];
     const r = await apiPost('/api/config', full);
+    const next = afterImport({
+      local: state.items,
+      saved: JSON.parse(_savedItems),
+      current,
+      serverItems: _serverItems,
+      newItems,
+    });
+    if (next.stale) _replaced++;
+    state.items = next.items;
     _serverItems = JSON.stringify(r.items);
-    state.items = full.items;
-    _savedItems = JSON.stringify(state.items);
+    _savedItems = JSON.stringify(next.saved);
+    saveOrRestore.landed(JSON.parse(_savedItems));
     syncDashSave();
   } finally {
     render();
   }
 }
 
+const saveOrRestore = revertingSaves({
+  write: save,
+  restore: items => {
+    state.items = snapshotItems(items);
+    render();
+  },
+});
+
 /** Save, and put the list back if the write did not land. Never rejects. */
 async function saveOrRevert(before) {
   try {
-    return await saveWithRevert({
-      write: save,
-      snapshot: before,
-      restore: items => {
-        state.items = items;
-        render();
-      },
-      superseded: () => saves.pending() > 0,
-    });
+    return await saveOrRestore(before);
   } catch {
     return false;
   }
@@ -300,7 +338,7 @@ function openModal(idx) {
 
   const isEdit = idx != null;
   const evTitle = el('ev-title');
-  if (isEdit) setUserText(evTitle, t('common.editNamed', { name: item.label || item.id }));
+  if (isEdit) setUserText(evTitle, t('common.editNamed', { name: isolate(item.label || item.id) }));
   else {
     evTitle.textContent = t('type.addNew');
     evTitle.removeAttribute('dir');
@@ -331,8 +369,8 @@ async function _evDelete(item, idx) {
   const ok = await confirmText({
     title: t('common.delete'),
     text: isFolder
-      ? t('confirm.deleteFolder', { name: item.label })
-      : t('confirm.remove', { name: item.label || item.id }),
+      ? t('confirm.deleteFolder', { name: isolate(item.label || item.id) })
+      : t('confirm.remove', { name: isolate(item.label || item.id) }),
     confirmLabel: t('common.delete'),
     cancelLabel: t('common.cancel'),
     destructive: true,
@@ -379,7 +417,7 @@ function openFolderPicker(appId, targetFolderId = null) {
   const appName = appItem?.label || appId;
 
   const dlg = openDialog({
-    title: appId ? t('folder.moveTo', { name: appName }) : t('folder.addApp'),
+    title: appId ? t('folder.moveTo', { name: isolate(appName) }) : t('folder.addApp'),
   });
   const list = dlg.body;
   const close = dlg.close;
@@ -417,7 +455,7 @@ function openFolderPicker(appId, targetFolderId = null) {
       const ri = document.createElement('span');
       ri.className = 'fp-ic';
       ri.style.background = clr(app.color);
-      paintIcon(ri, app.iconUrl, (app.label || '?')[0]);
+      paintIcon(ri, app.iconUrl, initial(app.label));
       const nm = document.createElement('span');
       nm.className = 'fp-nm';
       setUserText(nm, app.label || app.id);
@@ -624,7 +662,7 @@ async function doSave(orig) {
     closeModal(item.id);
     toast(t(replaced ? 'toast.updated' : 'toast.added'));
   } catch (e) {
-    toast(t('toast.error', { err: e.message }), 'err');
+    toast(t('toast.error', { err: errorText(e) }), 'err');
   } finally {
     _editorSaving = false;
   }
@@ -692,7 +730,7 @@ function initAllInlineEdits() {
   const apiInp = document.createElement('input');
   apiInp.id = 'bg-apikey-inp';
   document.body.appendChild(apiInp);
-  initInlineEdit('ie-apikey', 'bg-apikey-inp', { placeholder: 'Paste your Unsplash API key' });
+  initInlineEdit('ie-apikey', 'bg-apikey-inp', { placeholder: () => t('appearance.unsplashKeyPh') });
 
   const colInp = document.createElement('input');
   colInp.id = 'bg-col-inp';
@@ -854,12 +892,12 @@ function initWallpaperUpload() {
       const form = new FormData();
       form.append('wallpaper', file, file.name);
       const r = await fetch('/api/wallpaper/upload', { method: 'POST', body: form });
-      if (!r.ok) throw new Error(await responseError(r));
+      if (!r.ok) throw await responseError(r);
       const d = await r.json();
       setWallpaperUrl(d.url);
       toast(t('toast.wallpaperStored'));
     } catch (e) {
-      toast(t('toast.wallpaperFailed', { err: e.message }), 'err');
+      toast(t('toast.wallpaperFailed', { err: errorText(e) }), 'err');
     } finally {
       btn.textContent = orig;
       /** @type {HTMLInputElement} */ (input).value = '';
@@ -880,14 +918,14 @@ async function fetchWallpaperLink(url) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url }),
     });
-    if (!r.ok) throw new Error(await responseError(r));
+    if (!r.ok) throw await responseError(r);
     const d = await r.json();
     setWallpaperUrl(d.url);
     toast(t('toast.wallpaperStored'));
   } catch (e) {
     /* A link that failed must not replace the wallpaper already saved. */
     setWallpaperUrl(savedWallpaperUrl());
-    toast(t('toast.wallpaperFailed', { err: e.message }), 'err');
+    toast(t('toast.wallpaperFailed', { err: errorText(e) }), 'err');
   }
 }
 
@@ -1026,7 +1064,7 @@ el('btn-exp').onclick = async () => {
     a.click();
     document.body.removeChild(a);
   } catch (e) {
-    toast(t('toast.exportFailed', { err: e.message }), 'err');
+    toast(t('toast.exportFailed', { err: errorText(e) }), 'err');
   } finally {
     /* Revoked on the next frame. Revoking it in this one races the download the
        click just started. */
@@ -1038,7 +1076,7 @@ el('imp').onchange = async e => {
   if (!f) return;
   try {
     const d = JSON.parse(await f.text());
-    if (!d || !Array.isArray(d.items)) throw new Error('Invalid');
+    if (!d || !Array.isArray(d.items)) throw new ShownError(t('toast.importNotStackyard'));
     const cur = new Map(state.items.map(i => [i.id, i]));
     const inc = new Map(d.items.map(i => [i.id, i]));
     let added = 0,
@@ -1058,7 +1096,12 @@ el('imp').onchange = async e => {
     }
     const lead = document.createElement('p');
     lead.className = 'dlg-lead';
-    lead.textContent = t('import.confirm', { count: d.items.length, added, updated, deleted });
+    lead.textContent = t('import.confirm', {
+      count: d.items.length,
+      added: formatNumber(added),
+      updated: formatNumber(updated),
+      deleted: formatNumber(deleted),
+    });
     const ok = await confirmModal({
       title: t('import.confirmTitle'),
       body: lead,
@@ -1074,7 +1117,8 @@ el('imp').onchange = async e => {
     state.items = d.items;
     if (await saveOrRevert(before)) toast(t('toast.imported'));
   } catch (err) {
-    toast(t('toast.importFailed', { err: err.message }), 'err');
+    const why = err instanceof SyntaxError ? t('toast.importNotStackyard') : errorText(err);
+    toast(t('toast.importFailed', { err: why }), 'err');
   }
   tgt(e).value = '';
 };
@@ -1110,7 +1154,7 @@ function dlgSection(parent, heading, rows) {
   if (!rows.length) return;
   const h = document.createElement('div');
   h.className = 'dlg-sec';
-  h.textContent = `${heading} (${rows.length})`;
+  h.textContent = `${heading} (${formatNumber(rows.length)})`;
   const ul = document.createElement('ul');
   ul.className = 'dlg-ul';
   for (const row of rows) {
@@ -1146,16 +1190,17 @@ el('imp-foreign').onchange = async e => {
         ({ doc, errors: parseErrors } = parseYamlTolerant(await file.text()));
       } catch (err) {
         if (err instanceof YamlLiteError)
-          throw new Error(t('toast.importYamlUnsupported', { file: file.name, reason: err.reason, line: err.line }));
+          throw new ShownError(t('toast.importYamlUnsupported', { file: isolate(file.name), line: err.line }));
         throw err;
       }
-      const kind = detectSource(doc);
-      if (!kind) throw new Error(t('toast.importUnknownFormat', { file: file.name }));
       let out;
       try {
+        const kind = detectSource(doc);
+        if (!kind) throw new ShownError(t('toast.importUnknownFormat', { file: isolate(file.name) }));
         out = convert(kind, doc, taken, t('importForeign.untitledFolder'));
       } catch (err) {
-        if (err instanceof ImportTooLargeError) throw new Error(t('toast.importTooLarge', { file: file.name }));
+        if (err instanceof ImportTooLargeError)
+          throw new ShownError(t('toast.importTooLarge', { file: isolate(file.name) }));
         throw err;
       }
       items.push(...out.items);
@@ -1195,7 +1240,11 @@ el('imp-foreign').onchange = async e => {
       t('importForeign.willCreate'),
       items
         .filter(i => i.type === 'folder')
-        .map(i => ({ name: i.label, group: '', why: t('importForeign.appCount', { n: i.children.length }) })),
+        .map(i => ({
+          name: i.label,
+          group: '',
+          why: t('importForeign.appCount', { n: formatNumber(i.children.length) }),
+        })),
     );
     dlgSection(
       body,
@@ -1216,7 +1265,7 @@ el('imp-foreign').onchange = async e => {
     if (insecure.length) {
       const heading = document.createElement('div');
       heading.className = 'dlg-sec';
-      heading.textContent = `${t('app.allowSelfSigned')} (${insecure.length})`;
+      heading.textContent = `${t('app.allowSelfSigned')} (${formatNumber(insecure.length)})`;
       const choice = document.createElement('label');
       choice.className = 'dlg-choice';
       skipTlsChoice = document.createElement('input');
@@ -1253,9 +1302,9 @@ el('imp-foreign').onchange = async e => {
     /* Appended, never merged. An import must not rename, reorder or remove
        anything already on the dashboard. */
     await appendAndSave(items);
-    toast(t('toast.importForeignDone', { apps, folders }));
+    toast(t('toast.importForeignDone', { apps: formatNumber(apps), folders: formatNumber(folders) }));
   } catch (err) {
-    toast(t('toast.importFailed', { err: err.message }), 'err');
+    toast(t('toast.importFailed', { err: errorText(err) }), 'err');
   }
   input.value = '';
 };
@@ -1278,7 +1327,7 @@ setReauthHandler(requireLogin);
 
 const loadOrShowFailure = () =>
   load().catch(e => {
-    toast(t('toast.configLoadFailed', { err: e.message }), 'err');
+    toast(t('toast.configLoadFailed', { err: errorText(e) }), 'err');
     const al = el('al');
     if (al) {
       /* An inline onclick is blocked by the CSP. */

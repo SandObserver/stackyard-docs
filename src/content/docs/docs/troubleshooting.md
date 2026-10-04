@@ -273,6 +273,15 @@ Messages shown in the admin, and what each one means.
 | `The address answered with a redirect (HTTP <status>). Enter the address it points to.` | Redirects are not followed. Use the final address, which is often a login page when the API path is missing. |
 | `The service answered, but nothing is at that address (HTTP <status>).` | The host answered with 404. The API path is wrong. |
 | `The service answered with an error (HTTP <status>).` | The service returned an error status. 404, 405, 407 and 5xx errors have their own messages. |
+| `The host refused the connection. Check the port.` | The host answered, but nothing listens on that port. |
+| `The host name could not be found.` | DNS has no record for the name. Check the spelling, or use the container name or IP address. |
+| `The host could not be reached on the network.` | No route to the host. Check the IP address and that the host is on. |
+| `The service closed the connection before it answered.` | The service hung up mid-reply. Check its logs. |
+| `The service did not answer in HTTP. Check http or https and the port.` | Something answered on that port, but not a web server. Often `http` used for an `https` port, or the reverse. |
+| `The service uses a self-signed certificate. Turn on “Allow self-signed certificate” to accept it.` | The certificate is self-signed. Turn on the switch for a service on your own network. |
+| `The service uses a self-signed certificate. Allowing a self-signed certificate only applies to addresses on your own network.` | The address is public, so the switch does not apply. |
+| `The service's certificate has expired.` | Renew the certificate on the service. |
+| `The service did not answer in time.` | The service is slow or the network drops packets. |
 | `Ping failed` / `Ping returned <status>` | The URL was reached but did not answer as expected. |
 | `That image is too large for the server to accept.` | Over the 2 MB upload limit. |
 | `That is not a color. Use #rrggbb or a CSS color name.` | The wallpaper colour field rejects anything else. |

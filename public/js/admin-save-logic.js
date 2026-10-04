@@ -47,44 +47,82 @@ export function snapshotItems(items) {
   return Array.isArray(items) ? structuredClone(items) : [];
 }
 
-/** Run `write` and undo the local change when it did not reach the server.
-    Without this the list shows a dashboard the server does not have. `write`
-    reports failure by resolving false; a throw is re-raised after the restore.
-    `superseded` reports a later change still waiting to save. Its write carries
-    this change too, so restoring here would drop the later change.
+/** Saves that undo the local change when it did not reach the server. Without
+    this the list shows a dashboard the server does not have. `write` reports
+    failure by resolving false; a throw is re-raised after the restore. A failed
+    save with another one waiting leaves the list alone: the later write carries
+    this change too. It hands its snapshot to that save, which restores it if it
+    also fails.
+
+    Every writer calls `landed` with the list the server took. A failed save
+    restores that list, not its snapshot, when a write landed after the
+    snapshot was taken: the snapshot lacks a change the server has, and the
+    next save would delete it.
 
     @template T
-    @param {{ write: () => Promise<boolean|void>, snapshot: T,
-              restore: (snapshot: T) => void, superseded?: () => boolean }} opts
-    @returns {Promise<boolean>} */
-export async function saveWithRevert({ write, snapshot, restore, superseded = () => false }) {
-  let ok = false;
-  try {
-    ok = (await write()) !== false;
-  } finally {
-    if (!ok && !superseded()) restore(snapshot);
+    @param {{ write: () => Promise<boolean|void>, restore: (snapshot: T) => void }} opts
+    @returns {((snapshot: T) => Promise<boolean>) & { landed: (sent: T) => void }} */
+export function revertingSaves({ write, restore }) {
+  let waiting = 0;
+  let landings = 0;
+  /** @type {T | undefined} */
+  let lastLanded;
+  /** @type {{ seen: number, snapshot: T } | null} */
+  let carried = null;
+  const save = async (/** @type {T} */ snapshot) => {
+    const seen = landings;
+    waiting++;
+    let ok = false;
+    try {
+      ok = (await write()) !== false;
+    } finally {
+      waiting--;
+      const before = carried || { seen, snapshot };
+      carried = null;
+      if (!ok) {
+        if (waiting > 0) carried = before;
+        else restore(landings > before.seen ? /** @type {T} */ (lastLanded) : before.snapshot);
+      }
+    }
+    return ok;
+  };
+  save.landed = (/** @type {T} */ sent) => {
+    landings++;
+    lastLanded = sent;
+  };
+  return save;
+}
+
+/** What a page holds once its import lands. A list change made while the
+    import ran is not in `current`; dropping it lets its queued save send the
+    list without it. A page whose list is stale takes the server list, or its
+    next save deletes what another tab added, and a change queued on the stale
+    list must be refused.
+
+    @param {{ local: any[], saved: any[], current: any[], serverItems: string, newItems: any[] }} lists
+    `saved` is the list this page last sent, `current` the list the import
+    read, `serverItems` the server list this page last saw, as JSON.
+    @returns {{ items: any[], saved: any[], stale: boolean }} */
+export function afterImport({ local, saved, current, serverItems, newItems }) {
+  if (JSON.stringify(current) !== serverItems) {
+    return { items: [...current, ...newItems], saved: [...current, ...newItems], stale: true };
   }
-  return ok;
+  return { items: [...local, ...newItems], saved: [...saved, ...newItems], stale: false };
 }
 
 /** Run writes one at a time, in the order asked. A write asked for while
     another runs waits for it instead of being dropped.
 
-    @returns {{ run: <R>(write: () => Promise<R>) => Promise<R>, pending: () => number }} */
+    @returns {{ run: <R>(write: () => Promise<R>) => Promise<R> }} */
 export function serialWrites() {
   /** @type {Promise<unknown>} */
   let tail = Promise.resolve();
-  let pending = 0;
   return {
     run(write) {
-      pending++;
-      const p = tail.then(write).finally(() => {
-        pending--;
-      });
+      const p = tail.then(write);
       tail = p.catch(() => {});
       return p;
     },
-    pending: () => pending,
   };
 }
 

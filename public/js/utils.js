@@ -1,9 +1,9 @@
-import { iconChain } from '/js/icons.js?v=9c8c550c';
-import { toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
+import { iconChain } from '/js/icons.js?v=9c7b5111';
+import { toneForColor } from '/js/label-contrast.js?v=0b1ebb19';
 import { SETTINGS_ICON, SETTINGS_ICON_LIGHT } from '/js/settings-icon.js?v=4079b66a';
 import { mkGlassRim } from '/js/glass-rim.js?v=3faec233';
 import { smoothRectPath } from '/js/smooth-corner.js?v=b7dda7e1';
-import { t } from '/js/i18n.js?v=1f1ea9c1';
+import { t } from '/js/i18n.js?v=5579776a';
 import { pageTheme, tileColor } from '/js/palette.js?v=3fb8ae43';
 
 export const mk = (tag, a = {}) => {
@@ -48,6 +48,18 @@ export const clr = c => {
   if (named) return named;
   return cssColor(c, DEFAULT_TILE_COLOR);
 };
+const GRAPHEMES = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+/** The first visible character, upper-cased. Indexing a string splits an emoji
+    into half a surrogate pair, which draws as a replacement box.
+    @param {string|null|undefined} text @returns {string} */
+export const initial = text => {
+  for (const { segment } of GRAPHEMES.segment(text || '?')) return segment.toUpperCase();
+  return '?';
+};
+/** A name for a translated sentence, isolated so its punctuation stays with it
+    in the other direction.
+    @param {string} text @returns {string} */
+export const isolate = text => `\u2068${text}\u2069`;
 /* The plate is a colour the user chose, so the ink has to be measured from it.
    White on the palette's own yellow reads at 1.5:1. */
 export const letterTile = (l, sz, plate) => {
@@ -56,7 +68,7 @@ export const letterTile = (l, sz, plate) => {
   const tone = toneForColor(plate) ?? (pageTheme() === 'light' ? 'dark' : 'light');
   if (tone === 'dark') e.classList.add('fb-on-light');
   e.style.fontSize = Math.round(sz * 0.32) + 'px';
-  e.textContent = (l || '?')[0].toUpperCase();
+  e.textContent = initial(l);
   return e;
 };
 export { esc } from '/js/html.js?v=c71f8903';
@@ -147,6 +159,14 @@ export function focusFirst(...els) {
     if (document.activeElement === h) return true;
   }
   return false;
+}
+
+/** @param {Element} parent @param {number} current */
+export function inertAllBut(parent, current) {
+  [...parent.children].forEach((child, i) => {
+    if (i === current) child.removeAttribute('inert');
+    else child.setAttribute('inert', '');
+  });
 }
 
 export const ICON_R = 0.26;

@@ -5,6 +5,7 @@ import { esc, html, setHtml } from '/js/html.js?v=c71f8903';
 import { isSafeLinkUrl } from '/js/link-url.js?v=54adb40f';
 import { jitter } from '/js/jitter.js?v=087a1fcf';
 import { errorState as _errorState, errorKind, errorCopy } from '/js/widget-error.js?v=7da9754b';
+import { setNumberLanguage } from '/js/format-number.js?v=349a741d';
 
 export { esc, html, setHtml };
 
@@ -258,12 +259,13 @@ export function barFill(percent, opts = {}) {
 /* A widget is an iframe and does not load the i18n module. The language arrives
    on the iframe URL. */
 const _lang = new URLSearchParams(location.search).get('lang') || 'en';
+setNumberLanguage(_lang);
 let _strings = null;
 
 async function _loadStrings() {
   if (_lang === 'en') return;
   try {
-    const r = await fetch(`/i18n/${encodeURIComponent(_lang)}.json`, { cache: 'force-cache' });
+    const r = await fetch(`/i18n/${encodeURIComponent(_lang)}.json`, { cache: 'no-cache' });
     if (r.ok) _strings = (await r.json())?.widget || null;
   } catch {
     /* English is a usable answer */
@@ -290,7 +292,7 @@ export async function loadStrings() {
   if (!_widgetName || _lang === 'en' || _own) return;
   try {
     const r = await fetch(`/widgets/${encodeURIComponent(_widgetName)}/i18n/${encodeURIComponent(_lang)}.json`, {
-      cache: 'force-cache',
+      cache: 'no-cache',
     });
     if (r.ok) {
       const parsed = await r.json();
@@ -308,10 +310,10 @@ export function wt(key, fallback) {
 }
 
 /** @param {number} ts @returns {string} */
-/* Digit shape follows the reader's locale. Re-exported here so a widget takes it
+/* Digit shape follows the interface language. Re-exported here so a widget takes it
    from the toolbox rather than reaching for toLocaleString, which is the same
    thing until someone passes it a language. */
-export { formatNumber, localiseDigits } from '/js/format-number.js?v=4a5ccef4';
+export { formatNumber, localiseDigits } from '/js/format-number.js?v=349a741d';
 
 export function sinceLabel(ts) {
   if (!ts) return '';

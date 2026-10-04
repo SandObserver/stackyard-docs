@@ -302,6 +302,7 @@ Messages shown in the admin, and what each one means.
 | `Nothing to import. The file matches your current config.` | The imported file is identical to what is already stored. |
 | `Icon catalogues could not be reached` | No catalogue answered while searching. The field still takes a full URL or an upload. |
 | `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Import](/docs/import-export/migrating/). |
+| `<file> has too many entries to import.` | The file has more than 5,000 entries. Nothing was imported. See [Import](/docs/import-export/migrating/#what-is-skipped). |
 | `(may be out of date)` | A stale reading. The last poll failed and the previous value is shown. |
 
 ## Not actually broken

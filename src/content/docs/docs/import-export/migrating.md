@@ -25,6 +25,8 @@ Descriptions, abbreviations, tags, and per-item colours are dropped. Icons are n
 
 An entry is skipped when it has no label, has no link, or its link is not safe to follow. Relative links are skipped, because they have no meaning outside the dashboard that wrote them, as are values the other dashboard resolves from its own environment.
 
+A file with more than 5,000 entries is refused, and nothing is imported.
+
 Stackyard reports how many apps and folders were imported, and lists what it could not import and why.
 
 ## After importing

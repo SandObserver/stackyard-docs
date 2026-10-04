@@ -1,6 +1,7 @@
-import { toast, apiGet, apiPost, reveal, swapContent } from '/js/admin-shared.js?v=f5551857';
+import { toast, apiGet, apiPost, errorText, reveal, swapContent } from '/js/admin-shared.js?v=81ab2f92';
+import { socketProbeAdvice } from '/js/admin-error.js?v=61f73e4d';
 import { pwStrength } from '/js/password-strength.js?v=389e0ed0';
-import { t } from '/js/i18n.js?v=1f1ea9c1';
+import { t } from '/js/i18n.js?v=5579776a';
 import {
   shouldWritePassword,
   settingsSaveBlocker,
@@ -10,11 +11,18 @@ import {
   BLOCK,
 } from '/js/admin-logic.js?v=fc7f0836';
 import { confirmText, promptModal } from '/js/modal.js?v=6b0320bd';
-import { el, inp, setUserText } from '/js/utils.js?v=9a9bfb54';
-import { serialWrites } from '/js/admin-save-logic.js?v=8389782f';
-import { renderColorControl } from '/js/admin-color-control.js?v=233683ad';
-import { BACKDROP } from '/js/background.js?v=43a04bdb';
-import { firstBadHost, hostnameOf, isLocalAddress, parseHostList } from '/js/host-names.js?v=842f96ca';
+import { el, inp, setUserText } from '/js/utils.js?v=fdc0243f';
+import { formatNumber } from '/js/format-number.js?v=349a741d';
+import { serialWrites } from '/js/admin-save-logic.js?v=ae65f9c8';
+import { renderColorControl } from '/js/admin-color-control.js?v=426a5709';
+import { BACKDROP } from '/js/background.js?v=abd33088';
+import {
+  ALLOWED_HOSTS_MAX,
+  firstBadHost,
+  hostnameOf,
+  isLocalAddress,
+  parseHostList,
+} from '/js/host-names.js?v=98bf44d7';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
@@ -165,7 +173,7 @@ export function loadSettings(c) {
   /* The key itself is never included in /api/config. */
   const apiEl = inp('bg-apikey-inp') || inp('bg-apikey');
   if (apiEl) {
-    apiEl.placeholder = '●●●●●●●●●● (configured)';
+    apiEl.placeholder = `●●●●●●●●●● (${t('common.configured')})`;
     apiGet('/api/settings/unsplash-key')
       .then(d => {
         const vEl = el('ie-apikey-v');
@@ -194,13 +202,14 @@ export function loadSettings(c) {
        target on a phone. */
     slider.style.backgroundImage = `linear-gradient(var(--slider-dir), var(--ac) 0%, var(--ac) ${pct}%, var(--bd-inner) ${pct}%, var(--bd-inner) 100%)`;
   }
+  const twoPlaces = v => formatNumber(parseFloat(v), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   if (brEl) {
     brEl.value = bg.brightness ?? 0.62;
-    if (brVal) brVal.textContent = parseFloat(brEl.value).toFixed(2);
+    if (brVal) brVal.textContent = twoPlaces(brEl.value);
     updateSliderFill(brEl);
     brEl.addEventListener('input', () => {
       updateSliderFill(brEl);
-      if (brVal) brVal.textContent = parseFloat(brEl.value).toFixed(2);
+      if (brVal) brVal.textContent = twoPlaces(brEl.value);
     });
   }
   el('bg-save').addEventListener('click', saveWallpaper);
@@ -227,13 +236,13 @@ export function loadSettings(c) {
   _si('srv-ip', s.server?.hostIp || '');
   _si('srv-socket', s.server?.socketProxyUrl || '');
   _si('srv-hosts', (s.server?.allowedHosts || []).join(', '));
-  _sv('ie-bgcol-v', s.background?.collection, 'Collection ID');
+  _sv('ie-bgcol-v', s.background?.collection, t('appearance.collectionId'));
   _si('bg-col-inp', s.background?.collection || '');
   _si('bg-url-inp', s.background?.url || '');
   _si('bg-fit', s.background?.fit === 'fit' ? 'fit' : 'fill');
   showWallpaperFile(s.background?.url || '');
   renderBgColor(s.background?.color || BACKDROP);
-  _sv('ie-bgurl-v', s.background?.url, 'Image URL');
+  _sv('ie-bgurl-v', s.background?.url, t('appearance.imageUrl'));
 
   const ipEl = inp('srv-ip');
   if (ipEl) ipEl.value = s.server?.hostIp || '';
@@ -276,7 +285,7 @@ export function loadSettings(c) {
       await apiPost('/api/auth/revoke-sessions', {});
       toast(t('toast.sessionsRevoked'), 'ok');
     } catch (e) {
-      toast(e.message || t('toast.saveFailed'), 'err');
+      toast(errorText(e), 'err');
     } finally {
       secRevoke.disabled = false;
     }
@@ -358,7 +367,7 @@ function saveSwitchChange(e, apply) {
     } catch (err) {
       /* Assigning `checked` fires no event, so this does not loop. */
       if (toggled.checked === value) toggled.checked = !value;
-      toast(t('toast.saveFailed', { err: err.message }), 'err');
+      toast(t('toast.saveFailed', { err: errorText(err) }), 'err');
     }
   });
 }
@@ -405,7 +414,7 @@ async function saveWallpaper() {
     _bgTrack?.reset();
     toast(t('toast.saved'));
   } catch (e) {
-    toast(t('toast.saveFailed', { err: e.message }), 'err');
+    toast(t('toast.saveFailed', { err: errorText(e) }), 'err');
   }
 }
 const PASSWORD_ERROR_KEYS = Object.freeze({
@@ -439,6 +448,10 @@ async function saveServer() {
     return;
   }
   const allowedHosts = parseHostList(hostsText);
+  if (!allowedHosts) {
+    toast(t('toast.allowedHostsTooMany', { max: formatNumber(ALLOWED_HOSTS_MAX) }), 'err');
+    return;
+  }
   const here = hostnameOf(location.host);
   if (!enabled && here && !isLocalAddress(here) && !allowedHosts.includes(here)) {
     toast(t('toast.allowedHostsKeepCurrent', { host: here }), 'err');
@@ -457,20 +470,22 @@ async function saveServer() {
     try {
       probe = await apiPost('/api/docker/test', { url });
     } catch (e) {
-      toast(t('toast.saveFailed', { err: e.message }), 'err');
+      toast(t('toast.saveFailed', { err: errorText(e) }), 'err');
       return;
     }
     /* The error and the hint are both needed: "connection refused" for an IP is
        exactly what a proxy published on the host's loopback looks like from
        inside a container. */
     const hint = SOCKET_HINTS[probe.hint] ? ` ${t(SOCKET_HINTS[probe.hint])}` : '';
+    const advice = socketProbeAdvice(probe);
+    const socketReason = t(advice.key, advice.vars);
     if (!probe.ok && probe.fatal) {
-      toast(t('toast.socketUrlBad', { reason: probe.error }) + hint, 'err');
+      toast(t('toast.socketUrlBad', { reason: socketReason }) + hint, 'err');
       return;
     }
     /* Not answering yet is not the same as wrong. A proxy still starting would
        otherwise block a save that is correct. */
-    if (!probe.ok) socketWarning = t('toast.socketUrlUnverified', { reason: probe.error }) + hint;
+    if (!probe.ok) socketWarning = t('toast.socketUrlUnverified', { reason: socketReason }) + hint;
   }
 
   /* Switching protection off deletes the stored password. Ask before anything
@@ -504,7 +519,7 @@ async function saveServer() {
       const pwEl = inp('sec-pw');
       if (pwEl) {
         pwEl.value = '';
-        pwEl.placeholder = '●●●●●●●●●● (configured)';
+        pwEl.placeholder = `●●●●●●●●●● (${t('common.configured')})`;
       }
     }
     await apiPost('/api/auth/toggle', { enabled, currentPassword, allowedHosts });
@@ -545,7 +560,7 @@ async function saveServer() {
   } catch (e) {
     const key = PASSWORD_ERROR_KEYS[/** @type {any} */ (e).code];
     if (key) toast(t(key), 'err');
-    else toast(t('toast.saveFailed', { err: e.message }), 'err');
+    else toast(t('toast.saveFailed', { err: errorText(e) }), 'err');
     await syncAuthFromServer();
   }
 }

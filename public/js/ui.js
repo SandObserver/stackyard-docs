@@ -1,8 +1,10 @@
-import { iconChain } from '/js/icons.js?v=9c8c550c';
+import { iconChain } from '/js/icons.js?v=9c7b5111';
 import { widgetSrc, cardPreset, fixedAppearance, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=9264dee5';
 import {
   mk,
   clr,
+  inertAllBut,
+  initial,
   isDashboardEmpty,
   renderEmptyState,
   mkWrap as _mkWrap,
@@ -14,9 +16,9 @@ import {
   q,
   qa,
   setUserText,
-} from '/js/utils.js?v=9a9bfb54';
-import { t, currentLang } from '/js/i18n.js?v=1f1ea9c1';
-import { toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
+} from '/js/utils.js?v=fdc0243f';
+import { t, currentLang } from '/js/i18n.js?v=5579776a';
+import { toneForColor } from '/js/label-contrast.js?v=0b1ebb19';
 import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=349f4300';
 import { smoothRectPath } from '/js/smooth-corner.js?v=b7dda7e1';
 import { mkGlassRim, observeGlass } from '/js/glass-rim.js?v=3faec233';
@@ -74,7 +76,6 @@ function mkMiniIcon(child, pointerEvents) {
   const plate = clr(child.color);
   bg.style.background = plate;
   if (pointerEvents === 'none') bg.style.pointerEvents = 'none';
-  const onLight = toneForColor(plate) === 'dark';
   if (child.iconUrl) {
     const srcs = iconChain(child.iconUrl);
     if (srcs.length) {
@@ -91,16 +92,16 @@ function mkMiniIcon(child, pointerEvents) {
       bg.appendChild(img);
     } else {
       const s = mk('span');
-      s.className = onLight ? 'folder-mini-fb fb-on-light' : 'folder-mini-fb';
+      s.className = toneForColor(plate) === 'dark' ? 'folder-mini-fb fb-on-light' : 'folder-mini-fb';
       if (pointerEvents === 'none') s.style.pointerEvents = 'none';
-      s.textContent = (child.label || '?')[0].toUpperCase();
+      s.textContent = initial(child.label);
       bg.appendChild(s);
     }
   } else {
     const s = mk('span');
-    s.className = onLight ? 'folder-mini-fb fb-on-light' : 'folder-mini-fb';
+    s.className = toneForColor(plate) === 'dark' ? 'folder-mini-fb fb-on-light' : 'folder-mini-fb';
     if (pointerEvents === 'none') s.style.pointerEvents = 'none';
-    s.textContent = (child.label || '?')[0].toUpperCase();
+    s.textContent = initial(child.label);
     bg.appendChild(s);
   }
   return bg;
@@ -400,7 +401,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
   titleEl.className = 'folder-title-mobile dyn-title-mob';
   css(titleEl, {
     '--tfs': titleFs + 'px',
-    left: titleLeft + 'px',
+    'inset-inline-start': titleLeft + 'px',
     width: boxW - padH + 'px',
     top: boxTop - titleRendH - titleGap + Math.round(8 * ptScale) + 'px',
   });
@@ -434,12 +435,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc) {
     curPage = Math.max(0, Math.min(pages.length - 1, n));
     strip.style.transform = strip.style.webkitTransform = `translateX(${-pageDir() * curPage * pageW}px)`;
     dotEls.forEach((d, j) => d.classList.toggle('on', j === curPage));
-    /* A page that has scrolled off stays focusable, so Tab would leave the
-       visible page for tiles nobody can see. */
-    [...strip.children].forEach((page, j) => {
-      if (j === curPage) page.removeAttribute('inert');
-      else page.setAttribute('inert', '');
-    });
+    inertAllBut(strip, curPage);
   }
 
   function buildPage(apps) {
@@ -754,7 +750,7 @@ export function buildMobile() {
       iframeOpts: item.iframe,
       overlayHref,
       mobile: true,
-      onSwipe: dir => goTo(st().pg + dir),
+      onSwipe: dir => goTo(st().pg + dir * pageDir()),
     });
     return card;
   }

@@ -1,4 +1,4 @@
-import { loadLocalIcons, iconChain } from '/js/icons.js?v=9c8c550c';
+import { loadLocalIcons, iconChain } from '/js/icons.js?v=9c7b5111';
 import {
   WIDGET_HEIGHTS,
   WIDGET_DESIGN,
@@ -12,6 +12,7 @@ import {
 import {
   el,
   ICON_R,
+  inertAllBut,
   isDashboardEmpty,
   mk,
   mkWrap as _mkWrap,
@@ -26,13 +27,14 @@ import {
   storeSet,
   teardownWidgets,
   titleWhenTruncated,
-} from '/js/utils.js?v=9a9bfb54';
+} from '/js/utils.js?v=fdc0243f';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
-import { initSpotlight } from '/js/spotlight.js?v=17a182a1';
+import { initSpotlight } from '/js/spotlight.js?v=6b79fa8a';
 import { html, setHtml, raw } from '/js/html.js?v=c71f8903';
-import { initI18n, t, currentLang } from '/js/i18n.js?v=1f1ea9c1';
-import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=706fc9a7';
+import { initI18n, t, currentLang } from '/js/i18n.js?v=5579776a';
+import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=dbe542e1';
 import { pwStrength, passwordMismatch } from '/js/password-strength.js?v=389e0ed0';
+import { setupErrorKey } from '/js/admin-error.js?v=61f73e4d';
 import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
 import { DOCK_MAX } from '/js/limits.js?v=31048a24';
 import {
@@ -43,10 +45,10 @@ import {
   buildMobile,
   resetMobileChrome,
   mkFolderGlyph,
-} from '/js/ui.js?v=c64101c8';
+} from '/js/ui.js?v=1d2ce8a6';
 import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=9e6d9d4b';
-import { formatNumber } from '/js/format-number.js?v=4a5ccef4';
-import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=aa52b1a3';
+import { formatNumber } from '/js/format-number.js?v=349a741d';
+import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=1e0ab5d1';
 import { observeGlass } from '/js/glass-rim.js?v=3faec233';
 import {
   configChanged,
@@ -55,11 +57,11 @@ import {
   landingAfterSetup,
   restorePage,
 } from '/js/dashboard-logic.js?v=0d519f8b';
-import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=43a04bdb';
+import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=abd33088';
 import { repeatJittered } from '/js/jitter.js?v=087a1fcf';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
-import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=c1ac6fb8';
+import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=0b1ebb19';
 import { ensureSprite, iconSvg } from '/js/icon-set.js?v=34af798f';
 import { pageTheme, paletteColor } from '/js/palette.js?v=3fb8ae43';
 import { THEME_KEY, applyTheme, prefersDark, readMode, resolveTheme } from '/js/theme.js?v=eeafa4b5';
@@ -371,7 +373,7 @@ function mkDot(i, total, current, go) {
   const d = mk('button');
   d.type = 'button';
   d.className = 'dot' + (i === current ? ' on' : '');
-  d.setAttribute('aria-label', t('home.goToPage', { page: i + 1, total }));
+  d.setAttribute('aria-label', t('home.goToPage', { page: formatNumber(i + 1), total: formatNumber(total) }));
   if (i === current) d.setAttribute('aria-current', 'true');
   d.onclick = () => go(i);
   return d;
@@ -448,7 +450,7 @@ function applyPollRates() {
 function announcePage(index, total) {
   const live = el('page-live');
   if (!live) return;
-  live.textContent = t('home.pageAnnounce', { page: index + 1, total });
+  live.textContent = t('home.pageAnnounce', { page: formatNumber(index + 1), total: formatNumber(total) });
 }
 
 /* A page that has scrolled off is still in the DOM and still focusable, so Tab
@@ -458,11 +460,7 @@ function announcePage(index, total) {
 /** @param {number} current */
 function syncPageInert(current) {
   const strip = el('pages');
-  if (!strip) return;
-  [...strip.children].forEach((page, i) => {
-    if (i === current) page.removeAttribute('inert');
-    else page.setAttribute('inert', '');
-  });
+  if (strip) inertAllBut(strip, current);
 }
 
 function goTo(n, dotEls, announce = true) {
@@ -713,12 +711,15 @@ function showSetupPrompt() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: pw.value }),
         });
-        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || t('setup.failed'));
+        if (!r.ok) {
+          const body = await r.json().catch(() => null);
+          throw Object.assign(new Error(`HTTP ${r.status}`), { kind: body?.kind, code: body?.code });
+        }
         const to = landingAfterSetup(items);
         if (to) location.href = to;
         else location.reload();
       } catch (e) {
-        err.textContent = e.message;
+        err.textContent = t(setupErrorKey(e));
         err.style.display = 'block';
         setB.disabled = false;
         skip.disabled = false;
@@ -733,6 +734,24 @@ function showSetupPrompt() {
 }
 
 async function boot() {
+  const settled = p =>
+    p.then(
+      v => ({ v }),
+      e => ({ e }),
+    );
+  const loadConfig = () =>
+    settled(fetch('/api/config', { cache: 'no-store', signal: AbortSignal.timeout(BOOT_TIMEOUT_MS) }));
+  let configReq = loadConfig();
+  const loadWidgets = () =>
+    settled(
+      fetch('/api/widgets', { cache: 'no-store' }).then(r => {
+        if (!r.ok) throw Object.assign(new Error(`HTTP ${r.status}`), { status: r.status });
+        return r.json();
+      }),
+    );
+  let widgetsReq = loadWidgets();
+  let iconsReq = loadLocalIcons();
+
   let authData = null;
   try {
     const authCheck = await fetch('/api/auth/check', {
@@ -753,13 +772,20 @@ async function boot() {
       window.location.href = '/admin/';
       return;
     }
+    /* Only the sign-in check stores the first address. Requests sent before it
+       on a first visit by host name are refused. */
+    if ((await configReq).v?.status === 403) configReq = loadConfig();
+    if ((await widgetsReq).e?.status === 403) widgetsReq = loadWidgets();
+    if ((await iconsReq) === 403) iconsReq = loadLocalIcons();
   } catch {
     /* API down, handled below */
   }
 
   let configFailed = false;
   try {
-    const res = await fetch('/api/config', { cache: 'no-store', signal: AbortSignal.timeout(BOOT_TIMEOUT_MS) });
+    const got = await configReq;
+    if (got.e) throw got.e;
+    const res = got.v;
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const c = await res.json();
     /* Saving rejects these, but a config written earlier still reaches here.
@@ -773,7 +799,7 @@ async function boot() {
     configFailed = true;
   }
 
-  await loadLocalIcons();
+  await iconsReq;
 
   if (configFailed) {
     /* The catalog is loaded as the last step of the fetch that just failed, so
@@ -795,15 +821,13 @@ async function boot() {
 
   if (authData && !authData.setupPrompted && !authData.passwordSet) {
     await showSetupPrompt();
+    /* A password set in the prompt refuses a request that was still open. */
+    if ((await widgetsReq).e) widgetsReq = loadWidgets();
   }
 
-  try {
-    const wr = await (await fetch('/api/widgets', { cache: 'no-store' })).json();
-    widgetReg = Object.create(null);
-    for (const w of wr.widgets || []) if (w && w.name) widgetReg[w.name] = w;
-  } catch {
-    widgetReg = Object.create(null);
-  }
+  widgetReg = Object.create(null);
+  const wr = (await widgetsReq).v;
+  for (const w of Array.isArray(wr?.widgets) ? wr.widgets : []) if (w && w.name) widgetReg[w.name] = w;
 
   const state = {
     items,

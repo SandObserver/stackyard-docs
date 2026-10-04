@@ -1,11 +1,11 @@
 /* Renders a widget's declared `fields` into a config form and reads the values
    back. Each builder returns { el, get, control, liveValue }. */
 
-import { t } from '/js/i18n.js?v=1f1ea9c1';
+import { t } from '/js/i18n.js?v=5579776a';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=f5551857';
-import { createListbox } from '/js/listbox.js?v=30c1b9d1';
-import { renderColorControl } from '/js/admin-color-control.js?v=233683ad';
+import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=81ab2f92';
+import { createListbox } from '/js/listbox.js?v=11c869c4';
+import { renderColorControl } from '/js/admin-color-control.js?v=426a5709';
 import {
   seedCarried,
   applyOptionSet,
@@ -14,8 +14,9 @@ import {
   groupBounds,
   visibleFieldFlags,
 } from '/js/admin-logic.js?v=fc7f0836';
-import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=f82486b2';
-import { qi } from '/js/utils.js?v=9a9bfb54';
+import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=61f73e4d';
+import { qi } from '/js/utils.js?v=fdc0243f';
+import { formatNumber } from '/js/format-number.js?v=349a741d';
 
 const PE =
   '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M18.4 2.6a1.85 1.85 0 0 1 2.6 2.6l-9.1 9.1-3.4 1 1-3.4z"/></svg>';
@@ -208,9 +209,10 @@ function _picklist(field, value, ctx, size) {
   for (let i = 0; i < count; i++) {
     const row = document.createElement('div');
     row.className = 'row';
-    setHtml(row, html`<span class="rl">${rowLabel} ${i + 1}</span>`);
+    const name = `${rowLabel} ${formatNumber(i + 1)}`;
+    setHtml(row, html`<span class="rl">${name}</span>`);
     const cur = chosen[i] != null ? String(chosen[i]) : '';
-    const lb = createListbox({ label: `${rowLabel} ${i + 1}`, options: shown(cur), value: cur });
+    const lb = createListbox({ label: name, options: shown(cur), value: cur });
     row.appendChild(lb.el);
     card.appendChild(row);
     sels.push(lb);
@@ -610,7 +612,7 @@ function _group(field, rows, size, ctx) {
     data.forEach((rowData, idx) => {
       const hdr = document.createElement('p');
       hdr.className = 'grp-hdr grp-hdr-row';
-      setHtml(hdr, html`<span role="heading" aria-level="2">${field.label} ${idx + 1}</span>`);
+      setHtml(hdr, html`<span role="heading" aria-level="2">${field.label} ${formatNumber(idx + 1)}</span>`);
       const rm = document.createElement('button');
       rm.type = 'button';
       rm.className = 'grp-hdr-rm';
@@ -668,7 +670,8 @@ function _group(field, rows, size, ctx) {
     captureCurrent();
     return [field.key, data];
   };
-  const missing = () => rowBuilt.flatMap((built, i) => _missingIn(built).map(l => `${l} (${field.label} ${i + 1})`));
+  const missing = () =>
+    rowBuilt.flatMap((built, i) => _missingIn(built).map(l => `${l} (${field.label} ${formatNumber(i + 1)})`));
   return { el: wrap, get, control: null, liveValue: () => null, isGroup: true, missing };
 }
 

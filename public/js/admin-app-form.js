@@ -1,8 +1,9 @@
-import { clr, el, focusFirst, inp as inpById, q as qSel, qa, qi, tgt } from '/js/utils.js?v=9a9bfb54';
+import { clr, el, focusFirst, initial, inp as inpById, isolate, q as qSel, qa, qi, tgt } from '/js/utils.js?v=fdc0243f';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { loadLocalIcons, resolveIcon, iconChain, cdnIconRef, splitIconRef } from '/js/icons.js?v=9c8c550c';
+import { loadLocalIcons, resolveIcon, iconChain, cdnIconRef, splitIconRef } from '/js/icons.js?v=9c7b5111';
 import { state } from '/js/admin-state.js?v=af772a1b';
 import { DOCK_MAX } from '/js/limits.js?v=31048a24';
+import { formatNumber } from '/js/format-number.js?v=349a741d';
 import {
   isDockBlocked,
   clearsStoredSecret,
@@ -11,9 +12,10 @@ import {
   nextActiveIndex,
   sameIconName,
 } from '/js/admin-logic.js?v=fc7f0836';
-import { t } from '/js/i18n.js?v=1f1ea9c1';
+import { t } from '/js/i18n.js?v=5579776a';
 import {
   toast,
+  errorText,
   responseError,
   apiGet,
   apiPost,
@@ -22,11 +24,11 @@ import {
   reveal,
   setTogDisabled,
   swapContent,
-} from '/js/admin-shared.js?v=f5551857';
-import { createListbox } from '/js/listbox.js?v=30c1b9d1';
+} from '/js/admin-shared.js?v=81ab2f92';
+import { createListbox } from '/js/listbox.js?v=11c869c4';
 import { MAX_LABELS } from '/js/badge-logic.js?v=9e6d9d4b';
-import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=233683ad';
-import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=f82486b2';
+import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=426a5709';
+import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=61f73e4d';
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
 import { iconSvg } from '/js/icon-set.js?v=34af798f';
 
@@ -119,7 +121,7 @@ export function buildAppForm(body, item) {
     <div class="grp" id="ipw">
       <div class="icon-src-anchor">
       <div class="row icon-src-row">
-        <span class="icon-prev" id="ipv">${state.siurl ? html`<img src="${resolveIcon(state.siurl)}" alt="" id="ipv-img">` : html`<span>${(item?.label || '?')[0]?.toUpperCase() || '?'}</span>`}</span>
+        <span class="icon-prev" id="ipv">${state.siurl ? html`<img src="${resolveIcon(state.siurl)}" alt="" id="ipv-img">` : html`<span>${initial(item?.label)}</span>`}</span>
         <input class="icon-srch" id="ip-in" type="text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="iprs" aria-autocomplete="list" aria-describedby="ip-status" aria-label="${t('app.icon')}" placeholder="${t('app.iconPh')}" value="${state.siurl}">
         <button type="button" class="row-btn" id="ip-upload-lbl">${t('app.upload')}</button>
         <input type="file" id="ip-upload" class="file-hidden" tabindex="-1" aria-hidden="true" accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon">
@@ -134,7 +136,7 @@ export function buildAppForm(body, item) {
     <div class="grp">
       <div class="row"><span class="rl">${t('app.showInDock')}</span>${tog('f-dock', !!item?.dock, t('app.showInDock'))}</div>
     </div>
-    ${dockBlocked ? html`<p class="grp-tip" id="dock-full-tip">${t('app.dockFull', { max: DOCK_MAX })}</p>` : ''}
+    ${dockBlocked ? html`<p class="grp-tip" id="dock-full-tip">${t('app.dockFull', { max: formatNumber(DOCK_MAX) })}</p>` : ''}
 
     <p class="grp-hdr" role="heading" aria-level="2">${t('app.badge')}</p>
     <div class="grp">
@@ -169,7 +171,7 @@ export function buildAppForm(body, item) {
         <div id="auth-row-wrap">
           <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', !!(act.params || act.headers), t('app.authentication'))}</div>
           <div id="auth-sub" class="reveal${act.params?.length || act.headers?.length ? ' open' : ''}"><div class="reveal-in">
-            <div class="row kv-hdr"><span class="rl">${t('app.addToUrl')} <span class="rl-sub">(query params)</span></span></div>
+            <div class="row kv-hdr"><span class="rl">${t('app.addToUrl')} <span class="rl-sub">${t('app.queryParams')}</span></span></div>
             <div id="bpar-rows" class="kv-rows"></div>
             <div class="row kv-hdr"><span class="rl">${t('app.addToHeader')}</span></div>
             <div id="bhdr-rows" class="kv-rows"></div>
@@ -229,8 +231,8 @@ export function buildAppForm(body, item) {
   });
   state._bpar = normKvRows(act.params);
   state._bhdr = normKvRows(act.headers);
-  renderKvRows(el('bpar-rows'), state._bpar, 'key=value');
-  renderKvRows(el('bhdr-rows'), state._bhdr, 'X-Api-Key=…');
+  renderKvRows(el('bpar-rows'), state._bpar, t('app.value'));
+  renderKvRows(el('bhdr-rows'), state._bhdr, '…');
 
   wireIcon();
   if (state.siurl) updPrev();
@@ -366,7 +368,7 @@ function renderActLabels(host) {
     hdr.dataset.idx = String(i);
     setHtml(
       hdr,
-      html`<span class="albl-grip" aria-hidden="true">${raw(GRIP_SVG)}</span><span role="heading" aria-level="3">${t('app.labelN', { n: i + 1 })}</span>`,
+      html`<span class="albl-grip" aria-hidden="true">${raw(GRIP_SVG)}</span><span role="heading" aria-level="3">${t('app.labelN', { n: formatNumber(i + 1) })}</span>`,
     );
     const ctl = document.createElement('span');
     ctl.className = 'albl-ctl';
@@ -727,7 +729,7 @@ function wireIcon() {
         const form = new FormData();
         form.append('icon', file, file.name);
         const r = await fetch('/api/icons/upload', { method: 'POST', body: form });
-        if (!r.ok) throw new Error(await responseError(r));
+        if (!r.ok) throw await responseError(r);
         const d = await r.json();
         await loadLocalIcons();
         state.siurl = d.filename;
@@ -736,9 +738,9 @@ function wireIcon() {
         renderIconVariants([]);
         ipClose();
         updPrev();
-        toast(t('toast.uploaded', { name: d.filename }));
+        toast(t('toast.uploaded', { name: isolate(d.filename) }));
       } catch (e) {
-        toast(t('toast.uploadFailed', { err: e.message }), 'err');
+        toast(t('toast.uploadFailed', { err: errorText(e) }), 'err');
       } finally {
         upBtn.textContent = origText;
         upInput.value = '';
@@ -840,7 +842,7 @@ function showIPRes(list, rawInput) {
 function setInitialGlyph(p) {
   const l = inpById('f-lbl')?.value || '?';
   const s = document.createElement('span');
-  s.textContent = (l[0] || '?').toUpperCase();
+  s.textContent = initial(l);
   p.replaceChildren(s);
 }
 /* Several attempts are in flight at once and the half-typed ones finish last.
@@ -887,11 +889,10 @@ async function testPing() {
   const skipTls = inpById('f-skip-tls')?.checked || false;
   try {
     const r = await apiPost('/api/ping', { url, skipTls });
-    st.textContent = r.ok
-      ? '✓ ' + t('app.reachable', { status: r.status })
-      : '✗ ' + t('app.httpError', { status: r.status });
+    if (r.ok) st.textContent = '✓ ' + t('app.reachable', { status: r.status });
+    else st.textContent = '✗ ' + (r.status ? t('app.httpError', { status: r.status }) : errorText(r));
   } catch (e) {
-    st.textContent = '✗ ' + e.message;
+    st.textContent = '✗ ' + errorText(e);
   }
 }
 
@@ -941,12 +942,10 @@ function renderKvRows(host, rows, ph) {
   host.appendChild(add);
 }
 
-const defaultValuePlaceholder = ph => ph.split('=')[1] || 'value';
-
 function kvRowEl(host, rows, row, ph) {
   const rowEl = document.createElement('div');
   rowEl.className = 'kv-row';
-  const valPh = row.secret && row.valueSet && row.value === '' ? 'Configured' : defaultValuePlaceholder(ph);
+  const valPh = row.secret && row.valueSet && row.value === '' ? t('common.configured') : ph;
   setHtml(
     rowEl,
     html`
@@ -975,7 +974,7 @@ function kvRowEl(host, rows, row, ph) {
     if (clearsStoredSecret(row, cEl.checked)) {
       row.valueSet = false;
       vEl.value = '';
-      vEl.placeholder = defaultValuePlaceholder(ph);
+      vEl.placeholder = ph;
     }
   };
   dEl.onclick = () => {

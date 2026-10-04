@@ -1,6 +1,7 @@
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
-import { mk, clr, el, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=9a9bfb54';
-import { t } from '/js/i18n.js?v=1f1ea9c1';
+import { mk, clr, el, initial, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=fdc0243f';
+import { t } from '/js/i18n.js?v=5579776a';
+import { formatNumber } from '/js/format-number.js?v=349a741d';
 
 /* Attached to the window so a re-open can undo the previous one. */
 const _w = /** @type {any} */ (window);
@@ -112,14 +113,14 @@ export function initSpotlight({
           if (step < srcs.length) img.src = srcs[step];
           else {
             ic.replaceChildren();
-            ic.textContent = (app.label || app.id)[0].toUpperCase();
+            ic.textContent = initial(app.label || app.id);
             ic.style.color = '#fff';
             ic.style.fontWeight = '600';
           }
         };
         ic.appendChild(img);
       } else {
-        ic.textContent = (app.label || app.id)[0].toUpperCase();
+        ic.textContent = initial(app.label || app.id);
         ic.style.color = '#fff';
         ic.style.fontWeight = '600';
       }
@@ -145,7 +146,8 @@ export function initSpotlight({
     });
     res.appendChild(f);
     fluidHoverClear(res);
-    if (live) live.textContent = cur.length + ' ' + (cur.length === 1 ? t('home.result') : t('home.results'));
+    if (live)
+      live.textContent = formatNumber(cur.length) + ' ' + (cur.length === 1 ? t('home.result') : t('home.results'));
     inp.setAttribute('aria-expanded', 'true');
     inp.setAttribute('aria-activedescendant', cur.length ? 'sr-opt-0' : '');
   };

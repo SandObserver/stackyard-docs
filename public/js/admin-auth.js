@@ -1,13 +1,16 @@
-import { apiGet, apiPost } from '/js/admin-shared.js?v=f5551857';
-import { t } from '/js/i18n.js?v=1f1ea9c1';
+import { apiGet, apiPost } from '/js/admin-shared.js?v=81ab2f92';
+import { initI18n, t } from '/js/i18n.js?v=5579776a';
+import { loginErrorKey } from '/js/admin-error.js?v=61f73e4d';
 import { pwStrength } from '/js/password-strength.js?v=389e0ed0';
-import { el, inp as inpById, qa } from '/js/utils.js?v=9a9bfb54';
-import { blockingScreenFor } from '/js/config-recovery.js?v=706fc9a7';
+import { el, inp as inpById, qa } from '/js/utils.js?v=fdc0243f';
+import { blockingScreenFor } from '/js/config-recovery.js?v=dbe542e1';
 
 export async function checkAuth(onLogin) {
   try {
     const d = await apiGet('/api/auth/check');
     if (!d.enabled || d.authenticated) return true;
+    await initI18n(d.language || 'en');
+    document.title = t('nav.pageTitle');
     showLoginScreen(onLogin);
     return false;
   } catch (e) {
@@ -67,7 +70,7 @@ function showLoginScreen(onLogin) {
       onLogin?.();
     } catch (e) {
       if (err) {
-        err.textContent = e.message || t('login.incorrect');
+        err.textContent = t(loginErrorKey(e));
         err.style.display = 'block';
       }
       if (pw) {

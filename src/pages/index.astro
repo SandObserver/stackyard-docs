@@ -447,7 +447,7 @@ if (!reduced) {
     *,*::before,*::after{box-sizing:border-box}
     body{margin:0;background:var(--bg-primary);font-family:var(--font-ui);
       -webkit-font-smoothing:antialiased}
-    a{color:var(--accent);text-decoration:none} a:hover{color:var(--accent-strong)}
+    a{color:var(--accent);text-decoration:none;transition:color .2s ease} a:hover{color:var(--accent-strong)}
     .wrap{width:100%;max-width:1160px;margin:0 auto;padding:0 40px}
 
     .nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0}
@@ -459,6 +459,7 @@ if (!reduced) {
     /* Keep the hit area. The drawn pill is 40px, below the 44px minimum. */
     .pill::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
     .pill-solid{background:var(--label-primary);color:#101012}
+    .pill-solid:hover{background:#e5e5ea;color:#101012}
     .pill-ghost{background:var(--fill);color:var(--label-primary)}
     .pill-ghost:hover{color:var(--label-primary);background:rgba(120,120,128,.42)}
 
@@ -473,6 +474,8 @@ if (!reduced) {
     .btn-accent:hover{background:var(--accent-strong);color:var(--on-accent-ink)}
     .btn-quiet{background:var(--fill);color:var(--label-primary)}
     .btn-quiet:hover{background:rgba(120,120,128,.42);color:var(--label-primary)}
+    .pill,.btn{transition:background-color .2s ease,color .2s ease,transform .15s ease}
+    .pill:active,.btn:active{transform:scale(.97)}
 
     /* Metrics come from dashboard.css: 1041px design width, six 152.67px
        columns, 25px column gap, 30px row gap, 152px tile height. */
@@ -728,6 +731,7 @@ if (!reduced) {
     /* No animation leaves the rows parked with most of the list out of reach.
        Drop the duplicate halves and let the reader scroll the strip instead. */
     @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{transition-duration:.01ms !important}
       .mrow-a,.mrow-b{animation:none !important;transform:none}
       .mdup{display:none}
       .marquee{overflow-x:auto;overflow-y:hidden;padding:14px 0;

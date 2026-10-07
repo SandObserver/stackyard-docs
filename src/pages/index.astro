@@ -355,6 +355,7 @@ const schema = {
         <a href="/docs/support/">Support</a><span>·</span>
         <a href="/docs/accessibility/">Accessibility</a>
       </div>
+      <p class="more">Also by SandObserver: <a href="https://posteryard.sandobserver.com"><img src="/img/posteryard-mark-71ed4181.svg" alt="" width="15" height="18">Posteryard</a>, for clean, consistent posters in Plex, Jellyfin and Emby.</p>
     </div>
     <div class="foot-r">
       {version && (
@@ -627,6 +628,10 @@ if (!reduced) {
     .foot-links a{font-size:14px;color:var(--a11y-dim);display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
     .foot-links a:hover{color:var(--label-primary)}
     .foot-links span{color:rgba(255,255,255,.5);font-size:13px}
+    .more{margin:0;font-size:14px;color:var(--a11y-dim)}
+    .more a{display:inline-flex;align-items:center;gap:6px;vertical-align:bottom;color:var(--label-primary)}
+    .more a:hover{color:var(--accent)}
+    .more img{display:block;width:15px;height:18px}
     .foot-r{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
     .verbadge{display:flex;border-radius:5px;overflow:hidden;font-size:12px;font-weight:600}
     .verbadge span{padding:4px 8px;background:var(--bg-elevated-tertiary);color:var(--label-secondary)}

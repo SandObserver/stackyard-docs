@@ -800,33 +800,33 @@ if (!reduced) {
       transform:translate(0px,-0.335px) scale(0.8981);transform-origin:top left}
 
     .features{background:var(--bg-secondary);padding:4px 0 8px}
-    .feature{display:flex;align-items:center;gap:96px;padding:64px 0}
+    .feature{display:flex;align-items:center;gap:64px;padding:34px 0}
     .feature + .feature{border-top:1px solid var(--separator-opaque)}
-    .ftext{width:460px;flex-shrink:0}
-    .ftext h2{margin:0 0 14px;font-family:var(--font-display);font-size:30px;font-weight:700;
-      letter-spacing:-0.025em;color:var(--label-primary)}
-    .ftext p{margin:0;font-size:17px;line-height:1.55;color:var(--a11y-dim);text-wrap:pretty}
+    .ftext{width:440px;flex-shrink:0}
+    .ftext h2{margin:0 0 10px;font-family:var(--font-display);font-size:28px;font-weight:700;
+      letter-spacing:-0.022em;color:var(--label-primary);text-wrap:balance}
+    .ftext p{margin:0;max-width:42ch;font-size:16.5px;line-height:1.55;color:var(--a11y-dim);text-wrap:pretty}
     .fvis{flex:0 0 440px;display:flex;align-items:center;min-width:0}
 
-    .bdemo{display:grid;grid-template-columns:repeat(2,136px);gap:26px 16px;justify-content:center;width:100%}
+    .bdemo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%}
     /* The second pill sits behind and to the side, the way the tile draws it
        when a badge has more to report. The stack keeps its outer edge where a
        single badge sits, so the front pill shifts inward instead. */
     .badge-peek{z-index:2;box-shadow:0 0 0 1.5px rgba(0,0,0,.55)}
     .badge-peek + .badge{right:-3px}
-    .bdemo-item{display:flex;flex-direction:column;align-items:center;gap:12px;width:136px;text-align:center}
+    .bdemo-item{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
     .banchor{width:60px;height:60px;border-radius:16px}
     .bmeta{display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center}
     .bcap{font-size:14px;font-weight:600;color:var(--label-primary)}
-    .bsrc{font-size:12.5px;line-height:1.32;color:var(--a11y-dim);text-wrap:balance}
+    .bsrc{font-size:12px;line-height:1.32;color:var(--a11y-dim);text-wrap:balance}
 
-    .marquee{display:block;width:100%;overflow:hidden;padding:40px 0;
+    .marquee{display:block;width:100%;overflow:hidden;padding:34px 0;
       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
     /* Keep the trailing margin. Using gap breaks the -50% marquee loop. */
     .mrow{display:flex;width:max-content;gap:0;align-items:center}
     .mdup{display:contents}
-    .mrow + .mrow{margin-top:34px}
+    .mrow + .mrow{margin-top:24px}
     .mrow-a{animation:drift-a 58s linear infinite}
     .mrow-b{animation:drift-b 66s linear infinite}
     @keyframes drift-a{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -846,13 +846,13 @@ if (!reduced) {
     .mrow-a .mname{top:auto;bottom:calc(100% + 3px);transform:translate(-50%,-4px)}
     .mrow-a .mitem:hover .mname{transform:translate(-50%,0)}
 
-    .admin{width:100%;background:#000;border-radius:26px;overflow:hidden;padding:0 0 8px}
-    .achips{display:flex;gap:6px;padding:16px 16px 12px}
+    .admin{width:100%;background:#000;border-radius:22px;overflow:hidden;padding:0 0 8px}
+    .achips{display:flex;gap:6px;padding:12px 14px 10px}
     .achip{height:32px;padding:0 14px;border-radius:999px;display:flex;align-items:center;
       font-size:13px;font-weight:500;color:#C7C7CC;background:var(--fill)}
     .achip.on{background:var(--accent);color:var(--on-accent-ink);font-weight:600}
     .arows{margin:0 8px;background:var(--bg-secondary);border-radius:22px;padding:0 12px}
-    .arow{display:flex;align-items:center;gap:11px;height:58px;padding:0 4px}
+    .arow{display:flex;align-items:center;gap:11px;height:50px;padding:0 4px}
     .arow + .arow{border-top:1px solid var(--separator-opaque)}
     .ahandle{width:13px;height:13px;flex-shrink:0;color:rgba(235,235,245,.34)}
     .aicon{width:38px;height:38px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
@@ -975,9 +975,10 @@ if (!reduced) {
     @media (max-width:1180px){
       .wrap{padding:0 28px}
       .hero h1{font-size:60px}
-      .feature{gap:56px}
+      .feature{gap:44px}
       .ftext{width:420px}
       .fvis{flex:0 0 380px}
+      .bsrc{display:none}
     }
     @media (max-width:900px){
       .hero{padding:36px 0 32px}
@@ -986,11 +987,12 @@ if (!reduced) {
       .btn{height:46px;padding:0 22px;font-size:15px}
       .device{padding:0 14px}
       .screen-inner{--gs:.80;height:294px}
-      .feature{flex-direction:column;align-items:flex-start;gap:30px;padding:46px 0}
+      .feature{flex-direction:column;align-items:flex-start;gap:20px;padding:28px 0}
       .ftext{width:100%;max-width:560px}
       .ftext h2{font-size:25px}
       .ftext p{font-size:16px}
       .fvis{flex:none;width:100%;max-width:460px}
+      .bsrc{display:block}
     }
     /* The app treats this width as a phone, so the demo shows the phone home
        screen: four columns, a small widget over a 2x2 block. Sizes derive from
@@ -1040,15 +1042,16 @@ if (!reduced) {
       .bezel{border-radius:18px 18px 0 0;padding:8px 8px 0}
       .screen{border-radius:12px 12px 0 0}
       .features{padding:0}
-      .feature{padding:34px 0;gap:22px}
-      .ftext h2{font-size:22px}
+      .feature{padding:22px 0;gap:16px}
+      .ftext h2{font-size:21px}
       .ftext p{font-size:15.5px}
       .fvis{max-width:100%}
-      .bdemo{grid-template-columns:1fr;gap:16px}
-      .bdemo-item{flex-direction:row;align-items:center;gap:14px;width:100%;text-align:left}
-      .bmeta{align-items:flex-start;text-align:left}
+      .bdemo{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
+      .bdemo-item{gap:8px}
+      .bsrc{display:none}
       .banchor{width:54px;height:54px;border-radius:12px}
-      .marquee{padding:44px 0}
+      .marquee{padding:30px 0}
+      .mrow + .mrow{margin-top:16px}
       .mname{font-size:11px;padding:4px 8px;border-radius:7px}
       .mitem{width:38px;height:38px;margin-right:26px}
       .mitem img,.mitem svg{width:32px;height:32px}

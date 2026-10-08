@@ -1,7 +1,32 @@
 ---
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { iconSprite } from '../lib/icon-set';
 import { readAppVersion } from '../lib/repo';
 
 const version = readAppVersion();
+
+const guide = readFileSync(resolve(process.cwd(), 'src/content/docs/docs/installation/docker.mdx'), 'utf8');
+const composeBlock = guide.match(/## Compose\n+```yaml\n([\s\S]*?)\n```\n+```sh\n([\s\S]*?)\n```/);
+const runBlock = guide.match(/## docker run\n+```sh\n([\s\S]*?)\n```/);
+if (!composeBlock || !runBlock) throw new Error('docker.mdx: the Compose or docker run block moved. Update the Get started parser.');
+const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const markValues = (t: string) => esc(t)
+  .replace(/(?<=&quot;|-p )8700(?=:80)/g, '<span class="v">8700</span>')
+  .replace(/\.\/(data|icons)(?=:\/)/g, '<span class="v">./$1</span>');
+const install = {
+  compose: { fname: 'compose.yml', code: markValues(composeBlock[1]), start: esc(composeBlock[2]) },
+  run: { fname: 'Terminal', code: markValues(runBlock[1]), start: '' },
+  unraid: { fname: 'Unraid', code: esc('Apps tab › search "Stackyard" › Install'), start: '' },
+};
+const sprite = await iconSprite(['external', 'general']);
+const iconMasks = sprite.match(/<defs>([\s\S]*?)<\/defs>/)?.[1] ?? '';
+const stepIcon = (id: string) => {
+  const body = sprite.match(new RegExp(`<symbol id="sy-solid-${id}" viewBox="0 0 24 24">([\\s\\S]*?)</symbol>`))?.[1] ?? '';
+  return `<svg class="si" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${body}</svg>`;
+};
+const icons = { external: stepIcon('external'), general: stepIcon('general') };
+const installJson = JSON.stringify({ install, icons }).replace(/</g, '\\u003c');
 
 const title = 'Stackyard: a homelab dashboard you\'ll actually use';
 const description =
@@ -337,12 +362,182 @@ const schema = {
   </div>
 </section>
 
-<section class="cta">
-  <div class="cta-in">
-    <div class="eyebrow">Your homelab deserves better</div>
-    <h2>Set it up in minutes. Check it every day.</h2>
-    <a class="btn btn-accent" href="/docs/">Start building your dashboard</a>
+<section class="gs-band" id="get-started" aria-labelledby="gs-title">
+  <svg class="sy-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs set:html={iconMasks} /><symbol id="i-chevrons" viewBox="0 0 24 24"><path d="M8 9l4-4 4 4M8 15l4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol></svg>
+  <div class="wrap setup-grid pop-root">
+    <div class="setup-side">
+      <h2 id="gs-title">Get started</h2>
+      <p class="lede">Free and open source. Runs in Docker on 64-bit Intel, AMD and ARM.</p>
+    </div>
+    <div class="gs" id="gs">
+      <p class="sentence">I run containers with <button class="pop" type="button" aria-haspopup="listbox" aria-expanded="false" data-k="method" aria-label="Install method: Docker Compose"><span>Docker Compose</span><svg aria-hidden="true"><use href="#i-chevrons"/></svg></button>.</p>
+      <div class="code" id="g-code"><div class="code-bar"><span class="fname">{install.compose.fname}</span><button type="button" class="copy" aria-label="Copy the install file">Copy</button></div><pre tabindex="0" role="region" aria-label="Install file"><code class="out" set:html={install.compose.code} /></pre></div>
+      <div class="code" id="g-start"><div class="code-bar"><span>Start it</span><button type="button" class="copy" aria-label="Copy the start command">Copy</button></div><pre tabindex="0" role="region" aria-label="Start command"><code class="out" set:html={install.compose.start} /></pre></div>
+      <ul class="ilist" id="g-next">
+        <li><div class="irow"><Fragment set:html={icons.external} /><span class="imain"><span class="iname">Open <code>http://&lt;server-ip&gt;:8700</code></span><span class="itext">You can set a password on the first visit, or skip it.</span></span></div></li>
+        <li><div class="irow"><Fragment set:html={icons.general} /><span class="imain"><span class="iname">Set it up in Settings</span><span class="itext">Add apps, folders, badges and widgets, or import a backup or another dashboard's config.</span></span></div></li>
+      </ul>
+      <p class="list-foot">Variables, reverse proxies and backups: <a href="/docs/installation/docker/">Full setup guide<span aria-hidden="true"> ›</span></a></p>
+    </div>
   </div>
+  <p class="sr-only" id="gs-live" aria-live="polite"></p>
+  <script type="application/json" id="install-data" is:inline set:html={installJson} />
+  <script is:inline>
+{
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const { install, icons } = JSON.parse($('#install-data').textContent);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const live = $('#gs-live');
+  const say = (text) => { live.textContent = ''; requestAnimationFrame(() => (live.textContent = text)); };
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const methods = { compose: 'Docker Compose', run: 'docker run', unraid: 'Unraid' };
+  const row = (icon, name, text) => `<li><div class="irow">${icons[icon]}<span class="imain"><span class="iname">${name}</span><span class="itext">${text}</span></span></div></li>`;
+  const next = (m) =>
+    row('external', m === 'unraid' ? 'Click WebUI in the Docker tab' : 'Open <code>http://&lt;server-ip&gt;:8700</code>', 'You can set a password on the first visit, or skip it.')
+    + row('general', 'Set it up in Settings', "Add apps, folders, badges and widgets, or import a backup or another dashboard's config.");
+
+  function morph(el, mutate, animate = true) {
+    const from = el.offsetHeight;
+    mutate();
+    if (!animate || reduce.matches) return;
+    const to = el.offsetHeight;
+    if (from === to) return;
+    el.classList.add('morphing');
+    el.animate({ height: [`${from}px`, `${to}px`] }, { duration: Math.min(480, 260 + Math.abs(to - from) / 4), easing: 'cubic-bezier(0.32, 0.72, 0, 1)' })
+      .finished.finally(() => el.classList.remove('morphing'));
+  }
+
+  let openMenu = null;
+  function closeMenu(refocus) {
+    if (!openMenu) return;
+    const { list, btn } = openMenu;
+    list.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.removeAttribute('aria-controls');
+    setTimeout(() => list.remove(), 160);
+    if (refocus) btn.focus({ preventScroll: true });
+    openMenu = null;
+  }
+  function placePill(list, li) {
+    const pill = $('.mp', list);
+    if (!li) { pill.classList.remove('on'); return; }
+    pill.style.width = `${li.offsetWidth}px`;
+    pill.style.height = `${li.offsetHeight}px`;
+    pill.style.transform = `translate3d(${li.offsetLeft}px, ${li.offsetTop}px, 0)`;
+    if (!pill.classList.contains('on')) { pill.getBoundingClientRect(); pill.classList.add('on'); }
+  }
+  function showMenu(btn, { label, options, selected, onPick }) {
+    if (openMenu?.btn === btn) { closeMenu(true); return; }
+    closeMenu();
+    const root = btn.closest('.pop-root');
+    const list = document.createElement('div');
+    list.className = 'menu';
+    list.id = 'gs-menu';
+    list.setAttribute('role', 'listbox');
+    list.setAttribute('aria-label', label);
+    list.innerHTML = '<div class="mp" aria-hidden="true"></div>' + options.map((o) =>
+      `<div role="option" tabindex="-1" data-v="${esc(o.v)}" aria-selected="${o.v === selected}">${esc(o.label)}</div>`).join('');
+    root.append(list);
+    const opts = $$('[role=option]', list);
+    const rr = root.getBoundingClientRect(), br = btn.getBoundingClientRect();
+    const left = Math.min(Math.max(8, br.left - rr.left), rr.width - list.offsetWidth - 8);
+    list.style.left = `${left}px`;
+    list.style.top = `${br.bottom - rr.top + 6}px`;
+    list.style.transformOrigin = `${Math.max(16, Math.min(list.offsetWidth - 16, br.left - rr.left - left + br.width / 2))}px -6px`;
+    btn.setAttribute('aria-expanded', 'true');
+    btn.setAttribute('aria-controls', list.id);
+    requestAnimationFrame(() => list.classList.add('open'));
+    openMenu = { list, btn };
+    let active = Math.max(0, opts.findIndex((o) => o.dataset.v === selected));
+    const setActive = (i) => { active = (i + opts.length) % opts.length; opts[active].focus({ preventScroll: true }); placePill(list, opts[active]); };
+    const choose = (o) => { closeMenu(true); onPick(o.dataset.v); };
+    opts.forEach((o) => {
+      o.addEventListener('pointerenter', () => placePill(list, o));
+      o.addEventListener('click', () => choose(o));
+    });
+    list.addEventListener('pointerleave', () => placePill(list, document.activeElement?.closest?.('.menu [role=option]')));
+    list.addEventListener('focusout', (e) => { if (!list.contains(e.relatedTarget) && e.relatedTarget !== btn) closeMenu(); });
+    let typed = '', typedAt = 0;
+    list.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+      else if (e.key === 'Home') { e.preventDefault(); setActive(0); }
+      else if (e.key === 'End') { e.preventDefault(); setActive(opts.length - 1); }
+      else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(opts[active]); }
+      else if (e.key === 'Escape') { e.preventDefault(); closeMenu(true); }
+      else if (e.key === 'Tab') closeMenu(true);
+      else if (e.key.length === 1) {
+        const now = Date.now();
+        typed = now - typedAt > 800 ? e.key.toLowerCase() : typed + e.key.toLowerCase();
+        typedAt = now;
+        const hit = opts.findIndex((o) => o.textContent.toLowerCase().startsWith(typed));
+        if (hit >= 0) setActive(hit);
+      }
+    });
+    requestAnimationFrame(() => setActive(active));
+  }
+  document.addEventListener('pointerdown', (e) => { if (openMenu && !openMenu.list.contains(e.target) && !openMenu.btn.contains(e.target)) closeMenu(); });
+  addEventListener('resize', () => closeMenu());
+
+  const saved = store.get('stackyard-install');
+  let method = methods[saved?.method] ? saved.method : 'compose';
+  const plain = (html) => { const t = document.createElement('template'); t.innerHTML = html; return t.content.textContent; };
+  const highlight = (oldText, html) => {
+    const old = new Set(oldText.split('\n'));
+    return html.split('\n').map((line) => (old.has(plain(line)) ? line : `<span class="chg">${line}</span>`)).join('\n');
+  };
+  const pop = $('#gs .pop');
+  function draw(animate) {
+    const view = install[method];
+    const code = $('#g-code .out'), oldText = code.textContent, sameFile = $('#g-code .fname').textContent === view.fname;
+    morph($('#gs'), () => {
+      $('#g-code .fname').textContent = view.fname;
+      code.innerHTML = animate && sameFile ? highlight(oldText, view.code) : view.code;
+      $('#g-start').hidden = !view.start;
+      $('#g-start .out').innerHTML = view.start;
+      $('#g-next').innerHTML = next(method);
+      $('span', pop).textContent = methods[method];
+      pop.setAttribute('aria-label', `Install method: ${methods[method]}`);
+    }, animate);
+    if (animate) say(`Install steps now show ${methods[method]}.`);
+  }
+  const open = () => showMenu(pop, {
+    label: 'Install method',
+    options: Object.entries(methods).map(([v, label]) => ({ v, label })),
+    selected: method,
+    onPick: (v) => { if (v === method) return; method = v; store.set('stackyard-install', { method }); draw(true); },
+  });
+  pop.addEventListener('click', (e) => { e.stopPropagation(); open(); });
+  pop.addEventListener('keydown', (e) => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(); } });
+  if (method !== 'compose') draw(false);
+
+  async function copyText(code) {
+    try { await navigator.clipboard.writeText(code.textContent); }
+    catch {
+      getSelection().selectAllChildren(code);
+      const copied = document.execCommand('copy');
+      getSelection().removeAllRanges();
+      if (!copied) throw new Error('copy refused');
+    }
+  }
+  for (const button of $$('#gs .copy')) {
+    button.addEventListener('click', async () => {
+      const code = button.closest('.code').querySelector('code');
+      try {
+        await copyText(code);
+        button.textContent = 'Copied';
+        live.textContent = `Copied ${button.getAttribute('aria-label').replace(/^Copy /, '')}`;
+        setTimeout(() => { button.textContent = 'Copy'; live.textContent = ''; }, 1500);
+      } catch { getSelection().selectAllChildren(code); }
+    });
+  }
+}
+  </script>
 </section>
 
 <footer class="footer">
@@ -638,12 +833,83 @@ if (!reduced) {
       display:flex;align-items:center;gap:7px;font-size:15px;font-weight:500;color:#F2F2F7}
     .lang b{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:.03em}
 
-    .cta{background:var(--bg-elevated-tertiary);padding:58px 0}
-    .cta-in{text-align:center;max-width:720px;margin:0 auto;padding:0 40px}
-    .eyebrow{font-size:13px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.62)}
-    .cta h2{margin:14px 0 0;font-family:var(--font-display);font-size:36px;line-height:1.14;
-      letter-spacing:-0.028em;font-weight:700;color:var(--label-primary);text-wrap:balance}
-    .cta .btn{margin-top:28px}
+    .gs-band{--font-mono:ui-monospace,SFMono-Regular,Menlo,monospace;--ease:cubic-bezier(.32,.72,0,1);--pill-ease:cubic-bezier(.22,1,.36,1);
+      background:var(--bg-primary);padding:72px 0}
+    .gs-band .sy-sprite{position:absolute}
+    .gs .si .sy-i{fill:currentColor}
+    .gs .si .sy-i3{fill:currentColor;fill-opacity:.4}
+    .gs .si .sy-a{fill:var(--accent)}
+    .gs .si .sy-is{stroke:currentColor}
+    .gs .si .sy-as{stroke:var(--accent)}
+    .setup-grid{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:40px}
+    .pop-root{position:relative}
+    .setup-side{align-self:start;position:sticky;top:24px}
+    .setup-side h2{margin:0 0 14px;font-family:var(--font-display);font-size:36px;font-weight:700;letter-spacing:-0.025em;color:var(--label-primary)}
+    .setup-side .lede{margin:0;font-size:17px;line-height:1.55;color:var(--a11y-dim);max-width:60ch}
+    .gs{display:grid;gap:16px;align-content:start;min-width:0;max-width:860px}
+    .gs.morphing{overflow:hidden}
+    .sentence{margin:0 0 4px;font-size:22px;line-height:2.1;font-weight:600;letter-spacing:-0.02em;color:var(--label-primary);text-wrap:balance}
+    .pop{position:relative;display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;min-height:40px;border:0;margin:0 1px;
+      padding:0 10px 0 16px;border-radius:20px;background:rgba(118,118,128,.24);color:var(--accent);font:inherit;letter-spacing:inherit;
+      cursor:pointer;transition:background .15s ease}
+    .pop::after{content:'';position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
+    .pop:hover,.pop[aria-expanded="true"]{background:rgba(120,120,128,.36)}
+    .pop svg{width:20px;height:20px;opacity:.85;flex-shrink:0}
+    .pop:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    .gs .code{border:1px solid var(--separator-opaque);border-radius:12px;background:#0d1117;overflow:hidden}
+    .gs .code-bar{display:flex;justify-content:space-between;align-items:center;padding:4px 6px 4px 16px;border-bottom:1px solid var(--separator-opaque);
+      font-family:var(--font-mono);font-size:12.5px;color:var(--a11y-dim)}
+    .gs .copy{position:relative;height:30px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--label-primary);
+      font:600 13px var(--font-ui);cursor:pointer;transition:background-color .2s ease,transform .15s ease}
+    .gs .copy::after{content:'';position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
+    .gs .copy:hover{background:var(--fill)}
+    .gs .copy:active{transform:scale(.97)}
+    .gs .copy:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+    .gs pre{margin:0;padding:10px 14px;overflow-x:auto}
+    .gs pre:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+    .gs pre code{font-family:var(--font-mono);font-size:12.5px;line-height:1.4;color:#e6edf3}
+    .gs .code .v{color:var(--accent)}
+    .gs .code .chg{display:inline-block;min-width:calc(100% + 28px);margin-inline:-14px;padding-inline:14px;animation:gs-chg 2.4s var(--ease) forwards}
+    @keyframes gs-chg{0%,45%{background:rgba(0,210,224,.16);box-shadow:inset 2px 0 0 var(--accent)}100%{background:transparent;box-shadow:inset 2px 0 0 transparent}}
+    .gs-band .menu{position:absolute;z-index:30;margin:0;padding:10px 0;min-width:230px;max-width:calc(100% - 16px);max-height:360px;overflow-y:auto;
+      overscroll-behavior:contain;background:rgba(30,30,32,.72);-webkit-backdrop-filter:blur(32px) saturate(180%);backdrop-filter:blur(32px) saturate(180%);
+      border:.5px solid rgba(255,255,255,.12);border-radius:34px;box-shadow:0 8px 48px rgba(0,0,0,.45);opacity:0;transform:scale(.9);pointer-events:none;
+      transition:opacity .14s ease,transform .14s ease}
+    .gs-band .menu.open{opacity:1;transform:none;pointer-events:auto;transition:opacity .2s ease,transform .38s var(--ease)}
+    .gs-band .menu [role="option"]{position:relative;margin-inline:8px;border-radius:20px;padding-block:10px;padding-inline:6px 16px;min-height:40px;
+      display:flex;align-items:center;gap:8px;font-size:17px;line-height:1.29;letter-spacing:-0.025em;color:#f5f5f5;cursor:pointer;outline:none}
+    .gs-band .menu [role="option"]::before{content:'';width:24px;flex-shrink:0;text-align:center;font-weight:600}
+    .gs-band .menu [role="option"][aria-selected="true"]::before{content:'\2713'}
+    .gs-band .menu .mp{position:absolute;top:0;left:0;border-radius:20px;background:rgba(255,255,255,.1);pointer-events:none;opacity:0;transition:opacity .12s ease}
+    .gs-band .menu .mp.on{opacity:1;transition:opacity .12s ease,transform .19s var(--pill-ease),width .19s var(--pill-ease),height .19s var(--pill-ease)}
+    .gs .ilist{margin:0;padding:0;list-style:none;background:var(--bg-secondary);border-radius:18px}
+    .gs .ilist>li{position:relative}
+    .gs .ilist>li+li::before{content:'';position:absolute;top:0;inset-inline:52px 0;height:1px;background:var(--separator);z-index:1}
+    .gs .irow{display:flex;align-items:flex-start;gap:12px;min-height:52px;padding:10px 16px}
+    .gs .imain{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+    .gs .iname{font-size:15px;line-height:1.33;font-weight:500;color:var(--label-primary)}
+    .gs .itext{font-size:13.5px;line-height:1.45;color:var(--a11y-dim)}
+    .gs .iname code{font-family:var(--font-mono);font-size:.88em;background:var(--bg-elevated-secondary);padding:.12em .4em;border-radius:6px;color:var(--label-primary)}
+    .gs .si{flex-shrink:0;width:24px;height:24px;margin-top:1px;color:var(--a11y-dim)}
+    .gs .list-foot{margin:-8px 0 0;padding-inline:16px;font-size:13px;line-height:1.38;color:var(--a11y-dim)}
+    .gs .list-foot a{font-weight:600}
+    .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
+    @media (prefers-reduced-transparency: reduce){.gs-band .menu{background:var(--bg-elevated-secondary);-webkit-backdrop-filter:none;backdrop-filter:none}}
+    @media (prefers-reduced-motion: reduce){
+      .gs-band .menu,.gs-band .menu.open{transform:none !important}
+      .gs .code .chg{animation:none;background:rgba(0,210,224,.16)}
+    }
+    @media (max-width:900px){
+      .gs-band{padding:52px 0}
+      .setup-grid{grid-template-columns:minmax(0,1fr);gap:24px}
+      .setup-side{position:static}
+      .setup-side h2{font-size:30px}
+    }
+    @media (max-width:600px){
+      .setup-side h2{font-size:26px}
+      .sentence{font-size:20px}
+      .gs pre code{font-size:12px}
+    }
 
     .footer{background:var(--bg-primary);padding:40px 0 48px}
     .foot-in{display:flex;align-items:flex-start;justify-content:space-between;gap:40px}
@@ -682,9 +948,6 @@ if (!reduced) {
       .ftext h2{font-size:25px}
       .ftext p{font-size:16px}
       .fvis{flex:none;width:100%;max-width:460px}
-      .cta{padding:48px 0}
-      .cta h2{font-size:30px}
-      .cta-in{padding:0 28px}
     }
     /* The app treats this width as a phone, so the demo shows the phone home
        screen: four columns, a small widget over a 2x2 block. Sizes derive from
@@ -750,9 +1013,6 @@ if (!reduced) {
       .aname{font-size:13.5px}
       .apill{padding:0 6px;font-size:10.5px}
       .lang{height:33px;padding:0 13px;font-size:13px}
-      .cta{padding:40px 0}
-      .cta h2{font-size:25px}
-      .eyebrow{font-size:11.5px;letter-spacing:.11em}
       .footer{padding:30px 0 36px}
       .foot-in{flex-direction:column;align-items:flex-start;gap:22px}
       .foot-r{align-items:flex-start}

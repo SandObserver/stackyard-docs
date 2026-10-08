@@ -69,7 +69,7 @@ const schema = {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#0d1117" />
+    <meta name="theme-color" content="#000000" />
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -95,24 +95,25 @@ const schema = {
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
-    <main id="main">
 <div class="wrap">
-  <nav class="nav">
-    <div class="brand">
+  <nav class="nav" aria-label="Main">
+    <a class="brand" href="/">
       <svg class="mark" viewBox="146.35 105.5 772.15 816.5" width="26" height="28" aria-hidden="true" focusable="false">
         <defs><clipPath id="brand-orbit"><polygon points="512,512 -3000,-1515.65 -3000,-3000 4000,-3000 4000,4000 512,4000"/></clipPath></defs>
         <g clip-path="url(#brand-orbit)"><path class="orbit" fill="#00D2E0" d="M512 105.5A406.5 406.5 0 0 1 864.04 715.25A75.5 75.5 0 0 1 733.27 639.75A255.5 255.5 0 0 0 512 256.5A75.5 75.5 0 0 1 512 105.5Z"/></g>
         <path fill="#F2F2F7" d="M551.5 443.58L264.85 278.08A79 79 0 0 0 185.85 414.92L472.5 580.42A79 79 0 0 0 551.5 443.58ZM472.5 443.58L185.85 609.08A79 79 0 0 0 264.85 745.92L551.5 580.42A79 79 0 0 0 472.5 443.58ZM433 512L433 843A79 79 0 0 0 591 843L591 512A79 79 0 0 0 433 512Z"/>
       </svg>
       <span class="name">Stackyard</span>
-    </div>
+    </a>
     <div class="nav-right">
       <a class="pill pill-solid" href="/docs/installation/docker/">Install</a>
       <a class="pill pill-ghost" href="/docs/">Documentation</a>
       <a class="pill pill-ghost" href="https://github.com/SandObserver/stackyard">GitHub</a>
     </div>
   </nav>
-
+</div>
+    <main id="main">
+<div class="wrap">
   <header class="hero">
     <h1>A homelab dashboard you'll actually use.</h1>
     <p>A calm, customizable dashboard for the services you self-host. Open source, runs in Docker, and useful without becoming another wall of data.</p>
@@ -345,6 +346,7 @@ const schema = {
   </div>
 </section>
 
+    </main>
 <footer class="footer">
   <div class="wrap foot-in">
     <div class="foot-l">
@@ -370,7 +372,6 @@ const schema = {
     </div>
   </div>
 </footer>
-    </main>
     <script is:inline>
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -424,18 +425,21 @@ if (!reduced) {
     </script>
     <script is:inline>
 {
-  const brand = document.querySelector('.nav .brand');
-  const orbit = brand.querySelector('.orbit');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  let run = null;
-  brand.addEventListener('pointerenter', (e) => {
-    if (e.pointerType === 'touch' || run || reduce.matches) return;
-    run = orbit.animate(
-      [{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
-      { duration: 1000, easing: 'cubic-bezier(.65,0,.35,1)' }
-    );
-    run.onfinish = run.oncancel = () => (run = null);
-  });
+  for (const orbit of document.querySelectorAll('a .orbit')) {
+    const link = orbit.closest('a');
+    let run = null;
+    const spin = () => {
+      if (run || reduce.matches) return;
+      run = orbit.animate(
+        [{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+        { duration: 1000, easing: 'cubic-bezier(.65,0,.35,1)' }
+      );
+      run.onfinish = run.oncancel = () => (run = null);
+    };
+    link.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') spin(); });
+    link.addEventListener('focus', () => { try { if (link.matches(':focus-visible')) spin(); } catch {} });
+  }
 }
     </script>
   </body>
@@ -476,6 +480,7 @@ if (!reduced) {
     .brand{display:flex;align-items:center}
     .brand img{width:125px;height:28px;display:block}
     .nav .brand{gap:12px;min-height:44px;color:var(--label-primary);font-size:24px;font-weight:700;letter-spacing:-0.025em}
+    .nav .brand:hover{color:var(--label-primary)}
     .nav .brand .mark{width:26.5px;height:28px;display:block;flex:none;overflow:visible}
     .nav .brand .orbit{transform-box:view-box;transform-origin:512px 512px}
     .nav-right{display:flex;align-items:center;gap:8px}

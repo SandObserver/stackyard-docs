@@ -346,29 +346,61 @@ const schema = {
 </section>
 
 <footer class="footer">
-  <div class="wrap foot-in">
-    <div class="foot-l">
-      <div class="brand">
-        <img src="/img/stackyard-wordmark-dark-4680834d.svg" alt="Stackyard" width="125" height="28">
-      </div>
-      <div class="foot-links">
-        <a href="https://github.com/SandObserver/stackyard">GitHub</a><span>·</span>
-        <a href="/docs/">Documentation</a><span>·</span>
-        <a href="https://demo.sandobserver.com" target="_blank" rel="noopener noreferrer">Demo</a><span>·</span>
-        <a href="https://github.com/SandObserver/stackyard/releases">Releases</a><span>·</span>
-        <a href="https://github.com/SandObserver/stackyard/blob/main/SECURITY.md">Security</a><span>·</span>
-        <a href="/docs/support/">Support</a><span>·</span>
-        <a href="/docs/accessibility/">Accessibility</a>
-      </div>
-      <p class="more">Also by SandObserver: <a href="https://posteryard.sandobserver.com"><img src="/img/posteryard-mark-71ed4181.svg" alt="" width="15" height="18">Posteryard</a>, for clean, consistent posters in Plex, Jellyfin and Emby.</p>
+  <div class="wrap foot">
+    <div class="foot-main">
+      <a class="foot-brand" href="/">
+        <svg viewBox="146.35 105.5 772.15 816.5" width="24" height="26" aria-hidden="true" focusable="false">
+          <defs><clipPath id="foot-orbit"><polygon points="512,512 -3000,-1515.65 -3000,-3000 4000,-3000 4000,4000 512,4000"/></clipPath></defs>
+          <g clip-path="url(#foot-orbit)"><path class="orbit" fill="#00D2E0" d="M512 105.5A406.5 406.5 0 0 1 864.04 715.25A75.5 75.5 0 0 1 733.27 639.75A255.5 255.5 0 0 0 512 256.5A75.5 75.5 0 0 1 512 105.5Z"/></g>
+          <path fill="#F2F2F7" d="M551.5 443.58L264.85 278.08A79 79 0 0 0 185.85 414.92L472.5 580.42A79 79 0 0 0 551.5 443.58ZM472.5 443.58L185.85 609.08A79 79 0 0 0 264.85 745.92L551.5 580.42A79 79 0 0 0 472.5 443.58ZM433 512L433 843A79 79 0 0 0 591 843L591 512A79 79 0 0 0 433 512Z"/>
+        </svg>
+        <span>Stackyard</span>
+      </a>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="/docs/">Documentation</a>
+        <a href="https://demo.sandobserver.com" target="_blank" rel="noopener noreferrer">Demo</a>
+        <a href="https://github.com/SandObserver/stackyard">GitHub</a>
+        <a href="/docs/changelog/">Changelog</a>
+        <a href="/docs/support/">Support</a>
+      </nav>
+      <p class="foot-legal">© {new Date().getFullYear()} SandObserver · Apache License 2.0{version && <> · <a class="verbadge" data-version={version} href="/docs/changelog/" aria-label={`Release v${version}, changelog`}>v{version}</a></>}</p>
     </div>
-    <div class="foot-r">
-      {version && (
-        <div class="verbadge" data-version={version}><span>release</span><b>v{version}</b></div>
-      )}
-      <div class="license">Apache License 2.0 · © 2026 SandObserver</div>
-    </div>
+    <dl class="credits">
+      <div>
+        <dt>Also by SandObserver</dt>
+        <dd class="credit-row">
+          <a class="sibling" href="https://posteryard.sandobserver.com">
+            <svg viewBox="282 232 478 580" width="15" height="18" aria-hidden="true" focusable="false"><line x1="352" y1="302" x2="352" y2="742" stroke="#F2F2F7" stroke-width="140" stroke-linecap="round"/><path class="flag" d="M500 292V532L712 412Z" fill="#FFD60A" stroke="#FFD60A" stroke-width="96" stroke-linejoin="round"/></svg>
+            Posteryard
+          </a>
+        </dd>
+        <dd><p class="credit-note">Clean, consistent posters for Plex, Jellyfin and Emby.</p></dd>
+      </div>
+    </dl>
   </div>
+  <script is:inline>
+{
+  const link = document.querySelector('.footer .sibling');
+  const flag = link.querySelector('.flag');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  let run = null;
+  const hoist = () => {
+    if (run || reduce.matches) return;
+    run = flag.animate([
+      { offset: 0, transform: 'translateY(0)', easing: 'cubic-bezier(0.5, 0, 0.9, 0.5)' },
+      { offset: 0.18, transform: 'translateY(212px)', easing: 'cubic-bezier(0.3, 0, 0.3, 1)' },
+      { offset: 0.36, transform: 'translateY(140px)', easing: 'ease-in-out' },
+      { offset: 0.42, transform: 'translateY(150px)', easing: 'cubic-bezier(0.3, 0, 0.3, 1)' },
+      { offset: 0.58, transform: 'translateY(70px)', easing: 'ease-in-out' },
+      { offset: 0.64, transform: 'translateY(80px)', easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
+      { offset: 1, transform: 'translateY(0)' },
+    ], 1200);
+    run.onfinish = run.oncancel = () => (run = null);
+  };
+  link.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') hoist(); });
+  link.addEventListener('focus', () => { try { if (link.matches(':focus-visible')) hoist(); } catch {} });
+}
+  </script>
 </footer>
     </main>
     <script is:inline>
@@ -474,7 +506,6 @@ if (!reduced) {
 
     .nav{display:flex;align-items:center;justify-content:space-between;padding:26px 0}
     .brand{display:flex;align-items:center}
-    .brand img{width:125px;height:28px;display:block}
     .nav .brand{gap:12px;min-height:44px;color:var(--label-primary);font-size:24px;font-weight:700;letter-spacing:-0.025em}
     .nav .brand .mark{width:26.5px;height:28px;display:block;flex:none;overflow:visible}
     .nav .brand .orbit{transform-box:view-box;transform-origin:512px 512px}
@@ -646,21 +677,28 @@ if (!reduced) {
     .cta .btn{margin-top:28px}
 
     .footer{background:var(--bg-primary);padding:40px 0 48px}
-    .foot-in{display:flex;align-items:flex-start;justify-content:space-between;gap:40px}
-    .foot-l{display:flex;flex-direction:column;gap:14px}
-    .foot-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:-10px 0}
-    .foot-links a{font-size:14px;color:var(--a11y-dim);display:inline-flex;align-items:center;min-height:44px;padding:0 2px}
+    .foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:28px 48px}
+    .foot-main{flex:1 1 320px;display:grid;gap:10px;align-content:start}
+    .foot-brand{display:inline-flex;align-items:center;justify-self:start;gap:12px;min-height:44px;color:var(--label-primary);
+      font-size:22px;font-weight:700;letter-spacing:-0.025em}
+    .foot-brand:hover{color:var(--label-primary)}
+    .foot-brand svg{width:24px;height:26px;flex:none;overflow:visible}
+    .foot-brand .orbit{transform-box:view-box;transform-origin:512px 512px}
+    .foot-links{display:flex;flex-wrap:wrap;gap:0 18px}
+    .foot-links a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--a11y-dim)}
     .foot-links a:hover{color:var(--label-primary)}
-    .foot-links span{color:rgba(255,255,255,.5);font-size:13px}
-    .more{margin:0;font-size:14px;color:var(--a11y-dim)}
-    .more a{display:inline-flex;align-items:center;gap:6px;vertical-align:bottom;color:var(--label-primary)}
-    .more a:hover{color:var(--accent)}
-    .more img{display:block;width:15px;height:18px}
-    .foot-r{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
-    .verbadge{display:flex;border-radius:5px;overflow:hidden;font-size:12px;font-weight:600}
-    .verbadge span{padding:4px 8px;background:var(--bg-elevated-tertiary);color:var(--label-secondary)}
-    .verbadge b{padding:4px 8px;background:#0072b5;color:#fff;font-weight:700}
-    .license{font-size:13px;color:rgba(255,255,255,.5)}
+    .foot-legal{margin:0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.5)}
+    .foot-legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+    .foot-legal a:hover{color:var(--label-primary)}
+    .credits{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,220px);gap:0 32px;margin:0;align-content:start}
+    .credits>div{display:grid;grid-template-rows:auto 44px auto;align-content:start;gap:2px;min-width:0}
+    .credits dt{padding-top:6px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+    .credits dd{margin:0}
+    .credit-row{display:flex;align-items:center}
+    .sibling{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:15px;font-weight:600;color:var(--label-primary)}
+    .sibling:hover{color:var(--accent)}
+    .sibling svg{width:15px;height:18px;flex:none;overflow:visible}
+    .credit-note{margin:0;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.5)}
 
 
     @media (max-width:1180px){
@@ -754,8 +792,10 @@ if (!reduced) {
       .cta h2{font-size:25px}
       .eyebrow{font-size:11.5px;letter-spacing:.11em}
       .footer{padding:30px 0 36px}
-      .foot-in{flex-direction:column;align-items:flex-start;gap:22px}
-      .foot-r{align-items:flex-start}
+      .foot{flex-direction:column;align-items:flex-start;gap:14px}
+      .foot-main{display:contents}
+      .credits{order:2;margin-top:10px;grid-auto-flow:row;grid-auto-columns:auto;gap:14px}
+      .foot-legal{order:3;margin-top:10px}
     }
 
     /* No animation leaves the rows parked with most of the list out of reach.

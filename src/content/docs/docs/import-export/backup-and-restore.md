@@ -9,7 +9,7 @@ Stackyard's whole configuration is one JSON file. <span class="sy-btn sy-btn--gh
 
 ## Export
 
-Downloads your configuration as `dashboard-apps.json`, containing apps, folders, widgets, badges, and settings. Use it as a backup, or to move an install to another machine.
+Downloads your configuration as `stackyard-config.json`, containing apps, folders, widgets, badges, and settings. Use it as a backup, or to move an install to another machine.
 
 :::caution
 Stored secrets are never included in an export. API keys, tokens and passwords must be entered again after importing.
@@ -17,7 +17,13 @@ Stored secrets are never included in an export. API keys, tokens and passwords m
 
 ## Import
 
-Reads a file produced by Export. Stackyard shows how many items will be added, updated and deleted, and asks you to confirm before writing anything. A file matching your current configuration changes nothing and says so.
+Reads a file produced by Export. Stackyard shows how many items will be added, updated and deleted, says when settings will be replaced too, and asks you to confirm before writing anything. A file matching your current configuration changes nothing and says so.
+
+An import replaces apps, folders, widgets, badges and settings. The password is never replaced. An export from an older release is upgraded as it is imported.
+
+If the file names an uploaded wallpaper that this install does not hold, the current background stays.
+
+After an import that replaces settings, reload the page before you change any settings. Until then, Settings shows the values from before the import.
 
 ## What the volumes hold
 

@@ -290,6 +290,7 @@ Messages shown in the admin, and what each one means.
 | `Wallpaper failed: <reason>` | The image was not stored. The link was unreachable, the file is not a JPEG, PNG, WebP, AVIF or GIF, or it is over 16 MB. |
 | `Set a password before turning authentication on.` | Authentication needs a password to exist first. |
 | `Some items in the folder <id> are not in the file.` | A folder in the imported config lists apps that are not in the same file. Usually a hand-edited or partly merged export. |
+| `Stackyard cannot read the list of items in the folder <id>.` | A folder in the imported config lists its contents as something other than a list of item ids. Nothing was saved. |
 | `Two items share the id <id>. Each item needs its own id.` | The imported config has two entries with the same id. Nothing was saved. |
 | `The item <id> has a link that is not allowed. Links must use http or https.` | A link in the imported config uses a scheme such as `javascript:` or `data:`. Nothing was saved. |
 | `That file is not a Stackyard export.` | The imported file is not JSON, or has no `items` list. |
@@ -301,9 +302,10 @@ Messages shown in the admin, and what each one means.
 | `Something answered there, but it is not a Docker socket proxy.` | The address answered, but not with a Docker API version. |
 | `Saving is turned off in the live demo.` | The public demo is read-only. |
 | `Nothing to import. The file matches your current config.` | The imported file is identical to what is already stored. |
+| `Settings restored. Reload the page before changing any settings.` | An import replaced settings. Settings still shows the values from before it until the page reloads. |
 | `Icon catalogues could not be reached` | No catalogue answered while searching. The field still takes a full URL or an upload. |
 | `<file> is not a gethomepage or Dashy config.` | Only those two formats are recognised. See [Import](/docs/import-export/migrating/). |
-| `<file> has too many entries to import.` | The file has more than 5,000 entries. Nothing was imported. See [Import](/docs/import-export/migrating/#what-is-skipped). |
+| `<file> has too many entries to import.` | The file has more than 5,000 entries, or its merge keys expand too far. Nothing was imported. See [Import](/docs/import-export/migrating/#what-is-skipped). |
 | `(may be out of date)` | A stale reading. The last poll failed and the previous value is shown. |
 
 ## Not actually broken

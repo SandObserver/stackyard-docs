@@ -99,7 +99,7 @@ Check that the service is reachable and the credential is still valid.
 
 ### A credential stopped working after an edit
 
-Changing where or how a credential would be sent clears the stored value. Editing a badge URL, its non-secret headers, or a non-secret field of a widget's config all count. So do turning **Allow self-signed certificate** on or off for an app, and changing the port map (`settings.server.portMap`) in the config. Unticking **Secret** on a header row clears it on the next save.
+Changing where or how a credential would be sent clears the stored value. Editing a badge URL, its non-secret headers, or a widget field that decides where the credential goes all count. Display settings such as units, colours and links do not. So do turning **Allow self-signed certificate** on or off for an app, and changing the port map (`settings.server.portMap`) in the config. Unticking **Secret** on a header row clears it on the next save.
 
 Stackyard names the items to re-enter. Enter the credential again and save.
 

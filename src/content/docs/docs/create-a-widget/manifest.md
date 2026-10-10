@@ -107,7 +107,7 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | --- | --- |
 | `text` | An inline-edit row. |
 | `number` | An inline-edit row that stores a number. |
-| `secret` | An inline-edit row for a masked value. Shows `Configured` once set. The value stays on the server. Leaving it blank keeps the stored value. |
+| `secret` | An inline-edit row for a masked value. Shows `Configured` once set. The value stays on the server. Leaving it blank keeps the stored value, unless a field that is not `cosmetic` changed. |
 | `toggle` | An on and off switch, stored as a boolean. |
 | `color` | The swatch and colour control used elsewhere in the admin. Saves `#rrggbb`. |
 | `select` | A dropdown. `"variant": "pills"` renders a radio group. With `optionsFrom` it adds a Fetch button. |
@@ -125,9 +125,11 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | `default` | The value used when none is saved. |
 | `hint` | Short help under the field. On a `group`, it shows at the bottom of the section. |
 | `optional` | When `true`, the field is not required to save. A required `secret` counts as missing only when nothing is stored. |
+| `cosmetic` | When `true`, changing the field keeps a stored `secret`. Use it only on a field that cannot change the server a secret is sent to, the account it is paired with, or a path on a user-entered server. Links, labels, colours and units qualify. A repeated key needs it on every declaration. The keys a cosmetic picker `carries` count as cosmetic too. |
 | `transient` | When `true`, the field is sent to an `optionsFrom` fetch but not saved. Use it for a search box. Top-level fields only. |
 | `carries` | For a `select` with `optionsFrom`: extra config keys this picker writes, from the chosen option's `set` block. |
 | `showIf` | Shows the field only when a sibling matches: `{ "field": "provider", "equals": "adguard" }`, or `{ "field": "provider", "in": ["adguard", "pihole"] }`. Anything else is rejected. |
+| `options` | For a `select`, `multiselect` or `picklist`: an array of `{ "value", "label" }` objects. Any other entry is rejected. |
 | `optionsFrom` | For a `select`: the data endpoint that returns the options at config time. |
 | `variant` | For a `select`: `"pills"` renders a radio group. |
 | `min`, `max` | For a `group`: the fewest and most entries. |

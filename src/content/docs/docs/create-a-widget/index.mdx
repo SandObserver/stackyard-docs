@@ -31,12 +31,12 @@ cp -r docs/widget-template ui/widgets/mywidget
   "fields": [
     { "key": "url", "type": "text", "label": "Service URL", "placeholder": "http://host:port" },
     { "key": "apiKey", "type": "secret", "label": "API key", "optional": true },
-    { "key": "showTotal", "type": "toggle", "label": "Show total", "default": true }
+    { "key": "showTotal", "type": "toggle", "label": "Show total", "default": true, "cosmetic": true }
   ]
 }
 ```
 
-`name` must match the folder. Each field becomes a row in the widget's settings. A `secret` never returns to the browser. A `toggle` that was never saved is absent from `ctx.config`, so test for `false`. See [Manifest](/docs/create-a-widget/manifest/).
+`name` must match the folder. Each field becomes a row in the widget's settings. A `secret` never returns to the browser. `cosmetic` marks a field that can change without asking for the secret again. A `toggle` that was never saved is absent from `ctx.config`, so test for `false`. See [Manifest](/docs/create-a-widget/manifest/).
 
 ## 3. Data
 

@@ -1,7 +1,7 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=a707f78e';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=df3c72ef';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=c5eecf98';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=c54047e3';
 import { recoveryShown } from '/js/config-recovery.js?v=dbe542e1';
-import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=6d020ac7';
+import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=348d1d69';
 import { resolveAdminSection } from '/js/admin-logic.js?v=fc7f0836';
 import {
   afterImport,
@@ -19,7 +19,7 @@ import {
   settingsDirty,
   showBgFields,
   showWallpaperFile,
-} from '/js/admin-settings.js?v=7fbd9499';
+} from '/js/admin-settings.js?v=08a3c4c9';
 import {
   apiGet,
   apiPost,
@@ -32,9 +32,9 @@ import {
   ShownError,
   setReauthHandler,
   toast,
-} from '/js/admin-shared.js?v=81ab2f92';
+} from '/js/admin-shared.js?v=d0ef41ba';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=b05766fe';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=ea4e9101';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
 import { formatNumber } from '/js/format-number.js?v=349a741d';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
@@ -335,6 +335,17 @@ function openModal(idx) {
     state.spaths = ex.map(e => (typeof e === 'string' ? e : e.path)).filter(Boolean);
     state.slegacySum = state.spaths.length >= 2;
   }
+  /* The save reads a summed or single-path badge's style from the first label.
+     Without this seed the stored style is lost. */
+  const custom = item?.monitoring?.activity?.custom;
+  if (!state.slabels[state.spaths[0]] && state.spaths.length && custom && typeof custom === 'object') {
+    state.slabels[state.spaths[0]] = {
+      name: '',
+      unit: typeof custom.unit === 'string' ? custom.unit : '',
+      color: typeof custom.color === 'string' && custom.color ? custom.color : 'info',
+      min: custom.min == null ? '' : String(custom.min),
+    };
+  }
 
   const isEdit = idx != null;
   const evTitle = el('ev-title');
@@ -630,9 +641,6 @@ async function doSave(orig) {
         actInt: Math.min(3600, Math.max(10, parseInt(inp('f-bint')?.value || '30', 10))),
         actParams: serializeKvRows(state._bpar),
         actHeaders: serializeKvRows(state._bhdr),
-        actColor: inp('act-col-val')?.value || '#0289ff',
-        custUnit: inp('bcust-unit')?.value?.trim() || '',
-        custMin: parseInt(inp('bcust-min')?.value || '', 10),
         staticEn: inp('static-en')?.checked || false,
         staticLabel: inp('f-static-label')?.value?.trim() || '',
         staticColor: inp('static-col-val')?.value || 'info',

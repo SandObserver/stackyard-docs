@@ -99,7 +99,7 @@ Check that the service is reachable and the credential is still valid.
 
 ### A credential stopped working after an edit
 
-Changing where a credential would be sent clears the stored value. Editing a badge URL, its non-secret headers, or a non-secret field of a widget's config all count. Unticking **Secret** on a header row clears it on the next save.
+Changing where or how a credential would be sent clears the stored value. Editing a badge URL, its non-secret headers, or a non-secret field of a widget's config all count. So do turning **Allow self-signed certificate** on or off for an app, and changing the port map (`settings.server.portMap`) in the config. Unticking **Secret** on a header row clears it on the next save.
 
 Stackyard names the items to re-enter. Enter the credential again and save.
 
@@ -271,6 +271,7 @@ Messages shown in the admin, and what each one means.
 | `This address has no API path. Enter the service's full API URL.` | The Live Activity address names a host only. Badges read a value from an API response, so the address needs the service's API path. |
 | `Connected, but this address has no API path. Enter the service's full API URL.` | The address answered, but nothing numeric was found in the response. Same cause as above. |
 | `The address answered with a redirect (HTTP <status>). Enter the address it points to.` | Redirects are not followed. Use the final address, which is often a login page when the API path is missing. |
+| `The service's answer is too large to read in full. Use an API path that returns less.` | The Live Activity response is over 4 MB, or is XML with more than 5,000 elements. Stackyard does not count a partial response. |
 | `The service answered, but nothing is at that address (HTTP <status>).` | The host answered with 404. The API path is wrong. |
 | `The service answered with an error (HTTP <status>).` | The service returned an error status. 404, 405, 407 and 5xx errors have their own messages. |
 | `The host refused the connection. Check the port.` | The host answered, but nothing listens on that port. |

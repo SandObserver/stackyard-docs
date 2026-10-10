@@ -30,7 +30,7 @@ Badge colours are Accent, Success, Warning, Danger and Info. Each is drawn for t
 
 A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response. Pick one.
 
-Tick **Secret** on a header to keep its value on the server. Poll sets how often it reads, in seconds.
+Tick **Secret** on a header to keep its value on the server. Poll sets how often it reads, in seconds. Every open dashboard shares that reading.
 
 ### More than one value
 
@@ -64,4 +64,4 @@ A folder shows the badge of the app inside it that is reporting.
 
 ## Stale values
 
-When a poll fails, the last value stays on the tile, dimmed with a dashed outline. A failed poll never reads as zero.
+When a poll fails, the last value stays on the tile, dimmed with a dashed outline. A failed poll never reads as zero. An error answer from the service, such as a rejected API key, counts as a failed poll. A folder is dimmed the same way when an app inside it fails.

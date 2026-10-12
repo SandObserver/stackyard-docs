@@ -22,19 +22,20 @@ import {
   q,
   qa,
   qi,
+  scrollsSideways,
   setUserText,
   storeGet,
   storeSet,
   teardownWidgets,
   titleWhenTruncated,
-} from '/js/utils.js?v=fdc0243f';
+} from '/js/utils.js?v=0d64dfd3';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
-import { initSpotlight } from '/js/spotlight.js?v=6b79fa8a';
+import { initSpotlight } from '/js/spotlight.js?v=e89d7f89';
 import { html, setHtml, raw } from '/js/html.js?v=c71f8903';
 import { initI18n, t, currentLang } from '/js/i18n.js?v=5579776a';
 import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=dbe542e1';
 import { pwStrength, passwordMismatch } from '/js/password-strength.js?v=389e0ed0';
-import { setupErrorKey } from '/js/admin-error.js?v=a9a7e60c';
+import { setupErrorKey } from '/js/admin-error.js?v=b0881957';
 import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
 import { DOCK_MAX } from '/js/limits.js?v=31048a24';
 import {
@@ -45,7 +46,7 @@ import {
   buildMobile,
   resetMobileChrome,
   mkFolderGlyph,
-} from '/js/ui.js?v=1d2ce8a6';
+} from '/js/ui.js?v=3c85d5d7';
 import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=9e6d9d4b';
 import { formatNumber } from '/js/format-number.js?v=349a741d';
 import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=1e0ab5d1';
@@ -56,13 +57,14 @@ import {
   desktopPages,
   landingAfterSetup,
   restorePage,
-} from '/js/dashboard-logic.js?v=0d519f8b';
-import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=abd33088';
+  wheelPager,
+} from '/js/dashboard-logic.js?v=6a29cedc';
+import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=fe705356';
 import { repeatJittered } from '/js/jitter.js?v=087a1fcf';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
 import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=0b1ebb19';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=34af798f';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=628341d4';
 import { pageTheme, paletteColor } from '/js/palette.js?v=3fb8ae43';
 import { THEME_KEY, applyTheme, prefersDark, readMode, resolveTheme } from '/js/theme.js?v=eeafa4b5';
 
@@ -783,7 +785,7 @@ async function boot() {
     /* API down, handled below */
   }
 
-  let configFailed = false;
+  let apiFailed = false;
   try {
     const got = await configReq;
     if (got.e) throw got.e;
@@ -798,12 +800,19 @@ async function boot() {
     await initI18n(S.language || 'en');
   } catch (e) {
     console.error('[boot]', e);
-    configFailed = true;
+    apiFailed = true;
   }
 
   await iconsReq;
 
-  if (configFailed) {
+  /* Without the list every widget renders as a blank frame. */
+  if (!apiFailed && (await widgetsReq).e) widgetsReq = loadWidgets();
+  if (!apiFailed && (await widgetsReq).e) {
+    console.error('[boot]', (await widgetsReq).e);
+    apiFailed = true;
+  }
+
+  if (apiFailed) {
     /* The catalog is loaded as the last step of the fetch that just failed, so
        without this the only screen left renders its own keys. nginx serves this
        file, the API served the config, so it is still reachable. */
@@ -909,6 +918,26 @@ async function boot() {
     if (e.key === 'ArrowRight') goTo(pg + pageDir());
     if (e.key === 'ArrowLeft') goTo(pg - pageDir());
   });
+  /* A trackpad swipe or a thumb wheel turns one page per gesture. Widget frames
+     hand their wheel to the card, so this also runs over widgets. */
+  const wheelStep = wheelPager();
+  document.addEventListener(
+    'wheel',
+    e => {
+      if (e.ctrlKey) return;
+      if (el('spot').classList.contains('on')) return;
+      if (document.querySelector('.folder-overlay, .folder-overlay-mobile')) return;
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerWidth : 1;
+      const dx = e.deltaX * unit,
+        dy = e.deltaY * unit;
+      if (Math.abs(dx) <= Math.abs(dy) || scrollsSideways(e.target, dx)) return;
+      /* Unhandled, a sideways swipe is the browser's back and forward gesture. */
+      e.preventDefault();
+      const step = wheelStep(dx, dy, e.timeStamp);
+      if (step) goTo(pg + step * pageDir());
+    },
+    { passive: false },
+  );
   let _dMx = 0,
     _dDragging = false;
   document.addEventListener('mousedown', e => {

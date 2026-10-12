@@ -7,9 +7,11 @@ import WidgetGroup from '../../../../components/WidgetGroup.astro';
 import ServiceList from '../../../../components/ServiceList.astro';
 import SettingList from '../../../../components/SettingList.astro';
 
-Three stat slots and an optional network row.
+Three stat slots. The medium size adds a chart to each slot and an optional network row.
 
-<WidgetGroup caption="Two different machines. Small fits a few slots, medium fits more."
+Point at a chart to see a past reading, or at a disk to see its used and total size.
+
+<WidgetGroup caption="Two different machines. Small shows the figures, medium adds charts."
   items={[
     { type: 'system-summary', file: 'index.html', id: 'w-stats-sm', card: 'dark', title: 'System summary, small',  label: 'Small' },
     { type: 'system-summary', file: 'index.html', id: 'w-stats',    size: 'medium', card: 'dark', title: 'System summary, medium', label: 'Medium' },
@@ -68,6 +70,7 @@ Sizes: Small, Medium.
 
 <SettingList title="Settings" items={[
   { name: 'Source', text: 'Which of the above to read. Defaults to This Machine.' },
+  { name: 'Update Every', text: '5 s, 10 s, 30 s or 1 min. Defaults to 10 s. A remote source may update less often than this.' },
 ]} />
 
 ## Host mounts
@@ -92,6 +95,8 @@ The widget always shows three slots.
 ]} />
 
 ## Network row
+
+Medium size only.
 
 <SettingList title="Network row settings" items={[
   { name: 'Show Network Row', text: 'Off by default.' },

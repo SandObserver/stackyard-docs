@@ -4,7 +4,7 @@
 import { esc, html, setHtml } from '/js/html.js?v=c71f8903';
 import { isSafeLinkUrl } from '/js/link-url.js?v=54adb40f';
 import { jitter } from '/js/jitter.js?v=087a1fcf';
-import { errorState as _errorState, errorKind, errorCopy } from '/js/widget-error.js?v=7da9754b';
+import { errorState as _errorState, errorKind, errorCopy } from '/js/widget-error.js?v=3bfb691c';
 import { setNumberLanguage } from '/js/format-number.js?v=349a741d';
 
 export { esc, html, setHtml };
@@ -435,6 +435,18 @@ export async function loadStrings() {
   }
 }
 
+/* The dashboard zooms the page. Rects and pointer positions come back zoomed,
+   CSS lengths do not. Divide a rect value by this before writing it to a style.
+
+   @returns {number} */
+export function cssZoom() {
+  const z = /** @type {any} */ (document.documentElement).currentCSSZoom;
+  if (typeof z === 'number' && z > 0) return z;
+  const b = document.body;
+  const w = b && b.offsetWidth;
+  return (w && b.getBoundingClientRect().width / w) || 1;
+}
+
 /** @param {string} key @param {string} fallback @returns {string} */
 export function wt(key, fallback) {
   const v = _own && _own[key];
@@ -506,7 +518,7 @@ export function poll(opts = {}) {
   const isEmpty = opts.isEmpty || (() => false);
   const doFetch = opts.fetch || (() => fetchData(opts.endpoint));
   const custom = typeof opts.onError === 'function'; /* widget draws its own error UI */
-  const ov = custom ? null : errorState({ root: opts.root || document.body, content: opts.content });
+  const ov = custom ? null : errorState({ root: opts.root || document.body, content: opts.content, hideOnEmpty: true });
   let lastOk = 0,
     fails = 0,
     everOk = false,

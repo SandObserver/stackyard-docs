@@ -12,16 +12,16 @@
    reads and writes them too. */
 
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { snapshotItems } from '/js/admin-save-logic.js?v=ae65f9c8';
+import { snapshotItems } from '/js/admin-save-logic.js?v=5811620e';
 import { reorderItems } from '/js/admin-logic.js?v=fc7f0836';
-import { initDrag, wireRowDrag } from '/js/admin-drag.js?v=5e9c57c7';
-import { paintIcon } from '/js/admin-shared.js?v=d0ef41ba';
-import { clr, el, focusFirst, initial, qa, setUserText } from '/js/utils.js?v=fdc0243f';
+import { initDrag, wireRowDrag } from '/js/admin-drag.js?v=14a608cd';
+import { paintIcon } from '/js/admin-shared.js?v=2b48ff3f';
+import { clr, el, focusFirst, initial, qa, setUserText } from '/js/utils.js?v=0d64dfd3';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { t } from '/js/i18n.js?v=5579776a';
-import { sizeLabel } from '/js/admin-widget-form.js?v=ea4e9101';
-import { widgetGlyph } from '/js/widget-glyphs.js?v=648cc374';
-import { iconSvg } from '/js/icon-set.js?v=34af798f';
+import { sizeLabel } from '/js/admin-widget-form.js?v=8bb8feb4';
+import { widgetGlyph } from '/js/widget-glyphs.js?v=b383b7c8';
+import { iconSvg } from '/js/icon-set.js?v=628341d4';
 
 /** @type {{ openModal: (idx: number|null) => void,
              openFolderPicker: (appId: string|null, targetFolderId?: string|null) => void,

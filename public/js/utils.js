@@ -291,6 +291,21 @@ const isCrossOrigin = src => {
   }
 };
 
+/** Whether a wheel moving dx sideways belongs to something under the pointer
+    that can still scroll that way.
+
+    @param {EventTarget | null} target @param {number} dx */
+export function scrollsSideways(target, dx) {
+  for (let n = /** @type {any} */ (target); n && n.nodeType === 1; n = n.parentElement) {
+    const view = n.ownerDocument && n.ownerDocument.defaultView;
+    if (!view || n.scrollWidth <= n.clientWidth) continue;
+    if (!/(auto|scroll)/.test(view.getComputedStyle(n).overflowX)) continue;
+    const left = Math.abs(n.scrollLeft);
+    if (dx > 0 ? left + n.clientWidth < n.scrollWidth - 1 : left > 0) return true;
+  }
+  return false;
+}
+
 /** @param {HTMLElement} card
     @param {{
       src?: string, title?: string, design?: [number, number],
@@ -338,8 +353,54 @@ export function mountScaledWidget(card, { src, title, design, iframeOpts, overla
     doc.documentElement.setAttribute('dir', root.getAttribute('dir') || 'ltr');
     doc.documentElement.setAttribute('lang', root.getAttribute('lang') || 'en');
   };
+  /* A bundled widget page is zoomed to the card rather than scaled as a
+     picture. A scaled frame is resampled, and blurs on a 1x screen. Any other
+     page lays out at the design size it was written for. */
+  const zoomable = /^\/widgets\//.test(src);
+  const applyZoom = () => {
+    try {
+      const doc = ifr.contentDocument;
+      if (doc && doc.documentElement) doc.documentElement.style.zoom = ifr.getAttribute('data-zoom') || '';
+    } catch {}
+  };
+  /* A wheel over a frame never reaches the dashboard. Hand a bundled page's
+     wheel to the card, so sideways scrolling turns pages over widgets too. */
+  let wheelWin = null;
+  const forwardWheel = e => {
+    if (e.ctrlKey || scrollsSideways(e.target, e.deltaX)) return;
+    const copy = new WheelEvent('wheel', {
+      deltaX: e.deltaX,
+      deltaY: e.deltaY,
+      deltaMode: e.deltaMode,
+      bubbles: true,
+      cancelable: true,
+    });
+    Object.defineProperty(copy, 'timeStamp', {
+      value: e.timeStamp + (wheelWin?.performance.timeOrigin ?? performance.timeOrigin) - performance.timeOrigin,
+    });
+    card.dispatchEvent(copy);
+    if (copy.defaultPrevented) e.preventDefault();
+  };
+  const attachWheel = () => {
+    try {
+      if (wheelWin) wheelWin.removeEventListener('wheel', forwardWheel);
+      wheelWin = ifr.contentWindow;
+      if (wheelWin) wheelWin.addEventListener('wheel', forwardWheel, { passive: false });
+    } catch {
+      wheelWin = null;
+    }
+  };
   ifr.addEventListener('load', applyDir);
-  cleanups.push(() => ifr.removeEventListener('load', applyDir));
+  ifr.addEventListener('load', applyZoom);
+  if (zoomable) ifr.addEventListener('load', attachWheel);
+  cleanups.push(() => {
+    ifr.removeEventListener('load', applyDir);
+    ifr.removeEventListener('load', applyZoom);
+    ifr.removeEventListener('load', attachWheel);
+    try {
+      if (wheelWin) wheelWin.removeEventListener('wheel', forwardWheel);
+    } catch {}
+  });
   try {
     if (ifr.contentDocument && ifr.contentDocument.readyState === 'complete') applyDir();
   } catch {}
@@ -453,9 +514,18 @@ export function mountScaledWidget(card, { src, title, design, iframeOpts, overla
        fills the card exactly. Where the card's aspect drifts from the design's,
        cover crops the widget instead, and the card clips what it cropped. */
     const s = Math.min(w / dw, h / dh);
-    const tx = (w - dw * s) / 2,
-      ty = (h - dh * s) / 2;
-    ifr.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
+    /* Whole pixels. A fractional offset or size blurs the page on a 1x screen. */
+    if (zoomable) {
+      const fw = Math.round(dw * s),
+        fh = Math.round(dh * s);
+      ifr.style.width = fw + 'px';
+      ifr.style.height = fh + 'px';
+      ifr.style.transform = `translate(${Math.round((w - fw) / 2)}px, ${Math.round((h - fh) / 2)}px)`;
+      ifr.setAttribute('data-zoom', String(fw / dw));
+      applyZoom();
+    } else {
+      ifr.style.transform = `translate(${Math.round((w - dw * s) / 2)}px, ${Math.round((h - dh * s) / 2)}px) scale(${s})`;
+    }
     ifr.style.opacity = '1'; /* reveal only once scaled, avoids the flash of unscaled content on load */
   };
   if (typeof ResizeObserver !== 'undefined') {

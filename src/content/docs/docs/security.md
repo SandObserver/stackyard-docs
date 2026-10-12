@@ -40,7 +40,7 @@ The first page load after install or upgrade sets the list. A host name is trust
 
 Stored secrets are stripped from the config before it reaches the browser. A populated field reports as set without returning its value, in config responses and in exports alike.
 
-A secret is restored only for the request it was stored for. If a save changes where the credential would be sent, by editing a badge URL, its non-secret headers, or any non-secret field of a widget's config, the stored value is not restored and Stackyard names what must be re-entered. Matching on an item's id alone would let an imported config point an existing credential somewhere new. Turning **Allow self-signed certificate** on or off for an app, and changing the port map (`settings.server.portMap`), count as such a change.
+A secret is restored only for the request it was stored for. If a save changes where the credential would be sent, by editing a badge URL, its non-secret headers, or a widget field that decides where it goes, the stored value is not restored and Stackyard names what must be re-entered. Matching on an item's id alone would let an imported config point an existing credential somewhere new. Turning **Allow self-signed certificate** on or off for an app, and changing the port map (`settings.server.portMap`), count as such a change.
 
 Secrets are stored in plain text in `apps.json` on the data volume. Protect that volume with filesystem permissions and backups.
 

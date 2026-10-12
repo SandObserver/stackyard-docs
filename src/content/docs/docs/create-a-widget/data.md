@@ -38,7 +38,9 @@ A widget that renders entirely in the browser, like [Clock](/docs/widgets/clock/
 | `ctx.KIND` | `AUTH`, `INVALID`, `UPSTREAM`, `NETWORK`, `TIMEOUT`, `BLOCKED`, `INTERNAL`. See [API errors](/docs/contributing/api-errors/). |
 | `ctx.log` | The structured logger. |
 
-Keep every upstream call behind `ctx.fetchJSON`. It applies the SSRF guard, IP pinning, the size limit and the TLS setting.
+Keep every upstream call behind `ctx.fetchJSON`. It applies the size limit and the TLS setting. An `optionsFrom` fetch also applies the SSRF guard and IP pinning, because its config arrives with the request. A refresh reads the saved config and is not guarded. Never build a URL from `ctx.params`.
+
+Await every call. A rejected promise that nothing awaits stops the API process, and every widget fails until it restarts.
 
 ### Metrics and XML bodies
 

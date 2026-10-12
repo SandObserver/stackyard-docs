@@ -1,22 +1,27 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
 import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=fc7f0836';
-import { el, isolate, q } from '/js/utils.js?v=fdc0243f';
+import { el, isolate, q } from '/js/utils.js?v=0d64dfd3';
 import { t } from '/js/i18n.js?v=5579776a';
-import { errorAdvice } from '/js/admin-error.js?v=a9a7e60c';
+import { errorAdvice } from '/js/admin-error.js?v=b0881957';
 import { formatNumber } from '/js/format-number.js?v=349a741d';
 import { iconChain } from '/js/icons.js?v=9c7b5111';
-import { iconSvg } from '/js/icon-set.js?v=34af798f';
+import { iconSvg } from '/js/icon-set.js?v=628341d4';
 import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=dbe542e1';
 
 export const API = '';
 
 let tt;
 let _toastWired = false;
+let _pinned = false;
 
-/** @param {string} m @param {'ok'|'err'} [tone] @returns {void} */
-export const toast = (m, tone = 'ok') => {
+/** @param {string} m @param {'ok'|'err'} [tone]
+    @param {{ pin?: boolean }} [opts] pin: no 'ok' notice replaces it until it is dismissed
+    @returns {void} */
+export const toast = (m, tone = 'ok', { pin = false } = {}) => {
   const e = el('toast');
   if (!e) return;
+  if (tone === 'ok' && _pinned && e.classList.contains('show')) return;
+  _pinned = pin;
   e.textContent = m;
   e.className = `show ${tone}`;
   clearTimeout(tt);
@@ -35,6 +40,7 @@ export const toast = (m, tone = 'ok') => {
     e.addEventListener('click', () => {
       clearTimeout(tt);
       e.className = '';
+      _pinned = false;
     });
   }
   const ms = toastHoldMs(tone, m, 'show');
@@ -135,13 +141,20 @@ export const apiPost = async (p, b, recover = true) => {
   const body = await r.json();
   /* Every config write goes through here, and a withheld credential has to be
      said out loud. */
-  const withheld = (body?.withheld || [])
+  const withheld = withheldText(body);
+  if (withheld) toast(withheld, 'err', { pin: true });
+  return body;
+};
+
+/** @param {any} body a config write's reply
+    @returns {string} the notice naming the credentials it withheld, or '' */
+export function withheldText(body) {
+  const names = (body?.withheld || [])
     .map(w => w.label)
     .filter(Boolean)
     .map(isolate);
-  if (withheld.length) toast(t('toast.secretsWithheld', { items: withheld.join(', ') }), 'err');
-  return body;
-};
+  return names.length ? t('toast.secretsWithheld', { items: names.join(', ') }) : '';
+}
 
 /* A native `disabled` control is skipped by screen readers. aria-disabled keeps
    it announced but carries no behaviour, so activation is blocked here. */

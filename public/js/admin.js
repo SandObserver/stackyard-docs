@@ -1,25 +1,27 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=c5eecf98';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=c54047e3';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=7e288a05';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=db741421';
 import { recoveryShown } from '/js/config-recovery.js?v=dbe542e1';
-import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=348d1d69';
+import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=e7e8ec6e';
 import { resolveAdminSection } from '/js/admin-logic.js?v=fc7f0836';
 import {
   afterImport,
   buildAppItem,
   claimFolderChildren,
   newItemId,
+  restoreBody,
+  restoresSettings,
   revertingSaves,
   serialWrites,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=ae65f9c8';
+} from '/js/admin-save-logic.js?v=5811620e';
 import {
   loadSettings,
   savedWallpaperUrl,
   settingsDirty,
   showBgFields,
   showWallpaperFile,
-} from '/js/admin-settings.js?v=08a3c4c9';
+} from '/js/admin-settings.js?v=a5dc252e';
 import {
   apiGet,
   apiPost,
@@ -32,17 +34,18 @@ import {
   ShownError,
   setReauthHandler,
   toast,
-} from '/js/admin-shared.js?v=d0ef41ba';
+  withheldText,
+} from '/js/admin-shared.js?v=2b48ff3f';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=ea4e9101';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=8bb8feb4';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
 import { formatNumber } from '/js/format-number.js?v=349a741d';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=11c869c4';
+import { createListbox } from '/js/listbox.js?v=35d8318a';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=5579776a';
 import { loadLocalIcons } from '/js/icons.js?v=9c7b5111';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=34af798f';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=628341d4';
 import {
   clearSkipTls,
   convert,
@@ -52,7 +55,7 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=9efb127f';
+} from '/js/import-foreign.js?v=6ecd782f';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6b0320bd';
 import {
@@ -77,9 +80,9 @@ import {
   storeGet,
   storeSet,
   tgt,
-} from '/js/utils.js?v=fdc0243f';
-import { applyBackground, resolveBackground } from '/js/background.js?v=abd33088';
-import { parseYamlTolerant, YamlLiteError } from '/js/yaml-lite.js?v=6ebb564c';
+} from '/js/utils.js?v=0d64dfd3';
+import { applyBackground, resolveBackground } from '/js/background.js?v=fe705356';
+import { parseYamlTolerant, YamlLiteError, YamlTooLargeError } from '/js/yaml-lite.js?v=a42ef914';
 
 ensureSprite();
 
@@ -106,6 +109,7 @@ async function load() {
   qa('.ie-row').forEach(nameEditPen);
   document.title = t('nav.pageTitle');
   initVersion();
+  initAboutLogo();
   syncPickerLabels();
   try {
     const wr = await apiGet('/api/widgets');
@@ -214,6 +218,55 @@ async function appendItems(newItems) {
     syncDashSave();
   } finally {
     render();
+  }
+}
+
+/** @param {unknown} url @returns {Promise<boolean>} whether `url` names an uploaded wallpaper the server answers 404 for */
+async function wallpaperMissing(url) {
+  if (typeof url !== 'string' || !url.startsWith('/icons/wallpaper/')) return false;
+  try {
+    return (await fetch(url, { method: 'HEAD', cache: 'no-store' })).status === 404;
+  } catch {
+    return false;
+  }
+}
+
+/** Replace the list and the settings with a backup's. Returns whether the write
+    reached the server.
+    @param {any} file */
+function restoreBackup(file) {
+  return saves.run(() => writeBackup(file));
+}
+
+/** @param {any} file */
+async function writeBackup(file) {
+  try {
+    const live = await apiGet('/api/config');
+    if (JSON.stringify(live.items || []) !== _serverItems) {
+      throw Object.assign(new Error('stale'), { status: 409 });
+    }
+    const keepBackground = await wallpaperMissing(file?.settings?.background?.url);
+    const r = await apiPost('/api/config', restoreBody(file, live, keepBackground));
+    _replaced++;
+    state.items = r.items;
+    _serverItems = JSON.stringify(r.items);
+    _savedItems = _serverItems;
+    saveOrRestore.landed(JSON.parse(_savedItems));
+    const notice = [withheldText(r), restoresSettings(file, live) ? t('toast.reloadToFinishRestore') : '']
+      .filter(Boolean)
+      .join(' ');
+    if (notice) toast(notice, 'err', { pin: true });
+    else toast(t('toast.imported'));
+    return true;
+  } catch (e) {
+    toast(
+      e.status === 409 ? t('toast.dashboardChangedElsewhere') : t('toast.importFailed', { err: errorText(e) }),
+      'err',
+    );
+    return false;
+  } finally {
+    render();
+    syncDashSave();
   }
 }
 
@@ -757,6 +810,30 @@ function initAllInlineEdits() {
   });
 }
 
+/* The arc turns once, as on the docs site, when the logo is pointed at or
+   tapped. Never on its own. */
+function initAboutLogo() {
+  const wrap = document.querySelector('.about-ic-wrap');
+  const orbit = document.querySelector('.about-orbit');
+  if (!wrap || !orbit || typeof orbit.animate !== 'function') return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  let run = null;
+  const spin = () => {
+    if (run || reduce.matches) return;
+    run = orbit.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], {
+      duration: 1000,
+      easing: 'cubic-bezier(.65,0,.35,1)',
+    });
+    run.onfinish = run.oncancel = () => {
+      run = null;
+    };
+  };
+  wrap.addEventListener('pointerenter', e => {
+    if (/** @type {PointerEvent} */ (e).pointerType !== 'touch') spin();
+  });
+  wrap.addEventListener('click', spin);
+}
+
 async function initVersion() {
   try {
     const d = await apiGet('/api/version');
@@ -1097,7 +1174,8 @@ el('imp').onchange = async e => {
     for (const id of cur.keys()) {
       if (!inc.has(id)) deleted++;
     }
-    if (added + updated + deleted === 0) {
+    const settingsToo = restoresSettings(d, await apiGet('/api/config'));
+    if (added + updated + deleted === 0 && !settingsToo) {
       toast(t('toast.importNoChange'));
       tgt(e).value = '';
       return;
@@ -1110,6 +1188,7 @@ el('imp').onchange = async e => {
       updated: formatNumber(updated),
       deleted: formatNumber(deleted),
     });
+    if (settingsToo) lead.textContent += ` ${t('import.settingsToo')}`;
     const ok = await confirmModal({
       title: t('import.confirmTitle'),
       body: lead,
@@ -1121,9 +1200,7 @@ el('imp').onchange = async e => {
       tgt(e).value = '';
       return;
     }
-    const before = snapshotItems(state.items);
-    state.items = d.items;
-    if (await saveOrRevert(before)) toast(t('toast.imported'));
+    await restoreBackup(d);
   } catch (err) {
     const why = err instanceof SyntaxError ? t('toast.importNotStackyard') : errorText(err);
     toast(t('toast.importFailed', { err: why }), 'err');
@@ -1153,6 +1230,8 @@ const NOTE_TEXT = {
   [NOTE.LOCAL_URL_DROPPED]: 'importForeign.noteLocalUrl',
   [NOTE.FIELDS_DROPPED]: 'importForeign.noteFields',
   [NOTE.PAGES_NOT_FOLLOWED]: 'importForeign.notePages',
+  [NOTE.SCHEME_ADDED]: 'importForeign.noteSchemeAdded',
+  [NOTE.HEALTH_URL_DROPPED]: 'importForeign.noteHealthUrl',
 };
 
 /** One "Heading (n)" block followed by a line per entry.
@@ -1199,6 +1278,8 @@ el('imp-foreign').onchange = async e => {
       } catch (err) {
         if (err instanceof YamlLiteError)
           throw new ShownError(t('toast.importYamlUnsupported', { file: isolate(file.name), line: err.line }));
+        if (err instanceof YamlTooLargeError)
+          throw new ShownError(t('toast.importTooLarge', { file: isolate(file.name) }));
         throw err;
       }
       let out;

@@ -567,37 +567,21 @@ const schema = {
         <dt>Also by SandObserver</dt>
         <dd class="credit-row">
           <a class="sibling" href="https://posteryard.sandobserver.com">
-            <svg viewBox="282 232 478 580" width="15" height="18" aria-hidden="true" focusable="false"><line x1="352" y1="302" x2="352" y2="742" stroke="#F2F2F7" stroke-width="140" stroke-linecap="round"/><path class="flag" d="M500 292V532L712 412Z" fill="#FFD60A" stroke="#FFD60A" stroke-width="96" stroke-linejoin="round"/></svg>
+            <svg viewBox="282 232 478 580" width="15" height="18" aria-hidden="true" focusable="false"><line x1="352" y1="302" x2="352" y2="742" stroke="#F2F2F7" stroke-width="140" stroke-linecap="round"/><path d="M500 292V532L712 412Z" fill="#FFD60A" stroke="#FFD60A" stroke-width="96" stroke-linejoin="round"/></svg>
             Posteryard
           </a>
         </dd>
         <dd><p class="credit-note">Clean, consistent posters for Plex, Jellyfin and Emby.</p></dd>
+        <dd class="credit-row">
+          <a class="sibling" href="https://tellyard.sandobserver.com">
+            <svg viewBox="232 152 560 720" width="15" height="18" aria-hidden="true" focusable="false"><rect x="242" y="362" width="140" height="300" rx="70" fill="#F2F2F7"/><rect x="442" y="222" width="140" height="580" rx="70" fill="#FF4245"/><rect x="642" y="362" width="140" height="300" rx="70" fill="#F2F2F7"/></svg>
+            Tellyard
+          </a>
+        </dd>
+        <dd><p class="credit-note">Free live TV streams in the Plex and Jellyfin guide.</p></dd>
       </div>
     </dl>
   </div>
-  <script is:inline>
-{
-  const link = document.querySelector('.footer .sibling');
-  const flag = link.querySelector('.flag');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  let run = null;
-  const hoist = () => {
-    if (run || reduce.matches) return;
-    run = flag.animate([
-      { offset: 0, transform: 'translateY(0)', easing: 'cubic-bezier(0.5, 0, 0.9, 0.5)' },
-      { offset: 0.18, transform: 'translateY(212px)', easing: 'cubic-bezier(0.3, 0, 0.3, 1)' },
-      { offset: 0.36, transform: 'translateY(140px)', easing: 'ease-in-out' },
-      { offset: 0.42, transform: 'translateY(150px)', easing: 'cubic-bezier(0.3, 0, 0.3, 1)' },
-      { offset: 0.58, transform: 'translateY(70px)', easing: 'ease-in-out' },
-      { offset: 0.64, transform: 'translateY(80px)', easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' },
-      { offset: 1, transform: 'translateY(0)' },
-    ], 1200);
-    run.onfinish = run.oncancel = () => (run = null);
-  };
-  link.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') hoist(); });
-  link.addEventListener('focus', () => { try { if (link.matches(':focus-visible')) hoist(); } catch {} });
-}
-  </script>
 </footer>
     <script is:inline>
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;

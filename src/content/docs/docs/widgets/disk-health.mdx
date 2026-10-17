@@ -21,8 +21,11 @@ Small holds four bays. Medium holds ten.
   {
     name: 'Scrutiny', icon: 'scrutiny',
     kind: 'SMART monitoring',
-    needs: 'URL',
-    fields: [['Scrutiny URL', 'For example `scrutiny:8080`. No API key.']],
+    needs: 'URL, API token from Scrutiny 2.0',
+    fields: [
+      ['Scrutiny URL', 'For example `scrutiny:8080`.'],
+      ['Scrutiny API Token', 'Optional. Needed when Scrutiny requires a login, which is the default from Scrutiny 2.0. A token with read scope is enough. Stored as a secret.'],
+    ],
     notes: ['Works with the original project and with the maintained fork. Original builds before and after 0.9.0 name drives differently, and the widget reads all three.'],
     links: [
       { label: 'AnalogJ/scrutiny (original)', href: 'https://github.com/AnalogJ/scrutiny' },

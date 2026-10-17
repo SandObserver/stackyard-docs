@@ -47,5 +47,5 @@ Small holds one slot. Medium holds three. Each slot reads one job.
 <SettingList title="Settings for each slot" items={[
   { name: 'Provider', text: 'Duplicati, Kopia, or None for an empty slot.' },
   { name: 'Display name', text: 'Replaces the job name shown on the card.', optional: true },
-  { name: 'Click URL', text: 'Where clicking the slot opens.', optional: true },
+  { name: 'Link URL', text: 'Where clicking the slot opens. Duplicati opens the job log and Kopia the snapshot list under it. Leave blank to use the service address, if your browser can reach it.', optional: true },
 ]} />

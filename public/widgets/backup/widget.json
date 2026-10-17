@@ -1,6 +1,7 @@
 {
   "name": "backup",
   "label": "widget.label",
+  "description": "widget.description",
   "appearance": "dark",
   "glyph": "archive",
   "sizes": [
@@ -81,6 +82,7 @@
           "type": "text",
           "label": "slots.dupHref.label",
           "placeholder": "slots.dupHref.placeholder",
+          "hint": "slots.dupHref.hint",
           "optional": true,
           "showIf": {
             "field": "provider",
@@ -147,6 +149,7 @@
           "type": "text",
           "label": "slots.kopiaHref.label",
           "placeholder": "slots.kopiaHref.placeholder",
+          "hint": "slots.kopiaHref.hint",
           "optional": true,
           "showIf": {
             "field": "provider",

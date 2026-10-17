@@ -56,15 +56,16 @@
     background: inherit;
   }
   .card-back-meta {
-    font-size: 6.5px; font-weight: 500; opacity: 0.85; line-height: 1.45;
+    font-size: 11px; font-weight: 500; opacity: 0.85; line-height: 1.3;
     flex-shrink: 0; margin-bottom: 2px;
   }
   .card-back-name {
-    font-size: 7px; font-weight: 700; line-height: 1.18; word-break: break-word;
+    font-size: 11px; font-weight: 700; line-height: 1.18;
     flex-shrink: 0;
     display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
   }
+  .card-back-name.cut, .card-front-name.cut { display: block; white-space: nowrap; text-overflow: ellipsis; }
   .card-back.running { animation: pulse-bg 2s ease-in-out infinite; }
   @keyframes pulse-bg { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.15)} }
 
@@ -103,8 +104,8 @@
     background: #FFFFFF;
   }
   .card-front-name {
-    font-size: 7px; font-weight: 700; color: #1c1c1e;
-    line-height: 1.18; word-break: break-word;
+    font-size: 11px; font-weight: 700; color: #1c1c1e;
+    line-height: 1.18;
     display: -webkit-box; -webkit-line-clamp: 2;
     -webkit-box-orient: vertical; overflow: hidden;
   }
@@ -123,7 +124,7 @@
 <body>
 <div class="widget" id="widget" role="group" aria-label="Backup status"></div>
 <script type="module">
-import { poll, fetchData, openUrl, linkTo, html, setHtml, loadStrings, wt, errorState, errorLine, formatNumber, cssZoom } from '/js/widget-toolbox.js?v=5532b552';
+import { poll, fetchData, openUrl, linkTo, html, setHtml, loadStrings, wt, errorState, errorLine, formatList, relativeTime, cssZoom } from '/js/widget-toolbox.js?v=2c521043';
 await loadStrings();
 document.getElementById('widget').setAttribute('aria-label', wt('ui.backupStatus', 'Backup status'));
 const id   = new URLSearchParams(location.search).get('id')   || '';
@@ -150,7 +151,8 @@ function statusColor(s) {
   return null;
 }
 
-let _cfg={}, _pollSec=60, _href='', _jobSlots=[], _hrefs=[];
+let _cfg={}, _pollSec=60, _href='', _jobSlots=[], _hrefs=[], _links=[];
+const cardLink = idx => _links[idx] || _hrefs[idx] || '';
 
 function parseDate(v) {
   if(!v) return null;
@@ -164,13 +166,12 @@ function parseDate(v) {
 }
 
 function relTime(v) {
-  const d=parseDate(v); if(!d) return '—';
-  const diff=(Date.now()-d.getTime())/1000, abs=Math.abs(diff), past=diff>=0;
-  let l;
-  if(abs<90) l='< '+formatNumber(2)+'m'; else if(abs<3600) l=formatNumber(Math.round(abs/60))+'m';
-  else if(abs<86400) l=formatNumber(Math.round(abs/3600))+'h'; else l=formatNumber(Math.round(abs/86400))+'d';
-  return past?l+' ago':'in '+l;
+  const d=parseDate(v);
+  return d ? relativeTime(d.getTime()) : '—';
 }
+
+const STATUS_KEY={healthy:'ui.status.healthy',warning:'ui.status.warning',error:'ui.status.error',missed:'ui.status.missed'};
+const STATUS_EN={healthy:'healthy',warning:'warning',error:'failed',missed:'missed'};
 
 /* ── Seeded LCG ── */
 function mkRng(seed) {
@@ -258,7 +259,7 @@ function drawPh(canvas, haiku, isFront, seed) {
   const ROW_H  = 3;   /* dash height px */
   const GAP    = 5;   /* gap between rows */
   const STEP   = ROW_H + GAP;
-  const TEXT_H = 8;   /* font size for haiku lines */
+  const TEXT_H = 11;  /* font size for haiku lines */
   const TEXT_STEP = TEXT_H + GAP;
 
   /* Build row plan */
@@ -288,19 +289,19 @@ function drawPh(canvas, haiku, isFront, seed) {
   for (const entry of plan) {
     if (y > H) break;
 
-    if (entry.type === 'text') {
-      ctx.font = `700 ${Math.max(6, px(TEXT_H))}px -apple-system, BlinkMacSystemFont, system-ui, sans-serif`;
-      ctx.fillStyle = textC;
+    ctx.font = `700 ${px(TEXT_H)}px -apple-system, BlinkMacSystemFont, system-ui, sans-serif`;
+    const textW = entry.type === 'text' ? ctx.measureText(entry.line).width / k : 0;
+    /* A line wider than the card is drawn as a plain row. Text is never clipped. */
+    if (entry.type === 'text' && textW + 7 <= usableW) {
       ctx.textBaseline = 'top';
+      ctx.textAlign = 'left';
       /* Small left dash */
-      const ldW = 4 + Math.floor(rng() * 10);
+      const ldW = Math.min(4 + Math.floor(rng() * 10), usableW - textW - 3);
       ctx.fillStyle = dashC;
       bar(PAD, y + TEXT_H/2 - 1, ldW, 2, 1);
       /* Text */
       ctx.fillStyle = textC;
       ctx.fillText(entry.line, px(PAD + ldW + 3), px(y));
-      /* Right dash — measure text first */
-      const textW = ctx.measureText(entry.line).width / k;
       const rdX   = PAD + ldW + 3 + textW + 3;
       const rdW   = Math.max(4, usableW - (ldW + 3 + textW + 3));
       ctx.fillStyle = dashC;
@@ -473,21 +474,23 @@ function buildShell() {
 
   slots.forEach((jobId, idx) => {
     const isActive = !!jobId;
-    const href  = _hrefs[idx] || '';
     const seed  = idx * 9371 + 3;
     const haiku = haikus[idx];
 
     const wrap = document.createElement('div');
+    wrap.id = `wrap-${idx}`;
     wrap.className = 'card-wrap' + (isActive?'':' inactive');
     wrap.style.width = cardW;
     wrap.style.flex  = '0 0 ' + cardW;
     if (cardH) { wrap.style.height = cardH; wrap.style.alignSelf = 'center'; }
 
-    if (href && isActive) {
-      linkTo(wrap, href);
+    if (isActive) {
+      linkTo(wrap, cardLink(idx));
       if (isTouch) {
         let _revealTimer = null;
         wrap.addEventListener('touchend', (e) => {
+          const href = cardLink(idx);
+          if (!href) return;
           e.preventDefault();
           const isRevealed = wrap.classList.contains('touch-revealed');
           /* Reset all cards and clear any pending timers */
@@ -530,7 +533,7 @@ function buildShell() {
     const bmeta = document.createElement('div');
     bmeta.className = 'card-back-meta'; bmeta.id = `back-meta-${idx}`;
     bmeta.innerHTML = '&nbsp;<br>&nbsp;';
-    if (isMobile) { bmeta.style.fontSize = '10px'; bmeta.style.marginBottom = '2px'; }
+    if (isMobile) { bmeta.style.fontSize = '11px'; bmeta.style.marginBottom = '2px'; }
 
     const bname = document.createElement('div');
     bname.className = 'card-back-name'; bname.id = `back-name-${idx}`;
@@ -583,6 +586,19 @@ function apply(jobs) {
   });
 }
 
+function fitName(el, text) {
+  el.textContent = text;
+  el.classList.remove('cut');
+  el.removeAttribute('dir');
+  const base = _isMobile ? 15 : 11;
+  for (let px = base; px >= 11; px--) {
+    el.style.fontSize = px + 'px';
+    if (el.scrollWidth <= el.clientWidth) return;
+  }
+  el.classList.add('cut');
+  el.dir = 'auto';
+}
+
 function applyCard(idx, job) {
   const back  = document.getElementById(`back-${idx}`);
   const front = document.getElementById(`front-${idx}`);
@@ -595,6 +611,9 @@ function applyCard(idx, job) {
     applyCardError(idx, errorLine({ kind: job.error }));
     return;
   }
+  _links[idx] = (job && job.link) || '';
+  const wrapEl = document.getElementById(`wrap-${idx}`);
+  if (wrapEl && !wrapEl.classList.contains('inactive')) linkTo(wrapEl, cardLink(idx));
   if(!job) {
     back.style.background='rgba(255,255,255,0.06)'; back.style.color='';
     back.classList.remove('running');
@@ -616,8 +635,8 @@ function applyCard(idx, job) {
     drawPh(c.back, c.haiku, false, c.seed);
   }
 
-  if(bname) bname.textContent = job.name||'—';
-  if(fname) fname.textContent = job.name||'—';
+  if(bname) fitName(bname, job.name||'—');
+  if(fname) fitName(fname, job.name||'—');
 
   const running = job.status==='running';
   const last = running ? '' : relTime(job.lastFinished);
@@ -626,12 +645,18 @@ function applyCard(idx, job) {
     if(running){
       bmeta.innerHTML=`<svg class="sync-icon" aria-hidden="true" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 4 1.73"/><path d="M13.5 2.5v2.5H11"/></svg>${wt('ui.runningNow','Running…')}<br>&nbsp;`;
     } else {
-      bmeta.innerHTML = next ? `${wt('ui.lastCap','Last')} ${last}<br>${wt('ui.nextCap','Next')} ${next}` : `${wt('ui.lastCap','Last')} ${last}`;
+      setHtml(bmeta, next
+        ? html`${wt('ui.lastAt','Last {when}',{when:last})}<br>${wt('ui.nextAt','Next {when}',{when:next})}`
+        : html`${wt('ui.lastAt','Last {when}',{when:last})}`);
     }
   }
   /* Screen-reader summary on the visible face — status is otherwise colour-only */
   front.setAttribute('role','img');
-  front.setAttribute('aria-label', `${job.name||wt('widget.label','Backup')}: ${running?wt('ui.running','running'):(job.status||wt('ui.unknown','unknown'))}${last?', '+wt('ui.last','last')+' '+last:''}${next?', '+wt('ui.next','next')+' '+next:''}`);
+  const status=running?wt('ui.running','running'):STATUS_KEY[job.status]?wt(STATUS_KEY[job.status],STATUS_EN[job.status]):wt('ui.unknown','unknown');
+  const parts=[wt('ui.summary','{name}: {status}',{name:job.name||wt('widget.label','Backup'),status})];
+  if(last) parts.push(wt('ui.lastAria','last run {when}',{when:last}));
+  if(next) parts.push(wt('ui.nextAria','next run {when}',{when:next}));
+  front.setAttribute('aria-label', formatList(parts,'plain'));
   back.setAttribute('aria-hidden','true');
 }
 
@@ -648,7 +673,7 @@ function applyCardError(idx, line) {
   /* Set both. An unset colour inherits black onto a dark card. */
   if(back){ back.style.background='rgba(255,255,255,0.06)'; back.style.color='#fff'; back.classList.remove('running'); }
   if(front){ front.setAttribute('role','img'); front.setAttribute('aria-label', line); front.style.removeProperty('--status-color'); }
-  if(bname) bname.textContent = line;
+  if(bname) fitName(bname, line);
   if(bmeta) setHtml(bmeta, html`&nbsp;<br>&nbsp;`);
   if(fname) fname.textContent = '\u2014';
 }

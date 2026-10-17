@@ -5,7 +5,7 @@ import { esc, html, setHtml } from '/js/html.js?v=c71f8903';
 import { isSafeLinkUrl } from '/js/link-url.js?v=54adb40f';
 import { jitter } from '/js/jitter.js?v=087a1fcf';
 import { errorState as _errorState, errorKind, errorCopy } from '/js/widget-error.js?v=3bfb691c';
-import { setNumberLanguage } from '/js/format-number.js?v=349a741d';
+import { formatNumber, setNumberLanguage } from '/js/format-number.js?v=abcd4ae4';
 
 export { esc, html, setHtml };
 
@@ -78,15 +78,14 @@ export function theme() {
 const NS = 'http://www.w3.org/2000/svg';
 const _params = new URLSearchParams(location.search);
 
-/** Gives the card the dark card's edge and border while the widget paints its own dark background.
+/** Matches the card to the background the widget paints, dark or light, in either theme.
     @param {boolean} dark */
 export function setCardAppearance(dark) {
   const card = /** @type {HTMLElement | null | undefined} */ (
     window.frameElement?.closest('.widget, .mob-widget-card')
   );
   if (!card) return;
-  if (dark) card.dataset.appearance = 'dark';
-  else delete card.dataset.appearance;
+  card.dataset.appearance = dark ? 'dark' : 'light';
 }
 
 export function widgetId() {
@@ -121,6 +120,9 @@ export function openUrl(href) {
     a.href = href;
     a.target = '_blank';
     a.rel = 'noopener noreferrer';
+    /* Keep this. Without it, a click handler on the body opens the link
+       again, in a loop, and the browser blocks every tab. */
+    a.addEventListener('click', e => e.stopPropagation());
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -319,7 +321,8 @@ export function columns(opts = {}) {
   const color = colorOrFallback(opts.color, '#0a84ff');
   const el = document.createElement('div');
   el.className = 'tb-cols';
-  el.style.cssText = `display:flex;align-items:stretch;height:100%;gap:${opts.gap != null ? opts.gap : 3}px`;
+  const half = (opts.gap != null ? opts.gap : 3) / 2;
+  el.style.cssText = `display:flex;align-items:stretch;height:100%;margin:0 -${half}px`;
   /** @type {HTMLElement[]} */
   const fills = [];
   /** @type {HTMLElement[]} */
@@ -329,7 +332,10 @@ export function columns(opts = {}) {
   for (let i = 0; i < count; i++) {
     const col = document.createElement('div');
     col.className = 'tb-col';
-    col.style.cssText = `flex:1 1 0;position:relative;overflow:hidden;border-radius:${radius}px`;
+    col.style.cssText =
+      `flex:1 1 0;box-sizing:content-box;position:relative;overflow:hidden;` +
+      `border:solid transparent;border-width:0 ${half}px;background-clip:padding-box;` +
+      `border-radius:${radius + half}px / ${radius}px`;
     if (opts.track !== null) col.style.backgroundColor = opts.track || 'rgba(255,255,255,0.10)';
     const fill = document.createElement('div');
     fill.className = 'tb-col-fill';
@@ -403,7 +409,7 @@ async function _loadStrings() {
     /* English is a usable answer */
   }
 }
-_loadStrings();
+const _sharedStrings = _loadStrings();
 
 /** @param {string} key @param {string} fallback */
 function _t(key, fallback) {
@@ -421,6 +427,7 @@ let _own = null;
 
     @returns {Promise<void>} */
 export async function loadStrings() {
+  await _sharedStrings;
   if (!_widgetName || _lang === 'en' || _own) return;
   try {
     const r = await fetch(`/widgets/${encodeURIComponent(_widgetName)}/i18n/${encodeURIComponent(_lang)}.json`, {
@@ -447,17 +454,38 @@ export function cssZoom() {
   return (w && b.getBoundingClientRect().width / w) || 1;
 }
 
-/** @param {string} key @param {string} fallback @returns {string} */
-export function wt(key, fallback) {
+const _fill = (s, vars) => (vars ? s.replace(/\{(\w+)\}/g, (m, k) => (vars[k] == null ? m : String(vars[k]))) : s);
+
+/** @param {string} key @param {string} fallback
+    @param {Record<string, unknown>} [vars] placeholder values
+    @returns {string} */
+export function wt(key, fallback, vars) {
   const v = _own && _own[key];
-  return typeof v === 'string' && v ? v : fallback;
+  return _fill(typeof v === 'string' && v ? v : fallback, vars);
+}
+
+/** A counted message, stored as `key_<category>` in the widget catalog. `{count}`
+    is filled in the reader's digits; other placeholders come from `vars`.
+    @param {string} key @param {number} count
+    @param {{ one: string, other: string }} fallback English forms
+    @param {Record<string, unknown>} [vars] @returns {string} */
+export function wtCount(key, count, fallback, vars) {
+  let category = 'other';
+  try {
+    category = new Intl.PluralRules(_lang).select(count);
+  } catch {
+    /* An unusable tag: the `other` form still reads. */
+  }
+  const own = _own && (_own[`${key}_${category}`] || _own[`${key}_other`]);
+  const en = new Intl.PluralRules('en').select(count) === 'one' ? fallback.one : fallback.other;
+  return _fill(typeof own === 'string' && own ? own : en, { ...vars, count: formatNumber(count) });
 }
 
 /** @param {number} ts @returns {string} */
 /* Digit shape follows the interface language. Re-exported here so a widget takes it
    from the toolbox rather than reaching for toLocaleString, which is the same
    thing until someone passes it a language. */
-export { formatNumber, localiseDigits } from '/js/format-number.js?v=349a741d';
+export { formatNumber, formatList, localiseDigits } from '/js/format-number.js?v=abcd4ae4';
 
 export function sinceLabel(ts) {
   if (!ts) return '';
@@ -482,10 +510,61 @@ export function sinceLabel(ts) {
   }
 }
 
+/** A signed distance from now, in the interface language: "2 hr. ago", "in 3 days".
+    @param {number} ts epoch milliseconds @returns {string} */
+export function relativeTime(ts) {
+  const s = (ts - Date.now()) / 1000;
+  const abs = Math.abs(s);
+  const [value, unit] =
+    abs < 3600
+      ? [Math.max(1, Math.round(abs / 60)), 'minute']
+      : abs < 86400
+        ? [Math.round(abs / 3600), 'hour']
+        : [Math.round(abs / 86400), 'day'];
+  const signed = s < 0 ? -value : value;
+  try {
+    return new Intl.RelativeTimeFormat(_lang, { numeric: 'always', style: 'short' }).format(
+      signed,
+      /** @type {Intl.RelativeTimeFormatUnit} */ (unit),
+    );
+  } catch {
+    return new Intl.RelativeTimeFormat('en', { numeric: 'always', style: 'short' }).format(
+      signed,
+      /** @type {Intl.RelativeTimeFormatUnit} */ (unit),
+    );
+  }
+}
+
 /** The shared error, empty and healthy states, wired to the widget catalog.
     @param {any} opts */
 export function errorState(opts = {}) {
   return _errorState(Object.assign({ t: _t }, opts));
+}
+
+const PH_STYLE_ID = 'wt-ph-css';
+const PH_CSS =
+  '.wt-ph{display:inline-block;vertical-align:middle;flex:none;border-radius:4px;' +
+  'background:var(--wt-ph,rgba(235,235,245,0.16))}' +
+  'html[data-theme="light"] .wt-ph{background:var(--wt-ph,rgba(60,60,67,0.12))}';
+
+/** A soft rounded shape that stands in for content still loading. Set --wt-ph
+    on an ancestor to recolour it for a light surface.
+    @param {number|string} width px, or any CSS length @param {number} [height] px
+    @param {number} [radius] px @returns {HTMLElement} */
+export function placeholder(width, height = 10, radius = 4) {
+  if (!document.getElementById(PH_STYLE_ID)) {
+    const s = document.createElement('style');
+    s.id = PH_STYLE_ID;
+    s.textContent = PH_CSS;
+    document.head.appendChild(s);
+  }
+  const el = document.createElement('span');
+  el.className = 'wt-ph';
+  el.setAttribute('aria-hidden', 'true');
+  el.style.width = typeof width === 'number' ? width + 'px' : width;
+  el.style.height = height + 'px';
+  el.style.borderRadius = radius + 'px';
+  return el;
 }
 
 /** The reader's wording for a failure, for a widget that draws its own state.
@@ -512,9 +591,13 @@ export function setPollRate(rate) {
 
 if (typeof window !== 'undefined') /** @type {any} */ (window).__setPollRate = setPollRate;
 
+const SLOW_POLL_MS = 300000;
+
 export function poll(opts = {}) {
   const intervalFor = d => (typeof opts.interval === 'function' ? opts.interval(d) : opts.interval) || 30000;
-  const staleAfter = opts.staleAfter != null ? opts.staleAfter : 2;
+  /* A slow widget that waits for a second failure shows data two intervals old
+     with no sign of it. */
+  const staleAfter = () => (opts.staleAfter != null ? opts.staleAfter : intervalFor(lastData) >= SLOW_POLL_MS ? 1 : 2);
   const isEmpty = opts.isEmpty || (() => false);
   const doFetch = opts.fetch || (() => fetchData(opts.endpoint));
   const custom = typeof opts.onError === 'function'; /* widget draws its own error UI */
@@ -549,7 +632,7 @@ export function poll(opts = {}) {
     } catch (e) {
       if (stopped) return;
       fails++;
-      const stale = fails >= staleAfter;
+      const stale = fails >= staleAfter();
       if (custom) opts.onError({ error: e, everOk, stale, since: lastOk ? sinceLabel(lastOk) : '' });
       else if (!everOk || stale) ov.fail(e, { since: everOk && lastOk ? sinceLabel(lastOk) : '' });
     }

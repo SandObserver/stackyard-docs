@@ -1,12 +1,13 @@
 {
   "widget.label": "Tiempo",
+  "widget.description": "Mira el tiempo actual de un lugar.",
   "provider.label": "Servicio",
   "provider.opt.openmeteo": "Open-Meteo",
   "provider.opt.openweather": "OpenWeather",
   "owKey.label": "Clave de API",
   "owKey.hint": "Clave gratuita de openweathermap.org. Una clave nueva puede tardar unas horas en activarse.",
   "cityQuery.label": "Buscar",
-  "cityQuery.placeholder": "p. ej. Ottawa",
+  "cityQuery.placeholder": "p. ej. Ottawa",
   "city.label": "Ubicación",
   "city.hint": "Escribe una ciudad arriba, pulsa Obtener y elige el lugar correcto.",
   "units.label": "Unidades",
@@ -26,5 +27,8 @@
   "ui.snow": "Nieve",
   "ui.snowShowers": "Chubascos de nieve",
   "ui.thunderstorm": "Tormenta",
-  "ui.feelsLike": "sensación"
+  "ui.summary": "{place}: {condition}, {temp}",
+  "ui.updated": "{summary}. Actualizado {time}",
+  "ui.currentLocation": "Ubicación actual",
+  "ui.feelsLikeTemp": "{temp} (sensación térmica)"
 }

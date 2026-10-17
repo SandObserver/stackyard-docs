@@ -1,11 +1,11 @@
 import { state } from '/js/admin-state.js?v=af772a1b';
-import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=2b48ff3f';
-import { createListbox } from '/js/listbox.js?v=35d8318a';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=02ffdaba';
+import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=36dc5cc1';
+import { createListbox } from '/js/listbox.js?v=23e87940';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=191cb80f';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=fc7f0836';
-import { t } from '/js/i18n.js?v=5579776a';
-import { focusFirst, q, qi, qa } from '/js/utils.js?v=0d64dfd3';
+import { t } from '/js/i18n.js?v=ed7c5565';
+import { focusFirst, q, qi, qa } from '/js/utils.js?v=14b18b8c';
 import { iconSvg } from '/js/icon-set.js?v=628341d4';
 
 const SIZES_WITH_ICONS = new Set(['small', 'medium', 'large', 'xlarge']);
@@ -81,6 +81,15 @@ function _renderWidgetForm(body) {
     },
   });
   q('#wtype-row', shell).appendChild(typeBox.el);
+  const desc = state._wtype === 'custom' ? t('widgetCfg.typeCustomDesc') : state._widgetReg[state._wtype]?.description;
+  if (desc) {
+    const tip = document.createElement('p');
+    tip.className = 'grp-tip';
+    tip.id = 'wtype-desc';
+    tip.textContent = desc;
+    body.appendChild(tip);
+    typeBox.button.setAttribute('aria-describedby', tip.id);
+  }
 
   const refused = (state._widgetRejected || []).filter(r => r && r.name);
   if (refused.length) {

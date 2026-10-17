@@ -1,6 +1,7 @@
 {
   "name": "books",
   "label": "widget.label",
+  "description": "widget.description",
   "glyph": "shelf",
   "sizes": [
     "small",
@@ -147,6 +148,7 @@
       "type": "text",
       "label": "href.label",
       "placeholder": "href.placeholder",
+      "hint": "href.hint",
       "optional": true,
       "cosmetic": true
     }

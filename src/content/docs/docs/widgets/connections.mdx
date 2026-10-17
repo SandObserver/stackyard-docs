@@ -43,6 +43,7 @@ Medium only. One marker per service, with an optional legend.
 
 <SettingList title="Map settings" items={[
   { name: 'Show Legend', text: 'A service key under the map. On by default.' },
+  { name: 'Link URL', text: 'Where clicking the map opens. Clicking a dot does not open it.', optional: true },
 ]} />
 
 ## VPN view
@@ -64,6 +65,7 @@ Small or Medium. The state of one VPN connection.
 
 <SettingList title="VPN settings" items={[
   { name: 'Display name', text: 'The label on the tile.', optional: true },
-  { name: 'Click URL', text: 'Where the tile links.', optional: true },
+  { name: 'Link URL', text: 'Where the tile links.', optional: true },
+  { name: 'Show IP Address', text: 'Gluetun only. Off by default. Anyone who can see the dashboard sees the address.' },
   { name: 'Dot color', text: 'Green by default.' },
 ]} />

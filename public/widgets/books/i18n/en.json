@@ -1,5 +1,6 @@
 {
   "widget.label": "Books",
+  "widget.description": "See what you're reading and what's next on your shelves.",
   "provider.label": "Service",
   "provider.opt.audiobookshelf": "Audiobookshelf",
   "provider.opt.komga": "Komga",
@@ -26,8 +27,9 @@
   "source.opt.list": "Custom List",
   "listId.label": "List",
   "listId.hint": "Enter the URL + key above, then click Fetch to load your collections / reading lists.",
-  "href.label": "Click URL (optional)",
+  "href.label": "Link URL (optional)",
   "href.placeholder": "https://…",
+  "href.hint": "The address your browser uses for this service. Leave blank to use the one above, if your browser can reach it.",
   "ui.reading": "Reading",
   "ui.srcRecently": "Recently Added",
   "ui.srcUnread": "On Deck",
@@ -36,5 +38,6 @@
   "ui.percentRead": "{pct}% read",
   "ui.noBooks": "No books",
   "ui.untitled": "Untitled",
-  "ui.by": "by"
+  "ui.describeAuthor": "{title} by {author}, {progress}",
+  "ui.describe": "{title}, {progress}"
 }

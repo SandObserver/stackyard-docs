@@ -1,6 +1,7 @@
 {
   "name": "system-summary",
   "label": "widget.label",
+  "description": "widget.description",
   "glyph": "gauge",
   "sizes": [
     "small",
@@ -146,6 +147,15 @@
         }
       ],
       "hint": "refresh.hint",
+      "cosmetic": true
+    },
+    {
+      "key": "href",
+      "type": "text",
+      "label": "href.label",
+      "placeholder": "href.placeholder",
+      "optional": true,
+      "hint": "href.hint",
       "cosmetic": true
     },
     {

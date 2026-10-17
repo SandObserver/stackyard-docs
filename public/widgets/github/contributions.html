@@ -82,7 +82,7 @@
 <div class="tip" id="tip" hidden aria-hidden="true"></div>
 <div class="cap" id="cap"></div>
 <script type="module">
-import { poll, fetchData, linkTo, loadStrings, wt, formatNumber, errorState, fitText, cssZoom } from '/js/widget-toolbox.js?v=5532b552';
+import { poll, fetchData, linkTo, loadStrings, wt, formatNumber, errorState, fitText, cssZoom } from '/js/widget-toolbox.js?v=2c521043';
 await loadStrings();
 
 const TICK_MS = 300000;
@@ -226,8 +226,8 @@ function render(data) {
   if (GRID.cols) drawGrid(weeks);
   num.textContent = total;
   fitText(num);
-  sub.textContent = wt('ui.lastYear', 'Last year');
-  name(wt('ui.contributionsAria', 'GitHub contributions: {total} in the last year').replace('{total}', total));
+  sub.textContent = wt('ui.lastYear', 'Past 12 months');
+  name(wt('ui.contributionsAria', 'GitHub contributions: {total} in the past 12 months').replace('{total}', total));
   if (!arrived) {
     arrived = true;
     w.classList.add('arrive');
@@ -243,7 +243,7 @@ async function boot() {
     const r = await fetch(`/api/widget-config/${encodeURIComponent(id)}`);
     if (r.ok) {
       const wc = (await r.json())?.widgetConfig || {};
-      href = wc.githubHref || '';
+      href = wc.githubHref || (wc.githubUser ? `https://github.com/${encodeURIComponent(wc.githubUser)}` : '');
     }
   } catch {}
   linkEl = MOBILE ? w : head;

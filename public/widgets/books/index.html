@@ -35,7 +35,7 @@
   .empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     color:#8E8E93;font-size:11px}
 
-  .bk{flex:none;position:relative;overflow:hidden;border-radius:1.5px 1.5px 0 0;transform-origin:center bottom;
+  .bk{flex:none;position:relative;overflow:hidden;border-radius:1.5px 1.5px 0 0;transform-origin:center bottom;will-change:transform;
     box-shadow:inset 0 .5px 0 rgba(255,255,255,.24),inset -1px 0 0 rgba(0,0,0,.14),inset 1px 0 0 rgba(255,255,255,.06);
     background-image:linear-gradient(180deg,rgba(255,255,255,.07),rgba(0,0,0,.07));
     transition:transform .2s cubic-bezier(.2,.8,.2,1),filter .2s}
@@ -51,7 +51,7 @@
 
   .spine{position:absolute;left:50%;top:7px;transform:translateX(-50%);writing-mode:vertical-rl;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-height:calc(100% - 16px);line-height:1;
-    font-family:ui-serif, Georgia, serif;font-size:7.5px;letter-spacing:.03em;font-weight:500;pointer-events:none}
+    font-size:11px;font-weight:600;pointer-events:none}
   .bk.current .spine{top:15px;max-height:calc(100% - 24px)}
   .bk.done .spine{max-height:calc(100% - 24px)}
   .ribbon{position:absolute;left:50%;top:-1px;width:4px;height:13px;transform:translateX(-50%);background:#D6453D;
@@ -87,7 +87,7 @@
 <body>
 <div class="card" id="card" role="group" aria-label="Books">
   <div class="bk-link" id="bk-link"></div>
-  <div class="head" id="lbl">READING</div>
+  <div class="head" id="lbl"></div>
   <div class="shelves" id="shelves">
     <div class="shelf-wrap">
       <span class="shelf-lbl" hidden></span>
@@ -103,9 +103,8 @@
   <span class="sr" id="sr" aria-live="polite"></span>
 </div>
 <script type="module">
-  import { poll, linkTo, loadStrings, wt, formatNumber, errorState } from '/js/widget-toolbox.js?v=5532b552';
+  import { poll, linkTo, loadStrings, wt, formatNumber, errorState, placeholder } from '/js/widget-toolbox.js?v=2c521043';
   await loadStrings();
-  document.getElementById('lbl').textContent = wt('ui.reading', 'Reading');
   document.getElementById('card').setAttribute('aria-label', wt('widget.label', 'Books'));
   const API='/api';
   const params=new URLSearchParams(location.search);
@@ -151,7 +150,10 @@
   }
   function describe(b){
     const [ptxt]=progressText(b);
-    return (b.title||wt('ui.untitled','Untitled'))+(b.author?' '+wt('ui.by','by')+' '+b.author:'')+', '+ptxt;
+    const title=b.title||wt('ui.untitled','Untitled');
+    return b.author
+      ?wt('ui.describeAuthor','{title} by {author}, {progress}',{title,author:b.author,progress:ptxt})
+      :wt('ui.describe','{title}, {progress}',{title,progress:ptxt});
   }
   function paintFoot(b){
     fT.textContent=b?(b.title||wt('ui.untitled','Untitled')):'';
@@ -164,6 +166,7 @@
 
   function render(books,list,shelf){
     list.innerHTML='';
+    list.removeAttribute('aria-hidden');
     list.classList.remove('sparse','pointing');
     shelf.querySelectorAll('.empty').forEach(n=>n.remove());
     /* Removing the bullets drops the list semantics in one engine, so the role
@@ -205,31 +208,52 @@
       const title=b.title||'';
       const h=hash(title+'|'+i);
       return Object.assign({}, b, {
-        _w: Math.max(11,Math.min(18,9+Math.round(title.length*.45)))+(h%2),
-        _h: 72 + (h % 24),
+        _w: Math.max(14,Math.min(19,12+Math.round(title.length*.35)))+(h%2),
+        _h: SHELVES>1 ? 90 + (h % 10) : 72 + (h % 24),
         _color: b.color || PALETTE[(h>>>4) % PALETTE.length],
       });
     });
   }
 
+  function paintPlaceholders(){
+    lbl.replaceChildren(placeholder(72,9));
+    for(const bay of bays){
+      const n=Math.min(SHOW,Math.max(5,Math.floor((bay.list.clientWidth||140)/18)));
+      bay.list.setAttribute('aria-hidden','true');
+      bay.list.replaceChildren(...Array.from({length:n},(_,i)=>{
+        const ph=placeholder(14+(i*7)%5,0,1.5);
+        ph.style.height=(62+(i*37)%32)+'%';
+        ph.style.borderRadius='1.5px 1.5px 0 0';
+        return ph;
+      }));
+    }
+    fT.replaceChildren(placeholder(90,10));
+    fP.replaceChildren(placeholder(36,10));
+  }
+
   async function boot(){
+    paintPlaceholders();
     try{
       const r=await fetch(`${API}/widget-config/${encodeURIComponent(id)}`);
       if(r.ok){ const c=await r.json(); href=(c&&c.widgetConfig&&c.widgetConfig.href)||''; }
     }catch(e){}
-    if(href){
-      const link=document.getElementById('bk-link');
-      if(linkTo(link,href)) link.setAttribute('aria-label', wt('widget.label','Books'));
-    }
+    const link=document.getElementById('bk-link');
+    const setLink=d=>{ if(linkTo(link,(d&&d.link)||href)) link.setAttribute('aria-label', wt('widget.label','Books')); };
+    setLink(null);
     const state = errorState({ root:card, content:document.getElementById('shelves'),
       caption:document.getElementById('cap') });
 
     poll({ interval:POLL_MS,
       isEmpty:d=>(Array.isArray(d&&d.shelves)?d.shelves:[]).every(sh=>!(sh&&Array.isArray(sh.books)&&sh.books.length)),
-      onEmpty:()=>{ paintFoot(null); state.empty(wt('ui.noBooks','No books')); },
+      onEmpty:d=>{
+        lbl.textContent=SHELVES>1?wt('widget.label','Books'):shelfName((d&&d.shelves||[])[0]);
+        for(const bay of bays){ bay.list.replaceChildren(); bay.list.removeAttribute('aria-hidden'); }
+        paintFoot(null); state.empty(wt('ui.noBooks','No books'));
+      },
       onError:({error,everOk,stale,since})=>{ if(!everOk||stale) state.fail(error,{since,inert:everOk}); },
       render:d=>{
       state.ok();
+      setLink(d);
       const shelves=Array.isArray(d.shelves)?d.shelves:[];
       lbl.textContent=SHELVES>1?wt('widget.label','Books'):shelfName(shelves[0]);
       const rows=bays.map((_,i)=>{ const sh=shelves[i]||{books:[]}; return decorate((Array.isArray(sh.books)?sh.books:[]).slice(0,SHOW)); });

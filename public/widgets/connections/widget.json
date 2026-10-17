@@ -1,6 +1,7 @@
 {
   "name": "connections",
   "label": "widget.label",
+  "description": "widget.description",
   "glyph": "network",
   "sizes": [
     "small",
@@ -125,6 +126,18 @@
           "label": "vpn.href.label",
           "placeholder": "vpn.href.placeholder",
           "optional": true,
+          "cosmetic": true
+        },
+        {
+          "key": "showIp",
+          "type": "toggle",
+          "label": "vpn.showIp.label",
+          "default": false,
+          "showIf": {
+            "field": "service",
+            "equals": "gluetun"
+          },
+          "hint": "vpn.showIp.hint",
           "cosmetic": true
         },
         {
@@ -318,6 +331,18 @@
           "cosmetic": true
         }
       ]
+    },
+    {
+      "key": "href",
+      "type": "text",
+      "label": "href.label",
+      "placeholder": "href.placeholder",
+      "optional": true,
+      "showIf": {
+        "field": "view",
+        "equals": "map"
+      },
+      "cosmetic": true
     },
     {
       "key": "showLegend",

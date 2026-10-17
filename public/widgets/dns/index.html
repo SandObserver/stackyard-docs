@@ -32,28 +32,38 @@
   @media (prefers-reduced-motion: reduce) { .pct, .link { transition:none; } }
 
   .msg { position:absolute; inset-inline:0; bottom:0; }
+  .flow.ph { color:rgba(235,235,245,0.16); }
+  .flow.ph .src-node { fill:currentColor; }
+  html[data-theme="light"] .flow.ph { color:rgba(60,60,67,0.12); }
+
+  .legend { display:flex; flex-wrap:wrap; gap:2px 10px; margin-top:8px; flex-shrink:0;
+    font-size:11px; font-weight:600; line-height:1.2; color:rgba(235,235,245,0.6); }
+  .legend[hidden] { display:none; }
+  .legend span { display:flex; align-items:center; gap:4px; white-space:nowrap; }
+  .legend i { width:6px; height:6px; border-radius:50%; background:var(--c); }
 
   .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   .src-node { fill:#fff }
   html[data-theme="light"] .src-node { fill:#1c1c1e }
-  html[data-theme="light"] .sub { color:rgba(0,0,0,0.62) }
+  html[data-theme="light"] .sub, html[data-theme="light"] .legend { color:rgba(0,0,0,0.62) }
 </style>
 </head>
 <body>
 <div class="widget" id="widget" role="group" aria-label="DNS filtering">
   <div class="hero" id="hero">
-    <div class="pct" id="pct">—</div>
+    <div class="pct" id="pct"></div>
     <div class="sub" id="sub-label">Queries Blocked</div>
   </div>
   <div class="flow" id="flow">
     <svg id="svg" viewBox="0 0 240 120" preserveAspectRatio="none" aria-hidden="true"></svg>
     <div class="msg" id="msg" hidden></div>
   </div>
+  <div class="legend" id="legend" aria-hidden="true" hidden></div>
   <div class="sr-only" id="sr"></div>
 </div>
 
 <script type="module">
-import { poll, fetchData, linkTo, loadStrings, wt, formatNumber, errorState, readableInk } from '/js/widget-toolbox.js?v=5532b552';
+import { poll, fetchData, linkTo, loadStrings, wt, formatNumber, errorState, readableInk, placeholder } from '/js/widget-toolbox.js?v=2c521043';
 await loadStrings();
 /* These two are in the markup, so the widget still reads correctly in English
    if the catalog fetch fails. */
@@ -86,6 +96,9 @@ function fmt(n) {
 }
 
 async function boot() {
+  pctEl.replaceChildren(placeholder(64, 26, 6));
+  flowEl.classList.add('ph');
+  render({ allowed: 6, cached: 3, blocked: 2 }, true);
   let cfg = null;
   try {
     const r = await fetch(`${API}/widget-config/${encodeURIComponent(id)}`);
@@ -93,14 +106,18 @@ async function boot() {
   } catch {}
   _href = cfg?.widgetConfig?.dnsHref || '';
   _provider = cfg?.widgetConfig?.provider || 'adguard';
-  if (linkTo(widgetEl, _href)) widgetEl.setAttribute('aria-describedby', 'sr');
+  const link = d => {
+    if (linkTo(widgetEl, d?.link || _href)) widgetEl.setAttribute('aria-describedby', 'sr');
+    else widgetEl.removeAttribute('aria-describedby');
+  };
+  link(null);
   poll({ fetch:gfetch, interval:TICK_MS,
-    render:d=>{ state.ok(); apply(d); },
+    render:d=>{ state.ok(); link(d); apply(d); },
     onError:({error,everOk,stale,since})=>{ if(!everOk||stale) state.fail(error,{since,inert:everOk}); } });
   addEventListener('resize', () => { if (_last) render(_last); });
 }
 
-const state = errorState({ root: widgetEl, content: [pctEl, svgEl], caption: msgEl });
+const state = errorState({ root: widgetEl, content: [pctEl, svgEl, document.getElementById('legend')], caption: msgEl });
 
 const gfetch = () => fetchData('stats');
 
@@ -113,6 +130,7 @@ function apply(d) {
   const allowed = Math.max(0, total - blocked - cached);
   const pct = total > 0 ? Math.round(blocked / total * 100) : 0;
 
+  flowEl.classList.remove('ph');
   const model = { total, allowed, cached, blocked, pct };
   _last = model;
   render(model);
@@ -133,17 +151,18 @@ const W = 240, H = 120, NODE_W = 8, SRC_SHARE = 0.5;
 let _segs = [];
 let _sel = -1;
 
-function render(m) {
+function render(m, ph = false) {
   svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
   const segs = [
     { key:'allowed', label:wt('ui.allowed','Allowed'), value:m.allowed, color:'#30D158' },
     { key:'cached',  label:wt('ui.cached','Cached'),   value:m.cached,  color:'#0091FF' },
     { key:'blocked', label:wt('ui.blocked','Blocked'), value:m.blocked, color:'#FF4245' },
-  ].filter(s => s.value > 0);
+  ].filter(s => s.value > 0).map(s => (ph ? { ...s, color: 'currentColor' } : s));
 
   _segs = segs;
   if (_sel >= segs.length) _sel = -1;
+  if (!ph) renderLegend(segs);
   if (!segs.length) { svgEl.innerHTML=''; return; }
 
   const sum = segs.reduce((a,s)=>a+s.value,0);
@@ -166,6 +185,18 @@ function render(m) {
 
   svgEl.innerHTML = links + nodes;
   highlight();
+}
+
+function renderLegend(segs) {
+  const el = document.getElementById('legend');
+  el.replaceChildren(...segs.map(s => {
+    const item = document.createElement('span');
+    const dot = document.createElement('i');
+    dot.style.setProperty('--c', s.color);
+    item.append(dot, s.label);
+    return item;
+  }));
+  el.hidden = !segs.length;
 }
 
 function ribbonY(s, x) {
@@ -200,7 +231,7 @@ function select(i) {
 }
 
 function pick(e) {
-  if (!_segs.length) return;
+  if (!_segs.length || flowEl.classList.contains('ph')) return;
   const r = flowEl.getBoundingClientRect();
   if (!r.width || !r.height) return;
   const x = (e.clientX - r.left) / r.width * W;

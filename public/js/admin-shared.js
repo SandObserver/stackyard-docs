@@ -1,12 +1,12 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
 import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=fc7f0836';
-import { el, isolate, q } from '/js/utils.js?v=0d64dfd3';
-import { t } from '/js/i18n.js?v=5579776a';
+import { el, isolate, q } from '/js/utils.js?v=14b18b8c';
+import { t } from '/js/i18n.js?v=ed7c5565';
 import { errorAdvice } from '/js/admin-error.js?v=b0881957';
-import { formatNumber } from '/js/format-number.js?v=349a741d';
+import { formatList, formatNumber } from '/js/format-number.js?v=abcd4ae4';
 import { iconChain } from '/js/icons.js?v=9c7b5111';
 import { iconSvg } from '/js/icon-set.js?v=628341d4';
-import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=dbe542e1';
+import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=85138697';
 
 export const API = '';
 
@@ -153,7 +153,7 @@ export function withheldText(body) {
     .map(w => w.label)
     .filter(Boolean)
     .map(isolate);
-  return names.length ? t('toast.secretsWithheld', { items: names.join(', ') }) : '';
+  return names.length ? t('toast.secretsWithheld', { items: formatList(names) }) : '';
 }
 
 /* A native `disabled` control is skipped by screen readers. aria-disabled keeps

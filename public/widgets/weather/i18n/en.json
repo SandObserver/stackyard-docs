@@ -1,5 +1,6 @@
 {
   "widget.label": "Weather",
+  "widget.description": "See the current weather for a place.",
   "provider.label": "Service",
   "provider.opt.openmeteo": "Open-Meteo",
   "provider.opt.openweather": "OpenWeather",
@@ -26,5 +27,8 @@
   "ui.snow": "Snow",
   "ui.snowShowers": "Snow Showers",
   "ui.thunderstorm": "Thunderstorm",
-  "ui.feelsLike": "feels like"
+  "ui.summary": "{place}: {condition}, {temp}",
+  "ui.updated": "{summary}. Updated {time}",
+  "ui.currentLocation": "Current location",
+  "ui.feelsLikeTemp": "{temp} (feels like)"
 }

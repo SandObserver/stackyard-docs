@@ -1,5 +1,6 @@
 {
   "widget.label": "正在播放",
+  "widget.description": "查看媒体服务器上正在播放的内容。",
   "provider.label": "媒体服务器",
   "provider.opt.plex": "Plex",
   "provider.opt.jellyfin": "Jellyfin",
@@ -19,13 +20,16 @@
   "navidromeUrl.placeholder": "http://host:4533",
   "navidromeUser.label": "用户名",
   "navidromePassword.label": "密码",
-  "href.label": "点击跳转地址（可选）",
+  "href.label": "链接地址（可选）",
   "href.placeholder": "https://…",
+  "href.hint": "浏览器访问此服务所用的地址。留空则使用上方地址（前提是浏览器能访问它）。",
   "ui.nothingPlaying": "当前没有播放",
-  "ui.nowPlayingPrefix": "正在播放：",
-  "ui.onPlayer": "于",
-  "ui.paused": "已暂停",
+  "ui.describeTitle": "正在播放：{title}",
+  "ui.describeSubtitle": "{text}，{subtitle}",
+  "ui.describePlayer": "{text}（{player}）",
+  "ui.describeProvider": "{text}，{provider}",
+  "ui.describePaused": "{text}（已暂停）",
   "ui.previous": "上一项",
   "ui.next": "下一项",
-  "ui.activateToOpen": "激活以打开链接。"
+  "ui.linkName": "{text}。轻点以打开链接。"
 }

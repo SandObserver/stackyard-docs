@@ -1,5 +1,6 @@
 {
   "widget.label": "Lecture en cours",
+  "widget.description": "Voyez ce qui est en lecture sur votre serveur multimédia.",
   "provider.label": "Serveur multimédia",
   "provider.opt.plex": "Plex",
   "provider.opt.jellyfin": "Jellyfin",
@@ -7,7 +8,7 @@
   "provider.opt.navidrome": "Navidrome",
   "plexUrl.label": "URL du serveur Plex",
   "plexUrl.placeholder": "http://host:32400",
-  "plexUrl.hint": "Votre serveur Plex Media Server (port 32400 par défaut).",
+  "plexUrl.hint": "Votre Plex Media Server (port 32400 par défaut).",
   "plexToken.label": "Jeton Plex (X-Plex-Token)",
   "jellyfinUrl.label": "URL Jellyfin",
   "jellyfinUrl.placeholder": "http://host:8096",
@@ -19,13 +20,16 @@
   "navidromeUrl.placeholder": "http://host:4533",
   "navidromeUser.label": "Nom d’utilisateur",
   "navidromePassword.label": "Mot de passe",
-  "href.label": "URL de clic (facultatif)",
+  "href.label": "URL du lien (facultatif)",
   "href.placeholder": "https://…",
+  "href.hint": "L’adresse que votre navigateur utilise pour ce service. Laissez vide pour utiliser celle ci-dessus, si votre navigateur peut l’atteindre.",
   "ui.nothingPlaying": "Aucune lecture en cours",
-  "ui.nowPlayingPrefix": "Lecture en cours :",
-  "ui.onPlayer": "sur",
-  "ui.paused": "en pause",
+  "ui.describeTitle": "Lecture en cours : {title}",
+  "ui.describeSubtitle": "{text}, {subtitle}",
+  "ui.describePlayer": "{text} sur {player}",
+  "ui.describeProvider": "{text}, {provider}",
+  "ui.describePaused": "{text} (en pause)",
   "ui.previous": "Élément précédent",
   "ui.next": "Élément suivant",
-  "ui.activateToOpen": "Activer pour ouvrir le lien."
+  "ui.linkName": "{text}. Activez pour ouvrir le lien."
 }

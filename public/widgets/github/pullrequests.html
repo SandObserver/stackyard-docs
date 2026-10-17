@@ -58,7 +58,7 @@
 <div class="widget" id="widget" role="group" aria-label="GitHub pull requests"></div>
 <div class="cap" id="cap"></div>
 <script type="module">
-import { poll, fetchData, linkTo, loadStrings, wt, errorState, formatNumber, fitText } from '/js/widget-toolbox.js?v=5532b552';
+import { poll, fetchData, linkTo, loadStrings, wt, errorState, formatNumber, fitText, placeholder, formatList } from '/js/widget-toolbox.js?v=2c521043';
 await loadStrings();
 
 const TICK_MS = 60000;
@@ -91,7 +91,7 @@ function line(cls, text) {
 
 const head = el('div', 'head');
 const fig = el('div', 'fig');
-const num = el('div', 'num', '—');
+const num = el('div', 'num');
 const sub = el('div', 'sub');
 fig.append(num, sub);
 head.append(el('div', 'lbl', wt('ui.pullRequests', 'Pull requests')), fig);
@@ -99,6 +99,13 @@ const list = el('div', 'list');
 w.className = 'widget size-' + size;
 w.append(head);
 if (ROWS) w.append(list);
+num.append(placeholder(48, 30, 6));
+sub.append(placeholder(70, 10));
+for (let i = 0; i < ROWS; i++) {
+  const row = el('div', 'pr');
+  row.append(placeholder(`${88 - (i % 3) * 14}%`, 11), placeholder('38%', 9));
+  list.append(row);
+}
 
 const state = errorState({ root: document.body, caption: document.getElementById('cap'), content: () => [w] });
 
@@ -110,7 +117,7 @@ function repoName(repo) {
 function render(data) {
   const total = formatNumber(Math.max(0, Number(data.totalCount) || 0));
   const filters = Array.isArray(data.filters) && data.filters.length ? data.filters : ['created'];
-  const label = filters.map(f => wt('githubPrFilters.opt.' + f, FILTER_FALLBACK[f] || f)).join(', ');
+  const label = formatList(filters.map(f => wt('githubPrFilters.opt.' + f, FILTER_FALLBACK[f] || f)), 'plain');
   num.textContent = total;
   fitText(num);
   sub.textContent = label;

@@ -59,6 +59,21 @@ export function formatNumber(value, options) {
   return cached.format(value);
 }
 
+/** Join items the way the interface language writes a list.
+    @param {string[]} items @param {'conjunction'|'plain'} [type]
+    @returns {string} */
+export function formatList(items, type = 'conjunction') {
+  const list = items.map(String);
+  try {
+    return new Intl.ListFormat(language || 'en', {
+      type: 'conjunction',
+      style: type === 'plain' ? 'narrow' : 'long',
+    }).format(list);
+  } catch {
+    return list.join(', ');
+  }
+}
+
 /* Ten entries, built once per locale from the same cached formatter. Formatting
    each character separately called Intl on every digit of every polled string. */
 let digitMap = null;

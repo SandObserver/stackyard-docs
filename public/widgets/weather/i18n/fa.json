@@ -1,12 +1,13 @@
 {
   "widget.label": "آب‌وهوا",
+  "widget.description": "آب‌وهوای فعلی یک مکان را ببینید.",
   "provider.label": "سرویس",
   "provider.opt.openmeteo": "Open-Meteo",
   "provider.opt.openweather": "OpenWeather",
   "owKey.label": "کلید API",
   "owKey.hint": "کلید رایگان را از openweathermap.org بگیرید. فعال شدن کلید تازه ممکن است چند ساعت طول بکشد.",
   "cityQuery.label": "جستجو",
-  "cityQuery.placeholder": "مثلاً تهران",
+  "cityQuery.placeholder": "مثلا تهران",
   "city.label": "موقعیت",
   "city.hint": "نام شهری را بالا بنویسید، سپس دریافت را بزنید و مورد درست را انتخاب کنید.",
   "units.label": "واحد",
@@ -16,7 +17,7 @@
   "href.label": "آدرس پیوند",
   "href.placeholder": "https://…",
   "ui.clear": "صاف",
-  "ui.mostlyClear": "عمدتاً صاف",
+  "ui.mostlyClear": "عمدتا صاف",
   "ui.partlyCloudy": "نیمه‌ابری",
   "ui.cloudy": "ابری",
   "ui.fog": "مه",
@@ -26,5 +27,8 @@
   "ui.snow": "برف",
   "ui.snowShowers": "رگبار برف",
   "ui.thunderstorm": "رعدوبرق",
-  "ui.feelsLike": "دمای محسوس"
+  "ui.summary": "{place}: {condition}، {temp}",
+  "ui.updated": "{summary}. {time} به‌روزرسانی شد",
+  "ui.currentLocation": "موقعیت فعلی",
+  "ui.feelsLikeTemp": "{temp} (دمای ظاهری)"
 }

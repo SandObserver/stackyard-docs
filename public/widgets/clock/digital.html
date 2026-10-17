@@ -87,7 +87,7 @@ function zoneOk(z) {
 }
 async function showZoneError() {
   const w = document.getElementById('widget');
-  const { errorState, loadStrings, wt } = await import('/js/widget-toolbox.js?v=5532b552');
+  const { errorState, loadStrings, wt } = await import('/js/widget-toolbox.js?v=2c521043');
   await loadStrings();
   const line = wt('ui.unknownZone', 'Unknown timezone');
   errorState({ root: w, place: 'center' }).empty(line);
@@ -120,7 +120,7 @@ async function boot() {
     }
   } catch {}
   if (!zoneOk(_timezone)) return showZoneError();
-  const { clockDateFormatter } = await import('/js/clock-date.js?v=978eaa4f');
+  const { clockDateFormatter } = await import('/js/clock-date.js?v=161731f5');
   _dateLong = clockDateFormatter(_lang, 'long');
   _dateShort = clockDateFormatter(_lang, 'short');
   layout();

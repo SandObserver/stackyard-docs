@@ -1,6 +1,7 @@
 {
   "name": "nowplaying",
   "label": "widget.label",
+  "description": "widget.description",
   "appearance": "dark",
   "card": "graphite",
   "glyph": "play",
@@ -123,6 +124,7 @@
       "type": "text",
       "label": "href.label",
       "placeholder": "href.placeholder",
+      "hint": "href.hint",
       "optional": true,
       "cosmetic": true
     }

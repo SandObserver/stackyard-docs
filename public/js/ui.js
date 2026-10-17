@@ -1,5 +1,5 @@
 import { iconChain } from '/js/icons.js?v=9c7b5111';
-import { widgetSrc, cardPreset, fixedAppearance, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=9264dee5';
+import { widgetSrc, cardPreset, fixedAppearance, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=b0e8f76d';
 import {
   mk,
   clr,
@@ -16,8 +16,8 @@ import {
   q,
   qa,
   setUserText,
-} from '/js/utils.js?v=0d64dfd3';
-import { t, currentLang } from '/js/i18n.js?v=5579776a';
+} from '/js/utils.js?v=14b18b8c';
+import { t, currentLang } from '/js/i18n.js?v=ed7c5565';
 import { toneForColor } from '/js/label-contrast.js?v=0b1ebb19';
 import { mobileMetrics, gridColumnWidth, gridCellCount } from '/js/mobile-metrics.js?v=349f4300';
 import { smoothRectPath } from '/js/smooth-corner.js?v=b7dda7e1';

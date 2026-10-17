@@ -1,6 +1,7 @@
 {
   "name": "disk-health",
   "label": "widget.label",
+  "description": "widget.description",
   "appearance": "dark",
   "card": "graphite",
   "glyph": "drive",
@@ -36,10 +37,22 @@
       }
     },
     {
+      "key": "scrutinyToken",
+      "type": "secret",
+      "label": "scrutinyToken.label",
+      "hint": "scrutinyToken.hint",
+      "optional": true,
+      "showIf": {
+        "field": "diskProvider",
+        "equals": "scrutiny"
+      }
+    },
+    {
       "key": "scrutinyHref",
       "type": "text",
       "label": "scrutinyHref.label",
       "placeholder": "scrutinyHref.placeholder",
+      "hint": "scrutinyHref.hint",
       "optional": true,
       "showIf": {
         "field": "diskProvider",
@@ -71,6 +84,7 @@
       "type": "text",
       "label": "truenasHref.label",
       "placeholder": "truenasHref.placeholder",
+      "hint": "truenasHref.hint",
       "optional": true,
       "showIf": {
         "field": "diskProvider",

@@ -23,7 +23,6 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# working notes and design sources, kept outside the repo at
-# ~/Developer/stackyard/notes/docs-site/
+# working notes and design sources
 internal/
 design-work/

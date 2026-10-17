@@ -32,9 +32,10 @@ jobs:
       - name: Install
         run: npm ci
 
-      # The development and changelog pages are generated from the application
-      # repository at build time. Without it they fall back to a link, and the
-      # checks below would pass against a site two pages short of the real one.
+      # The accessibility, changelog, governance and security policy pages are
+      # generated from the application repository at build time. Without it they
+      # fall back to a link, and the checks below would pass against a site four
+      # pages short of the real one.
       - name: Fetch the application repository
         run: git clone --depth 1 https://github.com/SandObserver/stackyard.git "$RUNNER_TEMP/stackyard"
 

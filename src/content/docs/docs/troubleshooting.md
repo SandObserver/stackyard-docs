@@ -89,7 +89,7 @@ The SSRF guard blocks private, loopback and link-local addresses by default, so 
 
 Set `ALLOW_PRIVATE_IPS=true`. Read [Security](/docs/security/) first, then see [Environment variables](/docs/installation/docker/#environment-variables).
 
-Two things work without it. A dotless hostname such as a Docker container name is trusted. So is the Host IP set in **General**.
+Two things work without it. A dotless hostname such as a Docker container name works, unless it resolves to a loopback or link-local address. The Host IP set in **General** also works.
 
 ### The badge shows a dimmed value with a dashed outline
 

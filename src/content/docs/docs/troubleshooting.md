@@ -154,7 +154,7 @@ A ping check needs neither. Switch the check type to Ping and give it a URL.
 
 ### Every app with a container shows as unhealthy at once
 
-The container list comes from a socket proxy, which is a separate container you run yourself. Stackyard only stores its address. When that address cannot be reached, no container is found, and a container that cannot be found counts as not running.
+The container list comes from a socket proxy, which is a separate container you run yourself. Stackyard only stores its address. When that address cannot be reached, no container is found, and a container that cannot be found counts as not running. When the proxy stops answering, the last container list it sent is used for up to 2 minutes.
 
 Two addresses that look interchangeable are not, and they fail for opposite reasons.
 
@@ -240,7 +240,7 @@ One line, in place of the widget's data. Each names a kind of failure rather tha
 | `Key rejected` | The credential was refused. | The API key or token, and its scopes. |
 | `Request blocked` | Stackyard refused to make the request. | A private address with `ALLOW_PRIVATE_IPS` unset. See [Security](/docs/security/). |
 | `Not set up yet` | The widget has no address or credential yet. | The widget's own settings. |
-| `Service error` | The service answered with an error. | The service's logs. |
+| `Service error` | The service answered with an error, or with a reply the widget cannot read. | The service's logs, and that the URL points at the service's API. |
 | `Something went wrong` | Anything else. | The container logs. |
 | `No data` | The service answered, and had nothing to report. | Nothing. This is not a failure. |
 

@@ -560,11 +560,11 @@ const schema = {
         <a href="/docs/changelog/">Changelog</a>
         <a href="/docs/support/">Support</a>
       </nav>
-      <p class="foot-legal">© {new Date().getFullYear()} SandObserver · Apache License 2.0{version && <> · <a class="verbadge" data-version={version} href="/docs/changelog/" aria-label={`Release v${version}, changelog`}>v{version}</a></>}</p>
+      <p class="foot-legal">© {new Date().getFullYear()} <a href="https://backyard.sandobserver.com">SandObserver</a> · Apache License 2.0{version && <> · <a class="verbadge" data-version={version} href="/docs/changelog/" aria-label={`Release v${version}, changelog`}>v{version}</a></>}</p>
     </div>
     <dl class="credits">
       <div>
-        <dt>Also by SandObserver</dt>
+        <dt>Also by <a href="https://backyard.sandobserver.com">SandObserver</a></dt>
         <dd class="credit-row">
           <a class="sibling" href="https://posteryard.sandobserver.com">
             <svg viewBox="282 232 478 580" width="15" height="18" aria-hidden="true" focusable="false"><line x1="352" y1="302" x2="352" y2="742" stroke="#F2F2F7" stroke-width="140" stroke-linecap="round"/><path d="M500 292V532L712 412Z" fill="#FFD60A" stroke="#FFD60A" stroke-width="96" stroke-linejoin="round"/></svg>
@@ -943,8 +943,8 @@ if (!reduced) {
     .foot-links a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--a11y-dim)}
     .foot-links a:hover{color:var(--label-primary)}
     .foot-legal{margin:0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.5)}
-    .foot-legal a{color:inherit;text-decoration:underline;text-underline-offset:3px}
-    .foot-legal a:hover{color:var(--label-primary)}
+    .foot-legal a,.credits dt a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+    .foot-legal a:hover,.credits dt a:hover{color:var(--label-primary)}
     .credits{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,220px);gap:0 32px;margin:0;align-content:start}
     .credits>div{display:grid;grid-template-rows:auto 44px auto;align-content:start;gap:2px;min-width:0}
     .credits dt{padding-top:6px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5)}

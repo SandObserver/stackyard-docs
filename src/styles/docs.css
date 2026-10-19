@@ -1034,6 +1034,11 @@ starlight-menu-button button {
   background: var(--sy-glass);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   color: var(--sy-tx);
+  align-items: center;
+  justify-content: center;
+}
+starlight-menu-button svg {
+  font-size: 20px;
 }
 
 .sidebar-pane {

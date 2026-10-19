@@ -89,7 +89,7 @@ import { poll, fetchData, sparkline } from '/js/widget-toolbox.js?v=1';
 ### Data
 
 - `widgetId()` returns this widget id from the frame URL.
-- `fetchData(endpoint?)` fetches `/api/widget-data/<id>` and returns the parsed JSON. Throws on a non-OK response.
+- `fetchData(endpoint?, { params })` fetches `/api/widget-data/<id>` and returns the parsed JSON. Throws on a non-OK response. Each name in `params` must be listed in the manifest's [`params`](/docs/create-a-widget/manifest/#query-parameters).
 - `getConfig()` fetches this widget config, without secrets.
 
 ### Polling

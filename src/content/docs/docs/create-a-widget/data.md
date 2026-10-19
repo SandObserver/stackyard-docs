@@ -28,7 +28,7 @@ A widget that renders entirely in the browser, like [Clock](/docs/widgets/clock/
 | `ctx.settings` | A frozen copy of the dashboard settings shared with widgets. An allowlist, currently `stats` only. Everything else is withheld. To share another key, add it to `SHARED_KEYS` in `api/src/widget-settings.js`. |
 | `ctx.endpoint` | The endpoint name, set for an `optionsFrom` fetch or a multi-view widget. |
 | `ctx.row` | For an `optionsFrom` fetch from a field in a `group`, that row's values. Otherwise `null`. |
-| `ctx.params` | Extra query parameters, as `URLSearchParams`. |
+| `ctx.params` | The query parameters the manifest lists in [`params`](/docs/create-a-widget/manifest/#query-parameters), plus `endpoint`, as `URLSearchParams`. |
 | `ctx.fetchJSON(url, opts)` | Fetches a URL and parses the body. Returns `{ status, data }` or throws. JSON is returned as-is. Prometheus text and XML are parsed. Pass `{ raw: true }` for the untouched text. |
 | `ctx.parsePrometheus(text)` | Parses a Prometheus metrics body. Non-string input gives an empty object. |
 | `ctx.normalizeBase(raw)` | Tidies a user-entered base URL: adds a scheme, drops a trailing slash. |

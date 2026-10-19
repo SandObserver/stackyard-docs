@@ -241,7 +241,7 @@ One line, in place of the widget's data. Each names a kind of failure rather tha
 | `Request blocked` | Stackyard refused to make the request. | A private address with `ALLOW_PRIVATE_IPS` unset. See [Security](/docs/security/). |
 | `Not set up yet` | The widget has no address or credential yet. | The widget's own settings. |
 | `Service error` | The service answered with an error, or with a reply the widget cannot read. | The service's logs, and that the URL points at the service's API. |
-| `Something went wrong` | Anything else. | The container logs. |
+| `Something went wrong` | Anything else, including a widget that fails to draw the data it received. | The container logs, then the browser console. |
 | `No data` | The service answered, and had nothing to report. | Nothing. This is not a failure. |
 
 The Disk health widget marks a single bay `Not reporting` when the drive it names is no longer in the monitoring service's list. The other bays are unaffected.

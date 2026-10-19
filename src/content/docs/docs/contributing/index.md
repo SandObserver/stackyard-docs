@@ -43,6 +43,7 @@ npm run paths:check
 cd api && npm test
 cd api && npx c8 check-coverage --lines 92
 cd ui/test && node --test
+cd test/repo && node --test
 npm run lint
 npm run format:check
 npm run typecheck

@@ -18,7 +18,7 @@ If a release build fails, fix `main`, delete the tag, and push it again.
 
 - `RELEASE_APP_CLIENT_ID` and `RELEASE_APP_PRIVATE_KEY`: a GitHub App with read and write on Contents and Pull requests, installed on this repository only. The built-in token cannot trigger the release workflows. The app is also a bypass actor on the `main` ruleset, so it can push changelog entries after each merge.
 - `DOCS_DEPLOY_HOOK_URL`: a Cloudflare Pages deploy hook. It rebuilds this site after a stable release. The release still succeeds without it.
-- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`: a token made from the Edit Cloudflare Workers template, and its account. They publish the demo after a stable release. The release still succeeds without them.
+- `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`: a token made from the Edit Cloudflare Workers template, and its account. They are secrets of the `demo` environment, which only `main` and release tags can use. They publish the demo after a stable release. The release still succeeds without them.
 
 ## Demo
 

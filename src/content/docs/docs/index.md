@@ -13,6 +13,6 @@ Stackyard is a self-hosted dashboard for your homelab. Apps, folders, a few widg
 - **Small.** One container, no database, no runtime dependencies.
 - **Accessible.** Six languages including right to left, built to WCAG 2.2 AA.
 
-Try the [demo](https://demo.sandobserver.com). The first load can take a minute.
+Try the [demo](https://demo.sandobserver.com).
 
 Then [install with Docker](/docs/installation/docker/).

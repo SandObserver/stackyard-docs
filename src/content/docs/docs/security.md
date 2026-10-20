@@ -25,6 +25,7 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 - A session ends 30 days after sign-in even while in use, or after the idle lifetime if that is longer.
 - Signing out ends the session on the server. A copy of its cookie stops working too.
 - Login is rate-limited to 5 attempts per IP per 15 minutes. Counters are in memory, so a restart clears them and they are not shared across replicas. Run a single instance behind any proxy.
+- Attempts made under an address that is not local and not in **Allowed Addresses** share a separate limit. A page on another site that points its own name at your server cannot use up yours. Add your reverse proxy's name to the list to keep it on your own limit. While you are signed in on a name that is not listed, **General** offers to add it.
 - Changing the password rotates the session secret, signing out every other device. Sign out all devices does the same without changing the password.
 - Changing the password, or turning protection off, needs the current password as well as a session. Wrong attempts count toward the login limit of 5 per IP per 15 minutes.
 
@@ -83,10 +84,10 @@ The guard limits what a compromised widget can reach. It does not protect agains
 | --- | --- |
 | `cdn.jsdelivr.net` | Icon files, and three of the four icon catalogue indexes. |
 | `raw.githubusercontent.com` | The dashboard-icons index and its files, when jsdelivr does not answer. |
-| Unsplash | Wallpaper, only when the wallpaper source is Unsplash. |
-| `api.github.com` | The update check, when About is opened, at most once an hour. Also two icon catalogue listings, while you type in the icon picker. |
+| Unsplash | Wallpaper, only when the wallpaper source is Unsplash. The server keeps one photo for a day. |
+| `api.github.com` | The update check, when Settings is opened, at most once an hour. Also two icon catalogue listings, while you type in the icon picker. |
 
-Nothing else leaves your network, and no usage data is collected.
+Each widget also reaches the service it reads: the address you set, or the public API of Open-Meteo, OpenWeather, NextDNS or GitHub. Nothing else leaves your network, and no usage data is collected.
 
 Icons load through the server, which caches each one for 24 hours, so the CDN does not learn which services your dashboard shows. A catalogue index is read only while you type in the icon picker, and is cached for 24 hours. A dashboard load fetches none of them. Set the wallpaper to an image or a solid colour and Unsplash is never contacted.
 

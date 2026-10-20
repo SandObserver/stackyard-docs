@@ -34,7 +34,7 @@ Authentication is only in force once a password is stored. Until then, the endpo
 
 While no password is set, Stackyard answers only on IP addresses, `localhost`, single-label names, names under `.local`, `.home.arpa`, `.internal` and `.localhost`, and the names in **Allowed Addresses**. Any other address gets a 403. This stops a web page on another site from pointing its own name at your server (DNS rebinding) and changing your settings.
 
-The first page load after install or upgrade sets the list. A host name is trusted and saved. An IP address or local name saves an empty list. With a password set, every address works and the list is not checked.
+Stackyard never adds a name to the list by itself. Open a fresh install by its IP address or a local name, then add other names in **General**. With a password set, every address works and the list is not checked.
 
 ## Secrets
 
@@ -48,7 +48,7 @@ Secrets are stored in plain text in `apps.json` on the data volume. Protect that
 
 The server blocks outbound requests to private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
 
-`localhost` is refused by name. Dotless hostnames such as Docker container names are trusted, as is the host IP set in General. Only `http` and `https` URLs are fetched.
+`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address, but not at a loopback or link-local one. The host IP set in General is trusted. Only `http` and `https` URLs are fetched.
 
 | Range | Why |
 | --- | --- |
@@ -66,6 +66,9 @@ The server blocks outbound requests to private, loopback, link-local, carrier-gr
 | `::1`, `::` | IPv6 loopback and unspecified |
 | `fc00::/7` | IPv6 unique local |
 | `fe80::/10` | IPv6 link-local |
+| `fec0::/10` | IPv6 site-local, deprecated (RFC 3879) |
+| `2002::/16` | 6to4 (RFC 3056) |
+| `64:ff9b:1::/48` | local-use NAT64 (RFC 8215) |
 | `ff00::/8` | IPv6 multicast |
 
 An IPv4 address inside an IPv6 literal is checked against the same table.

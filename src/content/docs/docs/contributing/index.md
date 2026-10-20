@@ -13,10 +13,13 @@ Open an issue first if a change needs a dependency or a build step.
 
 ## Run locally
 
+Run the working tree with Docker Compose 2.23 or later:
+
 ```sh
-docker build -t stackyard:local .
-docker run -d -p 8700:80 -v ./data:/data -v ./icons:/icons stackyard:local
+docker compose -f docker-compose.dev.yml watch
 ```
+
+It serves `http://127.0.0.1:8701`. A saved file reaches the container within a few seconds. A change under `api/src` or `ui/widgets` restarts it. A change to the Dockerfile, nginx or supervisord config rebuilds the image. Data is kept in `.dev/`.
 
 Without Docker, start the API with `npm start` in `api/`, setting `CONFIG_PATH`, `ICONS_PATH` and `WIDGETS_PATH=../ui/widgets`. Serve `ui/` with any server that proxies `/api/` and `/health` to `127.0.0.1:3000`, as `nginx/dashboard.conf` does.
 

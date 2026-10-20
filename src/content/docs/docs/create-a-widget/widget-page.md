@@ -90,6 +90,7 @@ import { poll, fetchData, sparkline } from '/js/widget-toolbox.js?v=1';
 
 - `widgetId()` returns this widget id from the frame URL.
 - `fetchData(endpoint?, { params })` fetches `/api/widget-data/<id>` and returns the parsed JSON. Throws on a non-OK response. Each name in `params` must be listed in the manifest's [`params`](/docs/create-a-widget/manifest/#query-parameters).
+- `readingTime(data)` returns when the service produced data that `fetchData` returned. While a slow refresh runs, the server can answer with the previous result, so use this, not `Date.now()`, for an "updated" label.
 - `getConfig()` fetches this widget config, without secrets.
 
 ### Polling

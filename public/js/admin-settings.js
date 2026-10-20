@@ -1,4 +1,4 @@
-import { toast, apiGet, apiPost, errorText, reveal, swapContent } from '/js/admin-shared.js?v=36dc5cc1';
+import { toast, apiGet, apiPost, errorText, reveal, swapContent, wireInlineEdit } from '/js/admin-shared.js?v=1c01be9a';
 import { socketProbeAdvice } from '/js/admin-error.js?v=b0881957';
 import { pwStrength } from '/js/password-strength.js?v=389e0ed0';
 import { t } from '/js/i18n.js?v=ed7c5565';
@@ -9,13 +9,13 @@ import {
   needsCurrentPassword,
   createDirtyTracker,
   BLOCK,
-} from '/js/admin-logic.js?v=fc7f0836';
+} from '/js/admin-logic.js?v=1cca36f5';
 import { confirmText, promptModal } from '/js/modal.js?v=6b0320bd';
-import { el, inp, setUserText } from '/js/utils.js?v=14b18b8c';
+import { el, inp, setUserText } from '/js/utils.js?v=705ca896';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
-import { serialWrites } from '/js/admin-save-logic.js?v=5811620e';
-import { renderColorControl } from '/js/admin-color-control.js?v=e80f4a68';
-import { BACKDROP } from '/js/background.js?v=0f4ca726';
+import { serialWrites } from '/js/admin-save-logic.js?v=5613a9fa';
+import { renderColorControl } from '/js/admin-color-control.js?v=4083ea3b';
+import { BACKDROP } from '/js/background.js?v=25428bf2';
 import {
   ALLOWED_HOSTS_MAX,
   firstBadHost,
@@ -33,6 +33,7 @@ let _srvTrack = null;
 /** @type {{ dirty: () => boolean, reset: (force?: boolean) => void } | null} */
 let _bgTrack = null;
 let _savedWallpaperUrl = '';
+let _unsplashKeySet = false;
 
 /** The wallpaper link the server holds, for undoing a link that failed. */
 export const savedWallpaperUrl = () => _savedWallpaperUrl;
@@ -71,7 +72,7 @@ const readWallpaperForm = () =>
     _val('bg-url-inp', 'bg-url'),
     _val('bg-fit'),
     _val('bg-color-val'),
-    _val('bg-apikey-inp', 'bg-apikey'),
+    _val('bg-apikey-inp'),
   ]);
 
 /** Disables `buttonId` while its section matches what was last saved. */
@@ -126,6 +127,32 @@ function syncSessionRows(now = false) {
   const canRevoke = on && _passwordSet;
   reveal(el('sec-revoke-wrap'), canRevoke, now);
   reveal(el('revoke-tip-wrap'), canRevoke, now);
+  syncHostOffer(now);
+}
+
+function syncHostOffer(now = false) {
+  const here = hostnameOf(location.host);
+  const listed = parseHostList(inp('srv-hosts')?.value || '') || [];
+  const show = !!inp('sec-en')?.checked && _passwordSet && !!here && !isLocalAddress(here) && !listed.includes(here);
+  const name = el('hosts-add-name');
+  if (name && here) setUserText(name, here);
+  reveal(el('hosts-add-wrap'), show, now);
+  reveal(el('hosts-add-tip-wrap'), show, now);
+}
+
+function addCurrentHost() {
+  const here = hostnameOf(location.host);
+  const hostsEl = inp('srv-hosts');
+  const list = parseHostList(hostsEl?.value || '');
+  if (!hostsEl || !here || !list) return;
+  hostsEl.value = [...list, here].join(', ');
+  const valEl = el('ie-hosts-v');
+  if (valEl) {
+    setUserText(valEl, hostsEl.value);
+    valEl.classList.remove('is-ph');
+  }
+  syncHostOffer();
+  /** @type {HTMLElement | null | undefined} */ (el('ie-hosts')?.querySelector('.pe'))?.focus();
 }
 
 /* Rebuild on every load. The control takes its value at render time and has no
@@ -170,22 +197,9 @@ export function loadSettings(c) {
   if (llEl) llEl.value = s.logLevel || 'info';
   const langEl = inp('lang-sel');
   if (langEl) langEl.value = s.language || 'en';
-  /* The key itself is never included in /api/config. */
-  const apiEl = inp('bg-apikey-inp') || inp('bg-apikey');
-  if (apiEl) {
-    apiEl.placeholder = `●●●●●●●●●● (${t('common.configured')})`;
-    apiGet('/api/settings/unsplash-key')
-      .then(d => {
-        const vEl = el('ie-apikey-v');
-        if (!d.configured) {
-          apiEl.placeholder = t('appearance.unsplashKeyPh');
-          if (vEl) vEl.textContent = t('common.notSet');
-        } else {
-          if (vEl) vEl.textContent = t('common.configured');
-        }
-      })
-      .catch(() => {});
-  }
+  apiGet('/api/settings/unsplash-key')
+    .then(d => showUnsplashKeyState(!!d.configured))
+    .catch(() => {});
   const colEl = inp('bg-col');
   if (colEl) colEl.value = bg.collection || '';
   const urlEl = inp('bg-url');
@@ -291,6 +305,8 @@ export function loadSettings(c) {
     }
   });
   secEnEl?.addEventListener('change', () => syncSessionRows());
+  el('hosts-add')?.addEventListener('click', addCurrentHost);
+  inp('srv-hosts')?.addEventListener('blur', () => syncHostOffer());
 
   _srvTrack = trackSave('srv-save', readServerForm);
   _bgTrack = trackSave('bg-save', readWallpaperForm);
@@ -331,6 +347,32 @@ export function showWallpaperFile(url) {
     node.textContent = t('appearance.noImage');
     node.classList.add('is-ph');
   }
+}
+
+const unsplashKeyLabel = () => t(_unsplashKeySet ? 'common.configured' : 'common.notSet');
+
+function showUnsplashKeyState(set) {
+  _unsplashKeySet = set;
+  const vEl = el('ie-apikey-v');
+  if (vEl) vEl.textContent = unsplashKeyLabel();
+}
+
+/** The field opens empty. A blank field keeps the stored key. */
+export function wireUnsplashKey() {
+  const keyInp = document.createElement('input');
+  keyInp.id = 'bg-apikey-inp';
+  keyInp.autocomplete = 'new-password';
+  document.body.appendChild(keyInp);
+  const row = el('ie-apikey');
+  if (!row) return;
+  wireInlineEdit(row, keyInp, {
+    type: 'password',
+    placeholder: () => t(_unsplashKeySet ? 'widgetCfg.replaceSecret' : 'appearance.unsplashKeyPh'),
+    fill: false,
+    render: (valEl, v) => {
+      valEl.textContent = v ? t('widgetCfg.newValueSet') : unsplashKeyLabel();
+    },
+  });
 }
 
 export function showBgFields(type) {
@@ -408,8 +450,13 @@ async function saveWallpaper() {
     /* After the main config. GET /api/config strips the key, so a config write
        that follows would overwrite it with nothing. */
     if (type === 'unsplash') {
-      const keyVal = (inp('bg-apikey-inp') || inp('bg-apikey'))?.value?.trim() || '';
-      if (keyVal) await apiPost('/api/settings/unsplash-key', { apiKey: keyVal });
+      const keyEl = inp('bg-apikey-inp');
+      const keyVal = keyEl?.value?.trim() || '';
+      if (keyEl && keyVal) {
+        await apiPost('/api/settings/unsplash-key', { apiKey: keyVal });
+        keyEl.value = '';
+        showUnsplashKeyState(true);
+      }
     }
     _bgTrack?.reset();
     toast(t('toast.saved'));

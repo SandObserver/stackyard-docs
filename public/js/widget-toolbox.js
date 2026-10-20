@@ -92,6 +92,9 @@ export function widgetId() {
   return _params.get('id') || '';
 }
 
+const PENDING_RETRY_MS = 1000;
+const PENDING_TRIES = 20;
+
 export async function fetchData(endpoint, opts = {}) {
   const id = widgetId();
   const p = new URLSearchParams();
@@ -99,7 +102,15 @@ export async function fetchData(endpoint, opts = {}) {
   for (const [k, v] of Object.entries(opts.params || {})) p.set(k, String(v));
   const query = p.toString();
   const qs = query ? '?' + query : '';
-  const r = await fetch(`/api/widget-data/${encodeURIComponent(id)}${qs}`, { cache: 'no-store', signal: opts.signal });
+  let r;
+  for (let tries = 0; ; tries++) {
+    r = await fetch(`/api/widget-data/${encodeURIComponent(id)}${qs}`, { cache: 'no-store', signal: opts.signal });
+    if (r.status !== 202) break;
+    if (tries >= PENDING_TRIES) {
+      throw Object.assign(new Error('The service did not respond in time.'), { status: 202, kind: 'timeout' });
+    }
+    await new Promise(resolve => setTimeout(resolve, PENDING_RETRY_MS));
+  }
   if (!r.ok) {
     const d = await r.json().catch(() => ({}));
     const e = /** @type {Error & { status?: number, kind?: string }} */ (new Error(d.error || 'HTTP ' + r.status));
@@ -107,7 +118,19 @@ export async function fetchData(endpoint, opts = {}) {
     if (typeof d.kind === 'string') e.kind = d.kind;
     throw e;
   }
-  return r.json();
+  const data = await r.json();
+  const age = Number(r.headers.get('Age'));
+  if (data && typeof data === 'object') _readAt.set(data, Date.now() - (age > 0 ? age * 1000 : 0));
+  return data;
+}
+
+/** @type {WeakMap<object, number>} */
+const _readAt = new WeakMap();
+
+/** When the service produced data that fetchData returned.
+    @param {unknown} data @returns {number} */
+export function readingTime(data) {
+  return (data && typeof data === 'object' && _readAt.get(data)) || Date.now();
 }
 
 export function openUrl(href) {
@@ -575,6 +598,37 @@ export function errorLine(err) {
   return _t(key, text);
 }
 
+/** Calls onChange(true) while el is on screen in a visible tab and
+    onChange(false) when it leaves.
+    @param {Element} el @param {(shown: boolean) => void} onChange
+    @returns {{ stop(): void }} */
+export function whileOnScreen(el, onChange) {
+  const observable = typeof IntersectionObserver === 'function';
+  let inView = !observable;
+  let shown = null;
+  const update = () => {
+    const now = inView && !document.hidden;
+    if (now === shown) return;
+    shown = now;
+    onChange(now);
+  };
+  const io = observable
+    ? new IntersectionObserver(entries => {
+        inView = entries[entries.length - 1].isIntersecting;
+        update();
+      })
+    : null;
+  if (io) io.observe(el);
+  else update();
+  document.addEventListener('visibilitychange', update);
+  return {
+    stop() {
+      if (io) io.disconnect();
+      document.removeEventListener('visibilitychange', update);
+    },
+  };
+}
+
 /* Widgets on a page the user has swiped away from keep running: the dashboard
    mounts every page at once. It multiplies their poll interval through
    window.__setPollRate, which the dashboard calls on each frame. */
@@ -592,6 +646,14 @@ export function setPollRate(rate) {
 if (typeof window !== 'undefined') /** @type {any} */ (window).__setPollRate = setPollRate;
 
 const SLOW_POLL_MS = 300000;
+
+function asInternal(e) {
+  if (e && typeof e === 'object' && !Object.isFrozen(e)) {
+    if (typeof e.kind !== 'string') e.kind = 'internal';
+    return e;
+  }
+  return Object.assign(new Error(String(e)), { kind: 'internal' });
+}
 
 export function poll(opts = {}) {
   const intervalFor = d => (typeof opts.interval === 'function' ? opts.interval(d) : opts.interval) || 30000;
@@ -615,13 +677,11 @@ export function poll(opts = {}) {
   async function tick() {
     if (stopped) return;
     lastTick = Date.now();
+    let fetched = false;
     try {
       const data = await doFetch();
+      fetched = true;
       if (stopped) return;
-      fails = 0;
-      lastOk = Date.now();
-      everOk = true;
-      lastData = data;
       if (isEmpty(data)) {
         if (ov) ov.empty(opts.emptyText || _t('noData', 'No data'));
         else opts.onEmpty && opts.onEmpty(data);
@@ -629,8 +689,13 @@ export function poll(opts = {}) {
         if (ov) ov.ok();
         opts.render && opts.render(data);
       }
-    } catch (e) {
+      fails = 0;
+      lastOk = readingTime(data);
+      everOk = true;
+      lastData = data;
+    } catch (caught) {
       if (stopped) return;
+      const e = fetched ? asInternal(caught) : caught;
       fails++;
       const stale = fails >= staleAfter();
       if (custom) opts.onError({ error: e, everOk, stale, since: lastOk ? sinceLabel(lastOk) : '' });

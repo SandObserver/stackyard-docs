@@ -92,8 +92,7 @@ const MAP_DEFAULT_COLOR = {
 const TIMEOUT_CODES = new Set(['ETIMEDOUT', 'ESOCKETTIMEDOUT', 'UND_ERR_HEADERS_TIMEOUT']);
 function errorText(e) {
   if (e && e.vouchedMessage) return e.vouchedMessage;
-  /* Already a sentence this repo wrote. */
-  if (e && e.name === 'SsrfBlockedError') return e.message;
+  if (e && e.name === 'SsrfBlockedError') return 'The request was blocked.';
   const code = e && e.code;
   if (code === 'ECONNREFUSED') return 'Connection refused';
   if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') return 'Host not found';
@@ -183,8 +182,11 @@ async function vpnView(ctx) {
         } else if (ipRes.status >= 400) {
           out.error = 'Control server HTTP ' + ipRes.status;
           out.errorKind = 'upstream';
+        } else if (typeof ipRes.data?.public_ip !== 'string' && typeof ipRes.data?.ip !== 'string') {
+          out.error = 'Control server sent a reply without an IP address';
+          out.errorKind = 'upstream';
         } else {
-          const d = ipRes.data || {};
+          const d = ipRes.data;
           out.ip = d.public_ip || d.ip || '';
           out.city = d.city || '';
           out.region = d.region || '';
@@ -218,7 +220,8 @@ async function vpnView(ctx) {
       const r = await fetchJSON(apiBase + '/peers', { headers, timeout: 8000 });
       if (authErr(r)) ctx.fail('Auth failed — check the access token', { kind: ctx.KIND.AUTH });
       if (r.status >= 400) ctx.fail('Management API HTTP ' + r.status);
-      const peers = Array.isArray(r.data) ? r.data : [];
+      if (!Array.isArray(r.data)) ctx.fail('Management API sent a reply without a peer list');
+      const peers = r.data;
       const connected = peers.filter(p => p && p.connected);
       out.peersTotal = peers.length;
       out.peersConnected = connected.length;

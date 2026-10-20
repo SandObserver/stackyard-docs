@@ -12,14 +12,14 @@
    reads and writes them too. */
 
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { snapshotItems } from '/js/admin-save-logic.js?v=5811620e';
-import { reorderItems } from '/js/admin-logic.js?v=fc7f0836';
-import { initDrag, wireRowDrag } from '/js/admin-drag.js?v=b2422767';
-import { paintIcon } from '/js/admin-shared.js?v=36dc5cc1';
-import { clr, el, focusFirst, initial, qa, setUserText } from '/js/utils.js?v=14b18b8c';
+import { snapshotItems } from '/js/admin-save-logic.js?v=5613a9fa';
+import { reorderItems } from '/js/admin-logic.js?v=1cca36f5';
+import { initDrag, wireRowDrag } from '/js/admin-drag.js?v=8fa6fbae';
+import { paintIcon } from '/js/admin-shared.js?v=1c01be9a';
+import { clr, el, focusFirst, initial, qa, setUserText } from '/js/utils.js?v=705ca896';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { t } from '/js/i18n.js?v=ed7c5565';
-import { sizeLabel } from '/js/admin-widget-form.js?v=8a6be17f';
+import { sizeLabel } from '/js/admin-widget-form.js?v=1cb745cf';
 import { widgetGlyph } from '/js/widget-glyphs.js?v=b383b7c8';
 import { iconSvg } from '/js/icon-set.js?v=628341d4';
 

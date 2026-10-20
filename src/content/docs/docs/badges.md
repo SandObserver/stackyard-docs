@@ -8,7 +8,7 @@ description: Add health checks, fixed labels and live values from any API to Sta
 A badge is the small pill on an app tile. Each app can have three kinds.
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/app-edit-badge-03598133.png" alt="The Badge section of an app: Health Check, Fixed Label and Live Activity" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-badge-dark-adce9ae8.png" alt="The Badge section of an app: Health Check, Fixed Label and Live Activity" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/app-edit-badge-4c5acba5.png" alt="The Badge section of an app: Health Check, Fixed Label and Live Activity" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-badge-dark-fe4c22dd.png" alt="The Badge section of an app: Health Check, Fixed Label and Live Activity" loading="lazy">
 </figure>
 
 ## Health check
@@ -37,7 +37,7 @@ Tick **Secret** on a header to keep its value on the server. Poll sets how often
 One API can feed up to five values. Press Add Label for each.
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/app-edit-labels-4eb0fb0b.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark-07bd1535.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/app-edit-labels-81cbd949.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy"><img class="sy-shot__dark" src="/img/admin/app-edit-labels-dark-7acbcfd7.png" alt="Two labels, each with Value, Label Text, Color, Unit and Show From" loading="lazy">
 </figure>
 
 - **Show From** keeps a value hidden below that count.

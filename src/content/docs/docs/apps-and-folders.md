@@ -13,17 +13,19 @@ For the icon, type the service name, such as `sonarr`. Stackyard searches [dashb
 
 ### Tile colour
 
-| Colour | What the tile looks like |
+Pick the tile colour under Style.
+
+| Style | What the tile looks like |
 | --- | --- |
 | Dark | A near-black tile in both display modes. |
 | White | A white tile in both display modes. |
 | Auto | Dark in dark mode, white in light mode. |
 | Clear | Frosted glass, so the wallpaper reads through, like a folder tile. |
-| A system colour | One of thirteen, each drawn for the display mode it is shown in. |
+| Color | One of thirteen system colours, each drawn for the display mode it is shown in, or a colour you set. |
 
-The colour wheel opens the system colours, sliders for hue, saturation and brightness, and a colour code. A colour set by code or slider is used exactly as given in both modes.
+Color shows the system colours, sliders for hue, saturation and brightness, and a colour code. A colour set by code or slider is used exactly as given in both modes.
 
-An icon that is a white shape can disappear on White, Auto in light mode, or Clear. Pick Dark or a system colour for those.
+An icon that is a white shape can disappear on White, Auto in light mode, or Clear. Pick Dark or Color for those.
 
 Drag rows in the Dashboard list to reorder the grid.
 

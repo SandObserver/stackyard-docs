@@ -202,3 +202,17 @@ if (ctx.endpoint === 'jobs') {
   return { options: r.data.map(j => ({ value: j.id, label: j.name })) };
 }
 ```
+
+## Query parameters
+
+`data.js` receives only the query parameters the manifest lists in `params`, plus `endpoint`. Any other parameter is dropped.
+
+```json
+{ "params": ["range"] }
+```
+
+- At most 8 names.
+- Each name starts with a letter and holds letters, digits, `_` or `-`, up to 32 characters.
+- Do not list `endpoint`. It is always passed.
+
+Each distinct set of values is cached on its own, up to 16 per widget.

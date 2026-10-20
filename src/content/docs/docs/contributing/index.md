@@ -33,24 +33,7 @@ Playwright specs in `e2e/` run against `BASE_URL`, default `http://127.0.0.1:873
 
 ## Pull request checks
 
-CI runs `.github/actions/checks/action.yml`:
-
-```sh
-npm ci
-node scripts/changelog-check.js
-node scripts/bump-cache-busting.js --check
-npm run paths:check
-cd api && npm test
-cd api && npx c8 check-coverage --lines 92
-cd ui/test && node --test
-npm run lint
-npm run format:check
-npm run typecheck
-npm run typecheck:ui
-docker build -t stackyard:ci .
-```
-
-CodeQL and Trivy also run. Both block on a finding.
+The checks CI runs are listed in [CONTRIBUTING.md](https://github.com/SandObserver/stackyard/blob/main/CONTRIBUTING.md#before-opening-a-pr).
 
 - Do not edit `CHANGELOG.md`. List user-visible changes in the pull request description under **Changelog**, as `- ` lines below a Keep a Changelog heading such as `### Fixed`. Merging adds them to `[Unreleased]`.
 - Write `?v=1` on new `/css/` and `/js/` imports. The release sets the real hash.

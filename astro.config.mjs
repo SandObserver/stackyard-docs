@@ -139,6 +139,7 @@ export default defineConfig({
             { label: 'Design system', link: '/docs/contributing/design-system/' },
             { label: 'Translations', link: '/docs/contributing/translations/' },
             { label: 'API errors', link: '/docs/contributing/api-errors/' },
+            { label: 'Other clients', link: '/docs/contributing/other-clients/' },
             { label: 'Releasing', link: '/docs/contributing/releasing/' },
           ],
         },

@@ -315,7 +315,3 @@ Messages shown in the admin, and what each one means.
 Set the browser's page zoom back to 100% before reporting a layout bug. The admin is laid out in fixed pixels, while the dashboard scales itself from the viewport width, so at any other zoom the two disagree and spacing looks wrong. On iOS the safe-area inset is also reported in points regardless of zoom, so content can sit under the status bar.
 
 This has produced convincing false bug reports. Check the zoom first.
-
-### The demo site is slow to load
-
-The public demo runs on a free tier that sleeps when idle. The first visit can take up to a minute.

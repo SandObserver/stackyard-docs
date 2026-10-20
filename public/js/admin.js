@@ -1,12 +1,13 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=dd5f148f';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=71f8a57a';
+import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=f0da79cf';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=5246ff39';
 import { recoveryShown } from '/js/config-recovery.js?v=85138697';
-import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=5bdad01b';
-import { resolveAdminSection } from '/js/admin-logic.js?v=fc7f0836';
+import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=411d6f37';
+import { resolveAdminSection } from '/js/admin-logic.js?v=1cca36f5';
 import {
   afterImport,
   buildAppItem,
   claimFolderChildren,
+  importCounts,
   newItemId,
   restoreBody,
   restoresSettings,
@@ -14,14 +15,15 @@ import {
   serialWrites,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=5811620e';
+} from '/js/admin-save-logic.js?v=5613a9fa';
 import {
   loadSettings,
   savedWallpaperUrl,
   settingsDirty,
   showBgFields,
   showWallpaperFile,
-} from '/js/admin-settings.js?v=d69636fc';
+  wireUnsplashKey,
+} from '/js/admin-settings.js?v=4b374391';
 import {
   apiGet,
   apiPost,
@@ -35,16 +37,16 @@ import {
   setReauthHandler,
   toast,
   withheldText,
-} from '/js/admin-shared.js?v=36dc5cc1';
+} from '/js/admin-shared.js?v=1c01be9a';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=8a6be17f';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=1cb745cf';
 import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=23e87940';
+import { createListbox } from '/js/listbox.js?v=f814170f';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=ed7c5565';
-import { loadLocalIcons } from '/js/icons.js?v=9c7b5111';
+import { loadLocalIcons } from '/js/icons.js?v=5ac01d72';
 import { ensureSprite, iconSvg } from '/js/icon-set.js?v=628341d4';
 import {
   clearSkipTls,
@@ -55,7 +57,7 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=6ecd782f';
+} from '/js/import-foreign.js?v=3b635c16';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
 import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6b0320bd';
 import {
@@ -80,8 +82,8 @@ import {
   storeGet,
   storeSet,
   tgt,
-} from '/js/utils.js?v=14b18b8c';
-import { applyBackground, resolveBackground } from '/js/background.js?v=0f4ca726';
+} from '/js/utils.js?v=705ca896';
+import { applyBackground, resolveBackground } from '/js/background.js?v=25428bf2';
 import { parseYamlTolerant, YamlLiteError, YamlTooLargeError } from '/js/yaml-lite.js?v=a42ef914';
 
 ensureSprite();
@@ -788,10 +790,7 @@ function initAllInlineEdits() {
     );
   }
 
-  const apiInp = document.createElement('input');
-  apiInp.id = 'bg-apikey-inp';
-  document.body.appendChild(apiInp);
-  initInlineEdit('ie-apikey', 'bg-apikey-inp', { placeholder: () => t('appearance.unsplashKeyPh') });
+  wireUnsplashKey();
 
   const colInp = document.createElement('input');
   colInp.id = 'bg-col-inp';
@@ -1162,18 +1161,7 @@ el('imp').onchange = async e => {
   try {
     const d = JSON.parse(await f.text());
     if (!d || !Array.isArray(d.items)) throw new ShownError(t('toast.importNotStackyard'));
-    const cur = new Map(state.items.map(i => [i.id, i]));
-    const inc = new Map(d.items.map(i => [i.id, i]));
-    let added = 0,
-      updated = 0,
-      deleted = 0;
-    for (const [id, it] of inc) {
-      if (!cur.has(id)) added++;
-      else if (JSON.stringify(cur.get(id)) !== JSON.stringify(it)) updated++;
-    }
-    for (const id of cur.keys()) {
-      if (!inc.has(id)) deleted++;
-    }
+    const { added, updated, deleted } = importCounts((await apiGet('/api/config/export')).items, d.items);
     const settingsToo = restoresSettings(d, await apiGet('/api/config'));
     if (added + updated + deleted === 0 && !settingsToo) {
       toast(t('toast.importNoChange'));

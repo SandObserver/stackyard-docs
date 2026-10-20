@@ -11,6 +11,8 @@ The API serves the dashboard and the admin. It has no version and can change in 
 2. `POST /api/auth/login` with `{"password": "..."}`.
 3. Keep the `ds` cookie from the response. Send it on every request.
 
+While no password is set, Stackyard answers only local addresses and the names in **Allowed Addresses**. Any other `Host` gets a `403`.
+
 A session ends after 12 hours unused, or 30 days after sign-in. `SESSION_MAX_AGE_DAYS` changes the first. A `401` with `"kind": "auth"` means sign in again.
 
 ## Origin header
@@ -35,8 +37,10 @@ Origin: http://stackyard.lan:8700
 Show a widget by loading its page in a web view:
 
 ```
-/widgets/<widgetType>/index.html?id=<item id>&size=<widgetSize>
+/widgets/<widgetType>/<page>?id=<item id>&size=<widgetSize>
 ```
+
+`<page>` is `index.html`, unless the widget's entry in `GET /api/widgets` has `views`. Then it is the `src` of the view that the item's `widgetConfig[viewField]` names, or of `defaultView` when that is unset.
 
 The page fetches its own data with the session cookie. The data each widget returns is private to its page and changes without notice.
 

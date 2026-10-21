@@ -23,7 +23,7 @@ Browsers only allow Keep Screen Awake over HTTPS. On a plain HTTP address the to
 
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/appearance-cfd783c5.png" alt="The Appearance section of the admin UI" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-21a0110a.png" alt="The Appearance section of the admin UI" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/appearance-0b9254e2.png" alt="The Appearance section of the admin UI" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-74cc87b6.png" alt="The Appearance section of the admin UI" loading="lazy">
   <figcaption>Appearance, in the admin UI.</figcaption>
 </figure>
 

@@ -68,6 +68,6 @@ Small holds four bays. Medium holds ten.
 
 ## Drive states
 
-A bay shows Healthy or Failed. Any failed check in Scrutiny counts as Failed. In Unraid, a disabled, missing, wrong or invalid drive counts as Failed. A drive with no SMART data reports that. It is never shown as healthy.
+A bay shows Healthy or Failed. Any failed check in Scrutiny counts as Failed. In Unraid, a disabled, wrong or invalid drive counts as Failed. Unraid does not list a missing drive, so a bay whose drive Unraid no longer lists counts as Failed. After removing a drive on purpose, clear its bay. A drive with no SMART data reports that. It is never shown as healthy.
 
-A bay shows `Not reporting` when its drive is no longer in the monitoring service list. The other bays are unaffected.
+With Scrutiny or TrueNAS, a bay shows `Not reporting` when its drive is no longer in the service's list. The other bays are unaffected.

@@ -177,7 +177,7 @@ That saves `{ "vpn": { "url": "...", "apiKey": "..." } }`. A sub-field `showIf` 
 
 ## Options from the service
 
-When a `select` can only be filled after the user enters a URL and key, give it `"optionsFrom": "<endpoint>"`. The form shows a **Fetch** button, which calls `data.js` with `ctx.endpoint` set to that name. Return `{ options: [{ value, label }, ...] }`.
+When a `select` can only be filled after the user enters a URL and key, give it `"optionsFrom": "<endpoint>"`. The form shows a **Fetch** button, which calls `data.js` with `ctx.endpoint` set to that name. Return `{ options: [{ value, label }, ...] }`. If the service listed more than you return, add `truncated: true`. The form then says the list was cut short.
 
 The fetch receives the current form values, `transient` fields included.
 

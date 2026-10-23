@@ -29,7 +29,7 @@ A widget that renders entirely in the browser, like [Clock](/docs/widgets/clock/
 | `ctx.endpoint` | The endpoint name, set for an `optionsFrom` fetch or a multi-view widget. |
 | `ctx.row` | For an `optionsFrom` fetch from a field in a `group`, that row's values. Otherwise `null`. |
 | `ctx.params` | The query parameters the manifest lists in [`params`](/docs/create-a-widget/manifest/#query-parameters), plus `endpoint`, as `URLSearchParams`. |
-| `ctx.fetchJSON(url, opts)` | Fetches a URL and parses the body. Returns `{ status, data }` or throws. JSON is returned as-is. Prometheus text and XML are parsed. Pass `{ raw: true }` for the untouched text. |
+| `ctx.fetchJSON(url, opts)` | Fetches a URL and parses the body. Returns `{ status, data }` or throws. JSON is returned as-is. Prometheus text and XML are parsed. Pass `{ raw: true }` for the untouched text. At most six requests to one service run at once. The rest wait in order. |
 | `ctx.parsePrometheus(text)` | Parses a Prometheus metrics body. Non-string input gives an empty object. |
 | `ctx.normalizeBase(raw)` | Tidies a user-entered base URL: adds a scheme, drops a trailing slash. |
 | `ctx.metrics` | Host metrics: `cpuSample`, `ramPercent`, `cpuTemp`, `diskStats`, `procCount`, `uptimeSeconds`. Each is a function. `cpuSample()` is async and returns `{ cpu, iowait }`. They read `/proc` and `/sys`, so they report the host, not the container limits. |

@@ -46,5 +46,25 @@ Small only.
   { name: 'Location', text: 'Type a city into Search, press Fetch, then pick the place. Its coordinates are saved with the widget.' },
   { name: 'Units', text: 'Celsius or Fahrenheit. Defaults to Celsius.' },
   { name: 'Show feels like', text: 'Adds the apparent temperature. Off by default.' },
+  { name: 'Show UV and air warnings', text: 'Shows the warning icon. On by default.' },
   { name: 'Link URL', text: 'Where clicking the widget opens.', optional: true },
 ]} />
+
+## UV and air quality warnings
+
+An icon appears in the top corner when the UV index is 3 or higher, or when the air is unhealthy. Hover the card or tap the icon to see the reading. When both warn, the icon shows the worse one. Screen readers hear both.
+
+<WidgetGroup caption="Very high UV. Hover the card to see the reading."
+  items={[
+    { type: 'weather', file: 'index.html', id: 'w-weather-uv', title: 'Weather, UV warning', label: 'UV 8' },
+  ]} />
+
+| Reading | Warns from |
+| --- | --- |
+| UV index | 3 |
+| European Air Quality Index | 60 (Poor) |
+| US Air Quality Index | 101 (Unhealthy for Sensitive Groups) |
+
+Places in EU and EEA countries, the United Kingdom and Switzerland use the European index. All other places use the US index.
+
+Both readings come from the Open-Meteo Air Quality API, for either weather service. Air quality data is from the Copernicus Atmosphere Monitoring Service (CAMS).

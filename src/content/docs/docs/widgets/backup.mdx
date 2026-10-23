@@ -51,7 +51,7 @@ Small holds one slot. Medium holds three. Each slot reads one job.
       ['Token ID', 'The API token, for example `stackyard@pbs!dashboard`.'],
       ['Token Secret', 'Stored as a secret.'],
       ['Allow Self-Signed Certificate', 'Turn on if the server uses its default certificate.'],
-      ['Backup Group', 'Optional. Enter the URL and token, then load the groups and pick one. Lists every datastore and namespace.'],
+      ['Backup Group', 'Optional. Enter the URL and token, then load the groups and pick one. Lists up to 20 datastores, and up to 20 namespaces in each.'],
     ],
     links: [{ label: 'Proxmox Backup Server', href: 'https://www.proxmox.com/en/products/proxmox-backup-server/overview' }],
   },
@@ -83,7 +83,6 @@ A slot reads one backup group, such as `vm/100`. The card is named from the newe
 - Give the token the Audit role. On the datastore, the card shows the last backup, and failed if the newest backup failed verification. On `/`, it also shows running and failed backup tasks.
 - A backup older than 25 hours shows a warning.
 - Proxmox Backup Server does not hold the backup schedule, so the card shows no next run.
-- Running and failed tasks show only for groups in the root namespace. Proxmox Backup Server does not record the namespace on a backup task.
 
 ## Backrest
 

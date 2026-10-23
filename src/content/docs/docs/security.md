@@ -49,7 +49,7 @@ Secrets are stored in plain text in `apps.json` on the data volume. Protect that
 
 The server blocks outbound requests to private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
 
-`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address, but not at a loopback or link-local one. The host IP set in General is trusted. Only `http` and `https` URLs are fetched.
+`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address, but not at a loopback or link-local one. The host IP set in General is trusted. Only `http` and `https` URLs are fetched. The WebSocket connection TrueNAS widgets use opens on the same URL and passes the same check.
 
 | Range | Why |
 | --- | --- |

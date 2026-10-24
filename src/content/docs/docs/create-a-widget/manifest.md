@@ -24,7 +24,7 @@ An invalid manifest is skipped at startup with a logged reason. Only that widget
 
 ## Views
 
-A widget can ship more than one page and let the user pick, like the [GitHub](/docs/widgets/github/) and [Clock](/docs/widgets/clock/) widgets. Declare each view and its file, the field that holds the choice, and the default:
+A widget can ship more than one page and let the user pick, like the [Git](/docs/widgets/github/) and [Clock](/docs/widgets/clock/) widgets. Declare each view and its file, the field that holds the choice, and the default:
 
 ```json
 {

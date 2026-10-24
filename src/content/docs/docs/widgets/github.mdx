@@ -1,12 +1,14 @@
 ---
-title: GitHub widget
-description: Your open pull requests or your contribution graph from GitHub, on your Stackyard dashboard.
+title: Git widget
+description: Your open pull requests or your contribution graph from GitHub, Gitea, Forgejo or GitLab, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
 import SettingList from '../../../../components/SettingList.astro';
 
-Your open pull requests, or your contribution graph. Pick one with the **View** setting. Both come in every size.
+Your open pull requests, or your contribution graph, from GitHub, Gitea, Forgejo or GitLab. Pick one with the **View** setting. Both come in every size.
+
+GitLab shows merge requests only. It has no API for its contribution graph.
 
 Point at a day on the contribution graph to see its date and count. The card follows the light and dark theme.
 
@@ -17,15 +19,23 @@ Point at a day on the contribution graph to see its date and count. The card fol
   ]} />
 
 <SettingList title="Settings" items={[
-  { name: 'View', text: 'Pull Requests or Contributions.' },
-  { name: 'GitHub Username', text: 'The account to read.' },
+  { name: 'Service', text: 'GitHub, Gitea, Forgejo or GitLab.' },
+  { name: 'Server URL', text: 'Gitea, Forgejo and GitLab only. The address of your server.' },
+  { name: 'View', text: 'Pull Requests or Contributions. Not shown for GitLab.' },
+  { name: 'Username', text: 'The account to read.' },
   { name: 'Personal Access Token', text: 'See below.' },
-  { name: 'Pull request filters', text: 'Pull Requests view only. Created, Assigned, Mentioned or Review requested. Filters combine.' },
-  { name: 'Link URL', text: 'Where the widget links. Leave blank to open the GitHub profile.', optional: true },
+  { name: 'Link URL', text: 'Where the widget links. Leave blank to open your profile.', optional: true },
+  { name: 'Pull request filters', text: 'Pull requests only. Created, Assigned, Mentioned or Review requested. A pull request must match every filter you pick. GitLab names it Merge request filters and has no Mentioned.' },
 ]} />
+
+On Gitea and Forgejo, the filters read the account that owns the token.
 
 ## Token
 
-Create a classic token at [GitHub, Personal access tokens](https://github.com/settings/tokens) with the `repo` and `read:user` scopes. For public repositories only, `public_repo` and `read:user` are enough. A fine-grained token with the same read access also works.
+**GitHub.** Create a classic token at [GitHub, Personal access tokens](https://github.com/settings/tokens) with the `repo` and `read:user` scopes. For public repositories only, `public_repo` and `read:user` are enough. A fine-grained token with the same read access also works.
+
+**Gitea and Forgejo.** Create an access token with the `read:user` and `read:issue` scopes.
+
+**GitLab.** Create a personal access token with the `read_api` scope.
 
 `Key rejected` on the widget means the token is wrong, expired or missing a scope.

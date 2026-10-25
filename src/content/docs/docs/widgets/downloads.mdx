@@ -1,0 +1,89 @@
+---
+title: Downloads widget
+description: Active downloads from qBittorrent, Transmission, Deluge, SABnzbd and NZBGet on your Stackyard dashboard, with time left for each.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
+
+Shows each active download as a box on a conveyor belt. Tape over the lid is the progress. Each label shows the percent done and the time left. The heading shows when the last download finishes.
+
+<WidgetGroup caption="Small shows one download. Medium shows three at a time, here with one stalled."
+  items={[
+    { type: 'downloads', file: 'index.html', id: 'w-downloads',    card: 'dark', title: 'Downloads widget, small',  label: 'Small' },
+    { type: 'downloads', file: 'index.html', id: 'w-downloads-md', size: 'medium', card: 'dark', title: 'Downloads widget, medium', label: 'Medium' },
+  ]} />
+
+The widget reads one download client. It shows up to 12 downloads, closest to done first. More than fit on the card page with the arrows on the belt. The heading counts every download, including ones not shown.
+
+States:
+
+- **Stalled:** a download with no peers. Its tape turns amber.
+- **Error:** a download the client reports as failed. Its tape turns red.
+- **Waiting:** downloads are moving, but the client has no estimate yet.
+- **All done:** nothing is downloading. The heading shows how many finished today.
+
+The widget only reads. One exception: if the Deluge web interface is not connected to a daemon and lists exactly one, the widget connects it. With several daemons listed, it shows an error instead.
+
+<ServiceList items={[
+  {
+    name: 'qBittorrent', icon: 'qbittorrent',
+    kind: 'BitTorrent client',
+    needs: 'URL, API key',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://qbittorrent:8080`.'],
+      ['API key', 'From Options, Web UI, API key. Needs qBittorrent 5.2 or newer. Stored as a secret.'],
+    ],
+    links: [{ label: 'qbittorrent/qBittorrent', href: 'https://github.com/qbittorrent/qBittorrent' }],
+  },
+  {
+    name: 'Transmission', icon: 'transmission',
+    kind: 'BitTorrent client',
+    needs: 'URL, login if set',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://transmission:9091`.'],
+      ['Username', 'Optional.'],
+      ['Password', 'Optional. Stored as a secret.'],
+    ],
+    links: [{ label: 'transmission/transmission', href: 'https://github.com/transmission/transmission' }],
+  },
+  {
+    name: 'Deluge', icon: 'deluge',
+    kind: 'BitTorrent client',
+    needs: 'URL, web password',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://deluge:8112`.'],
+      ['Password', 'The Web UI password. Stored as a secret.'],
+    ],
+    links: [{ label: 'deluge-torrent/deluge', href: 'https://github.com/deluge-torrent/deluge' }],
+  },
+  {
+    name: 'SABnzbd', icon: 'sabnzbd',
+    kind: 'Usenet client',
+    needs: 'URL, API key',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://sabnzbd:8080`.'],
+      ['API key', 'From Config, General, API Key. The NZB key cannot read the queue. Stored as a secret.'],
+    ],
+    links: [{ label: 'sabnzbd/sabnzbd', href: 'https://github.com/sabnzbd/sabnzbd' }],
+  },
+  {
+    name: 'NZBGet', icon: 'nzbget',
+    kind: 'Usenet client',
+    needs: 'URL, login if set',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://nzbget:6789`.'],
+      ['Username', 'Optional.'],
+      ['Password', 'Optional. The restricted user can read the queue without changing settings. Stored as a secret.'],
+    ],
+    links: [{ label: 'nzbgetcom/nzbget', href: 'https://github.com/nzbgetcom/nzbget' }],
+  },
+]} />
+
+<SettingList title="Settings" items={[
+  { name: 'Download client', text: 'qBittorrent, Transmission, Deluge, SABnzbd or NZBGet.' },
+  { name: 'Allow Self-Signed Certificate', text: 'Accept a self-signed HTTPS certificate from the client. Off by default.' },
+  { name: 'Heading shows', text: 'Finish time, the clock time the last download finishes, or Time left. Defaults to Finish time.' },
+  { name: 'Link URL', text: 'Where clicking the widget opens. Leave blank to use the server address, if your browser can reach it.', optional: true },
+]} />

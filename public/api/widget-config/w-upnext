@@ -1,0 +1,1 @@
+{"widgetSize":"small","widgetConfig":{"sources":[{"app":"sonarr","url":"https://sonarr.example.com"},{"app":"radarr","url":"https://radarr.example.com","releases":["cinema","digital"]}],"unmonitored":false}}

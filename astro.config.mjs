@@ -105,6 +105,7 @@ export default defineConfig({
             { label: 'GitHub', link: '/docs/widgets/github/' },
             { label: 'Now Playing', link: '/docs/widgets/now-playing/' },
             { label: 'System summary', link: '/docs/widgets/system-summary/' },
+            { label: 'Up Next', link: '/docs/widgets/up-next/' },
             { label: 'Weather', link: '/docs/widgets/weather/' },
           ],
         },

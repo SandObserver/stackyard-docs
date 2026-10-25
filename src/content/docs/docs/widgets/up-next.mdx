@@ -1,0 +1,71 @@
+---
+title: Up Next widget
+description: The next episodes, films and albums from Sonarr, Radarr and Lidarr on your Stackyard dashboard, soonest first.
+---
+
+import WidgetGroup from '../../../../components/WidgetGroup.astro';
+import ServiceList from '../../../../components/ServiceList.astro';
+import SettingList from '../../../../components/SettingList.astro';
+
+Lists what comes next from your Sonarr, Radarr and Lidarr apps, soonest first. Each row shows the day and time on the left, and the title over the episode, release or artist. A coloured bar marks the kind: episode, film or album.
+
+<WidgetGroup caption="Small shows three items. Medium shows three items and adds each episode's name."
+  items={[
+    { type: 'upnext', file: 'index.html', id: 'w-upnext',    card: 'dark', title: 'Up Next widget, small',  label: 'Small' },
+    { type: 'upnext', file: 'index.html', id: 'w-upnext-md', size: 'medium', card: 'dark', title: 'Up Next widget, medium', label: 'Medium' },
+  ]} />
+
+Large shows seven items. The widget reads the next 14 days. With fewer than eight items, it reads the next 90 days.
+
+- **Today:** today's items say Today, in red.
+- **Episodes:** a row shows the season and episode, and marks a premiere or a finale. Episodes of one series at the same time share a row.
+- **Films:** each release date you choose is its own row.
+- **Albums:** a row shows the artist and the album type.
+- **Ended:** an episode leaves the list when it ends. A film or album leaves at the end of its day.
+
+Clicking a row opens the series, film or album in its app. With nothing to list, the card opens the app's calendar.
+
+You can add up to six apps, for example a second Sonarr or Radarr for 4K. An item two apps both list shows once. If one app fails, the others still show, and a line names the app that failed.
+
+The widget only reads.
+
+<ServiceList items={[
+  {
+    name: 'Sonarr', icon: 'sonarr',
+    kind: 'TV series manager',
+    needs: 'URL, API key',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://sonarr:8989`.'],
+      ['API key', 'From Settings, General, Security, API Key. Stored as a secret.'],
+    ],
+    links: [{ label: 'Sonarr/Sonarr', href: 'https://github.com/Sonarr/Sonarr' }],
+  },
+  {
+    name: 'Radarr', icon: 'radarr',
+    kind: 'Film manager',
+    needs: 'URL, API key',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://radarr:7878`.'],
+      ['API key', 'From Settings, General, Security, API Key. Stored as a secret.'],
+      ['Film releases', 'In cinemas, Digital release or Physical release. Defaults to In cinemas and Digital release.'],
+    ],
+    links: [{ label: 'Radarr/Radarr', href: 'https://github.com/Radarr/Radarr' }],
+  },
+  {
+    name: 'Lidarr', icon: 'lidarr',
+    kind: 'Music manager',
+    needs: 'URL, API key',
+    fields: [
+      ['Server URL', 'The web interface address, for example `http://lidarr:8686`.'],
+      ['API key', 'From Settings, General, Security, API Key. Stored as a secret.'],
+    ],
+    links: [{ label: 'Lidarr/Lidarr', href: 'https://github.com/Lidarr/Lidarr' }],
+  },
+]} />
+
+<SettingList title="Settings" items={[
+  { name: 'App', text: 'Sonarr, Radarr or Lidarr, once per app. Add up to six.' },
+  { name: 'Allow Self-Signed Certificate', text: 'Accept a self-signed HTTPS certificate from the app. Off by default.' },
+  { name: 'Link URL', text: 'The address your browser uses for the app. Leave blank to use the server address, if your browser can reach it.', optional: true },
+  { name: 'Include Unmonitored', text: 'Also list episodes, films and albums the apps do not monitor. Off by default.' },
+]} />

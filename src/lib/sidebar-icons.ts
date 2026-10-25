@@ -25,6 +25,7 @@ const LINKS: Record<string, string> = {
   '/docs/widgets/github/': 'github',
   '/docs/widgets/now-playing/': 'nowplaying',
   '/docs/widgets/system-summary/': 'system',
+  '/docs/widgets/up-next/': 'upnext',
   '/docs/widgets/weather/': 'weather',
 };
 

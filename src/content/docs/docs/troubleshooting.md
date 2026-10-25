@@ -298,8 +298,11 @@ Messages shown in the admin, and what each one means.
 | `<file>: the importer cannot read the YAML on line <line>.` | The file uses YAML the importer does not support, such as tab indentation or more than one document. |
 | `That file type is not supported.` | Icons must be SVG, PNG or ICO. Wallpapers must be JPEG, PNG, WebP, AVIF or GIF. |
 | `That is not a valid http or https address.` | The address is not an http or https URL. |
-| `The socket proxy refused the request.` | The socket proxy answered its `/version` endpoint with 401 or 403. |
-| `Something answered there, but it is not a Docker socket proxy.` | The address answered, but not with a Docker API version. |
+| `The socket proxy refused the request.` | The socket proxy answered with 401 or 403, with and without an API version in the path. For Import from Docker labels, the proxy needs read access to containers. |
+| `Something answered there, but it is not a Docker socket proxy.` | The address answered, but not with a Docker API version or a container list. |
+| `Turn on Health Checks in General and enter the Docker Socket URL.` | Import from Docker labels has no socket proxy address to read from. |
+| `No container has both a homepage.name and a homepage.group label.` | Import from Docker labels found no container it could turn into an app. |
+| `Docker lists too many containers to import at once.` | The container list is larger than 16 MB, or holds more than 5,000 entries. |
 | `Saving is turned off in the live demo.` | The public demo is read-only. |
 | `Nothing to import. The file matches your current config.` | The imported file is identical to what is already stored. |
 | `Settings restored. Reload the page before changing any settings.` | An import replaced settings. Settings still shows the values from before it until the page reloads. |

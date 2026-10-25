@@ -50,6 +50,7 @@ Locked out? See [password recovery](/docs/troubleshooting/#i-forgot-the-password
 | --- | --- |
 | Import / Export | Downloads your whole config as one file, or restores it. See [Backup and restore](/docs/import-export/backup-and-restore/). |
 | Import from another dashboard | Reads gethomepage and Dashy files. Apps and folders are added. See [Import](/docs/import-export/migrating/). |
+| Import from Docker labels | Reads gethomepage labels on your containers through the Docker Socket URL. Apps and folders are added. See [From Docker labels](/docs/import-export/migrating/#from-docker-labels). |
 
 ## Appearance
 

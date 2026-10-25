@@ -9,6 +9,8 @@ description: Add app tiles with icons by name, group them in folders, and pin th
 
 Press <span class="sy-btn sy-btn--primary">Add</span>, choose App, and enter a name, URL, icon and colour.
 
+A name is up to 64 characters. Keep a username and password out of the URL: anyone who can open the dashboard can read it. Stackyard shows a warning when the URL holds one.
+
 For the icon, type the service name, such as `sonarr`. Stackyard searches [dashboard-icons](https://github.com/homarr-labs/dashboard-icons), [selfh.st](https://github.com/selfhst/icons), [simple-icons](https://github.com/simple-icons/simple-icons) and [lobehub](https://github.com/lobehub/lobe-icons). A URL or an uploaded file also works. Icons load through your server, so the icon CDN never sees your list of services.
 
 ### Tile colour

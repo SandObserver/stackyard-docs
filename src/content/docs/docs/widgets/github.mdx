@@ -30,12 +30,14 @@ Point at a day on the contribution graph to see its date and count. The card fol
 
 On Gitea and Forgejo, the filters read the account that owns the token.
 
+Pull requests are listed by last update. Gitea lists the newest first.
+
 ## Token
 
 **GitHub.** Create a classic token at [GitHub, Personal access tokens](https://github.com/settings/tokens) with the `repo` and `read:user` scopes. For public repositories only, `public_repo` and `read:user` are enough. A fine-grained token with the same read access also works.
 
 **Gitea and Forgejo.** Create an access token with the `read:user` and `read:issue` scopes.
 
-**GitLab.** Create a personal access token with the `read_api` scope.
+**GitLab.** Create a fine-grained personal access token with the Merge Request permission set to Read, or a legacy personal access token with the `read_api` scope.
 
 `Key rejected` on the widget means the token is wrong, expired or missing a scope.

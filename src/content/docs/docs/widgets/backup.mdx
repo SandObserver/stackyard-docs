@@ -83,9 +83,10 @@ A slot reads one backup group, such as `vm/100`. The card is named from the newe
 - Give the token the Audit role. On the datastore, the card shows the last backup, and failed if the newest backup failed verification. On `/`, it also shows running and failed backup tasks.
 - A backup older than 25 hours shows a warning.
 - Proxmox Backup Server does not hold the backup schedule, so the card shows no next run.
+- A group moved to another namespace of its datastore is found again when exactly one namespace holds it. Pick the group again if two do.
 
 ## Backrest
 
-A slot reads one plan. The card shows the last run, the next run, and missed when Backrest marks the plan overdue.
+A slot reads one plan. The card shows the last run, the next run, and missed when Backrest marks the plan overdue. Missed needs Backrest 1.14 or newer.
 
 Backrest has no read-only user. Any Backrest login has full control of Backrest. Stackyard only reads from it.

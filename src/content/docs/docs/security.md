@@ -84,7 +84,7 @@ The guard limits what a compromised widget can reach. It does not protect agains
 | --- | --- |
 | `cdn.jsdelivr.net` | Icon files, and three of the four icon catalogue indexes. |
 | `raw.githubusercontent.com` | The dashboard-icons index and its files, when jsdelivr does not answer. |
-| Unsplash | Wallpaper, only when the wallpaper source is Unsplash. The server keeps one photo for a day. |
+| Unsplash | Wallpaper, only when the wallpaper source is Unsplash. The server keeps one photo for a day, and reports each new photo to Unsplash as used. |
 | `api.github.com` | The update check, when Settings is opened, at most once an hour. Also two icon catalogue listings, while you type in the icon picker. |
 
 Each widget also reaches the service it reads: the address you set, or the public API of Open-Meteo, OpenWeather, NextDNS or GitHub. Nothing else leaves your network, and no usage data is collected.

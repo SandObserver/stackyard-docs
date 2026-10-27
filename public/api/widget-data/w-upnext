@@ -1,0 +1,45 @@
+{
+  "items": [
+    {
+      "kind": "episode",
+      "title": "Northbound",
+      "at": "2099-10-13T01:00:00.000Z",
+      "day": "",
+      "season": 2,
+      "episode": 4,
+      "lastEpisode": 4,
+      "name": "The Long Pass",
+      "premiere": false,
+      "finale": "",
+      "link": "",
+      "ends": "2099-10-13T01:50:00.000Z"
+    },
+    {
+      "kind": "film",
+      "title": "Glass Harbor",
+      "at": null,
+      "day": "2099-10-14",
+      "release": "digital",
+      "year": 2099,
+      "link": "",
+      "ends": ""
+    },
+    {
+      "kind": "episode",
+      "title": "Fieldwork",
+      "at": "2099-10-15T00:00:00.000Z",
+      "day": "",
+      "season": 1,
+      "episode": 8,
+      "lastEpisode": 8,
+      "name": "Hollow Ground",
+      "premiere": false,
+      "finale": "",
+      "link": "",
+      "ends": "2099-10-15T00:50:00.000Z"
+    }
+  ],
+  "missing": [],
+  "days": 90,
+  "calendar": ""
+}

@@ -71,6 +71,7 @@ Settings lists every item with an icon. A widget that names a `glyph` shows it. 
 | `network` | Three linked nodes |
 | `merge` | A branch leaving a line |
 | `panels` | One card between its neighbours |
+| `calendar` | Agenda rows, a day beside each title |
 
 The icons come from the shared [icon set](/docs/contributing/design-system/#icons).
 

@@ -1,10 +1,7 @@
 ---
 import { manifestCard } from '../lib/widget-manifest';
+import { CARD_H, RADIUS, widgetFit } from '../lib/widget-fit';
 
-/* Geometry mirrors the product and must stay in step with it: the design
-   canvas from WIDGET_DESIGN, the card width from the 1041px six-column grid,
-   WIDGET_HEIGHTS for height, WIDGET_R for the corner, and mountScaledWidget's
-   cover fit in ui/js/utils.js. Changing any of them missizes every preview. */
 interface Props {
   type: string;
   file: string;
@@ -18,16 +15,7 @@ interface Props {
 const { type, file, id, size = 'small', card = null, title, caption } = Astro.props;
 const declared = manifestCard(type, file);
 
-const DESIGN = { small: [170, 170], medium: [360, 170] } as const;
-const CARD_W = { small: 152.67, medium: 330.34 } as const;
-const CARD_H = 150;
-const RADIUS = 28;
-
-const [dw, dh] = DESIGN[size];
-const w = CARD_W[size];
-const scale = Math.max(w / dw, CARD_H / dh);
-const tx = (w - dw * scale) / 2;
-const ty = (CARD_H - dh * scale) / 2;
+const { w, frameStyle, zoom } = widgetFit(size);
 
 const src = `/widgets/${type}/${file}?id=${encodeURIComponent(id)}&size=${size}&lang=en`;
 ---
@@ -46,9 +34,14 @@ const src = `/widgets/${type}/${file}?id=${encodeURIComponent(id)}&size=${size}&
         aria-label={title}
         loading="lazy"
         scrolling="no"
-        style={`width:${dw}px;height:${dh}px;transform:translate(${tx}px,${ty}px) scale(${scale});`}
+        style={frameStyle}
+        data-zoom={zoom}
       ></iframe>
     </div>
   </div>
   {caption && <figcaption>{caption}</figcaption>}
 </figure>
+
+<script>
+  import '../lib/widget-zoom';
+</script>

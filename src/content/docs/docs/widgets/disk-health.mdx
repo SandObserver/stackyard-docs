@@ -37,10 +37,11 @@ Small holds four bays. Medium holds ten.
     kind: 'NAS operating system',
     needs: 'URL, API key',
     fields: [
-      ['TrueNAS URL', 'For example `truenas.local`.'],
-      ['TrueNAS API Key', 'Stored as a secret.'],
+      ['TrueNAS URL', 'For example `truenas.local`. An address without `https://` gets it. An `http://` address is refused, because TrueNAS revokes an API key sent over HTTP.'],
+      ['TrueNAS API Key', 'Stored as a secret. The `POOL_READ` role is enough.'],
+      ['Allow Self-Signed Certificate', 'Turn on for the certificate TrueNAS installs by default.'],
     ],
-    notes: ['TrueNAS 25.x only. Later versions do not have the REST API this widget reads. On a later version, run Scrutiny instead.'],
+    notes: ['Reads pool health. TrueNAS 25.04 and later answer on the WebSocket API. Older versions are read over the REST API.'],
     links: [{ label: 'truenas.com', href: 'https://www.truenas.com/' }],
   },
   {

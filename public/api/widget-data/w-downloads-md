@@ -1,0 +1,47 @@
+{
+  "items": [
+    {
+      "name": "Fedora-Workstation-Live-43.iso",
+      "size": 2400000000,
+      "progress": 0.81,
+      "speed": 9800000,
+      "eta": 47,
+      "state": "run"
+    },
+    {
+      "name": "Sintel.2010.mkv",
+      "size": 1100000000,
+      "progress": 0.52,
+      "speed": 6200000,
+      "eta": 85,
+      "state": "run"
+    },
+    {
+      "name": "ubuntu-26.04-desktop-amd64.iso",
+      "size": 6100000000,
+      "progress": 0.34,
+      "speed": 11200000,
+      "eta": 359,
+      "state": "run"
+    },
+    {
+      "name": "big-buck-bunny-4k-60fps.mkv",
+      "size": 3600000000,
+      "progress": 0.23,
+      "speed": 0,
+      "eta": null,
+      "state": "stall",
+      "reason": "noPeers"
+    }
+  ],
+  "summary": {
+    "kind": "time",
+    "seconds": 359,
+    "moving": 3,
+    "speed": 27200000,
+    "stalled": 1,
+    "failed": 0
+  },
+  "finished": [],
+  "link": ""
+}

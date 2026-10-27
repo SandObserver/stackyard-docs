@@ -1,0 +1,22 @@
+{
+  "items": [
+    {
+      "name": "Fedora-Workstation-Live-43.iso",
+      "size": 2400000000,
+      "progress": 0.81,
+      "speed": 9800000,
+      "eta": 47,
+      "state": "run"
+    }
+  ],
+  "summary": {
+    "kind": "time",
+    "seconds": 47,
+    "moving": 1,
+    "speed": 9800000,
+    "stalled": 0,
+    "failed": 0
+  },
+  "finished": [],
+  "link": ""
+}

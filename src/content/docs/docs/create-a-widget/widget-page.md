@@ -142,6 +142,7 @@ The wording comes from the failure kind, not the upstream message. `errorLine(er
 - `esc(value)` HTML-escapes a value for `innerHTML`. Use it for anything from config or upstream.
 - `sparkline(values, opts?)` returns an `<svg>` area and line chart.
 - `barFill(percent, opts?)` returns a track and fill bar. It skips its transition under reduced motion.
+- `setBar(track, percent)` moves a `barFill` bar to `percent`, clamped to 0 to 100.
 - `smoothPath(points)` returns a smoothed SVG path through `[[x, y], ...]`.
 - `setCardAppearance(dark)` gives the card the dark card's edge and border. Call it when the widget paints its own dark background, for example at night.
 

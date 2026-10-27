@@ -127,6 +127,7 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | `hint` | Short help under the field. On a `group`, it shows at the bottom of the section. |
 | `optional` | When `true`, the field is not required to save. A required `secret` counts as missing only when nothing is stored. |
 | `cosmetic` | When `true`, changing the field keeps a stored `secret`. Use it only on a field that cannot change the server a secret is sent to, the user name sent with it, or a path on a user-entered server. Links, labels, colours and units qualify, and so does a value sent to a fixed vendor host, such as a profile ID or a user to look up. A repeated key needs it on every declaration. The keys a cosmetic picker `carries` count as cosmetic too. |
+| `plain` | When `true`, a `text` row turns off capitalisation, autocorrect and spell check. Use it for names that must match exactly, such as a pool or share. A key ending in `url`, `href`, `user`, `username`, `id` or `profile` gets this without it. |
 | `transient` | When `true`, the field is sent to an `optionsFrom` fetch but not saved. Use it for a search box. Top-level fields only. |
 | `carries` | For a `select` with `optionsFrom`: extra config keys this picker writes, from the chosen option's `set` block. |
 | `showIf` | Shows the field only when a sibling matches: `{ "field": "provider", "equals": "adguard" }`, or `{ "field": "provider", "in": ["adguard", "pihole"] }`. Anything else is rejected. |

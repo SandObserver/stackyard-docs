@@ -24,7 +24,7 @@ An invalid manifest is skipped at startup with a logged reason. Only that widget
 
 ## Views
 
-A widget can ship more than one page and let the user pick, like the [GitHub](/docs/widgets/github/) and [Clock](/docs/widgets/clock/) widgets. Declare each view and its file, the field that holds the choice, and the default:
+A widget can ship more than one page and let the user pick, like the [Git](/docs/widgets/github/) and [Clock](/docs/widgets/clock/) widgets. Declare each view and its file, the field that holds the choice, and the default:
 
 ```json
 {
@@ -178,7 +178,7 @@ That saves `{ "vpn": { "url": "...", "apiKey": "..." } }`. A sub-field `showIf` 
 
 ## Options from the service
 
-When a `select` can only be filled after the user enters a URL and key, give it `"optionsFrom": "<endpoint>"`. The form shows a **Fetch** button, which calls `data.js` with `ctx.endpoint` set to that name. Return `{ options: [{ value, label }, ...] }`.
+When a `select` can only be filled after the user enters a URL and key, give it `"optionsFrom": "<endpoint>"`. The form shows a **Fetch** button, which calls `data.js` with `ctx.endpoint` set to that name. Return `{ options: [{ value, label }, ...] }`. If the service listed more than you return, add `truncated: true`. The form then says the list was cut short.
 
 The fetch receives the current form values, `transient` fields included.
 

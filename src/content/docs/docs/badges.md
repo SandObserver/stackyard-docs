@@ -16,7 +16,19 @@ A badge is the small pill on an app tile. Each app can have three kinds.
 Shows whether the service is up.
 
 - **Ping** reads the HTTP status of a URL.
-- **Container** reads the container state from Docker. It needs a socket proxy such as [docker-socket-proxy](https://github.com/tecnativa/docker-socket-proxy), its address in `SOCKET_PROXY_URL`, and Docker Container Health Checks on in General. Never mount the Docker socket into Stackyard.
+- **Container** reads the container state from Docker. It needs a socket proxy such as [docker-socket-proxy](https://github.com/tecnativa/docker-socket-proxy) and its address in Docker Socket URL in General, or in `SOCKET_PROXY_URL`. Never mount the Docker socket into Stackyard.
+- **Proxmox** reads whether a Proxmox VE virtual machine or container is running. Pick it from the Guest list. It needs the Proxmox connection in General.
+
+Every check type needs **Health Checks** on in General.
+
+### Proxmox token
+
+1. In Proxmox, open **Datacenter**, **Permissions**, **API Tokens**, and add a token.
+2. Give the role **PVEAuditor** on path `/`. The role is read only.
+3. If **Privilege Separation** is on, give the role to the token itself, not only to its user. Otherwise the token sees no guests.
+4. In Stackyard, enter the address, the token ID (`user@realm!name`) and the secret, then press <span class="sy-btn sy-btn--ghost">Test</span>. It reports how many guests the token can see.
+
+One request to Proxmox serves every Proxmox tile.
 
 A problem shows a red `!`. Hover it for the reason. Turn on Hide Healthy Badge in General to hide the green state.
 
@@ -28,7 +40,9 @@ Badge colours are Accent, Success, Warning, Danger and Info. Each is drawn for t
 
 ## Live activity
 
-A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response. Pick one.
+A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response, including a number sent as text, such as `"21.5"`. Pick one.
+
+If the API asks for a username and password, turn on **Authentication** and enter them under **Sign In**. The password stays on the server. A username and password typed into the URL are not sent.
 
 Tick **Secret** on a header to keep its value on the server. Poll sets how often it reads, in seconds. Every open dashboard shares that reading.
 

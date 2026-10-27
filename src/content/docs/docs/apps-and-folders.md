@@ -38,3 +38,7 @@ A folder holds apps behind one tile. Press Add, choose Folder, then Add Apps. Fo
 ## Dock
 
 Turn on Show in Dock on an app to pin it to the bar at the bottom. The dock holds four apps.
+
+The Dashboard list shows docked apps in a Dock group above Home screen. Drag an app into the Dock group to dock it, or out of it to undock it. A docked app leaves its folder.
+
+The Settings tile can go in the dock too. Press Edit on it and turn on Show in Dock. Show in Dock stays off while Show Settings on dashboard is off.

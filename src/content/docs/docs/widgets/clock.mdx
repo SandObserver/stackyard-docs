@@ -1,22 +1,25 @@
 ---
 title: Clock widget
-description: A digital or analog clock for any timezone on your Stackyard dashboard. No service and no network requests.
+description: A digital, analog or Captain clock for any timezone on your Stackyard dashboard. No service and no network requests.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
 import SettingList from '../../../../components/SettingList.astro';
 
-A digital or analog clock. It runs in the browser and needs no service. The face follows [Display Mode](/docs/customization/).
+A digital, analog or Captain clock. It runs in the browser and needs no service. The digital and analog faces follow [Display Mode](/docs/customization/).
+
+The Captain face is a comic panel: a speech balloon with the weekday, time and date, and a glass of beer whose level changes each minute. Its wall colour follows the time of day.
 
 <WidgetGroup items={[
   { type: 'clock', file: 'digital.html', id: 'demo-clock-digital', title: 'Digital clock', label: 'Digital' },
   { type: 'clock', file: 'analog.html', id: 'demo-clock-analog', title: 'Analog clock', label: 'Analog' },
+  { type: 'clock', file: 'captain.html', id: 'demo-clock-captain', title: 'Captain clock', label: 'Captain' },
 ]} />
 
 Small only.
 
 <SettingList title="Settings" items={[
-  { name: 'Style', text: 'Digital or Analog.' },
+  { name: 'Style', text: 'Digital, Analog or Captain.' },
   { name: 'Timezone', text: 'An IANA name, such as `America/Toronto`. Blank uses the browser time. An unknown name shows `Unknown timezone`.', optional: true },
-  { name: 'Show date', text: 'The weekday and date under the time. In Persian, the Shahanshahi date; the digital clock also shows the year. On by default.' },
+  { name: 'Show date', text: 'The weekday and date under the time. In Persian, the Shahanshahi date; the digital clock also shows the year. The Captain face shows the day, month and year under the time, and keeps the weekday in its balloon. On by default.' },
 ]} />

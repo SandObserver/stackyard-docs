@@ -1,13 +1,13 @@
 ---
 title: Disk health widget
-description: SMART status for every drive bay, from Scrutiny or TrueNAS, on your Stackyard dashboard.
+description: Drive health for every bay, from Scrutiny, TrueNAS or Unraid, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
 import ServiceList from '../../../../components/ServiceList.astro';
 import SettingList from '../../../../components/SettingList.astro';
 
-One tile per drive bay, coloured by SMART status.
+One tile per drive bay, coloured by drive health.
 
 <WidgetGroup caption="Small, a three drive chassis, all healthy. Medium, an eight bay chassis with a failed drive, a drive with no SMART data and one empty bay."
   items={[
@@ -44,16 +44,31 @@ Small holds four bays. Medium holds ten.
     notes: ['Reads pool health. TrueNAS 25.04 and later answer on the WebSocket API. Older versions are read over the REST API.'],
     links: [{ label: 'truenas.com', href: 'https://www.truenas.com/' }],
   },
+  {
+    name: 'Unraid', icon: 'unraid',
+    kind: 'NAS operating system',
+    needs: 'URL, API key',
+    fields: [
+      ['Unraid URL', 'For example `tower.local`.'],
+      ['Unraid API Key', 'A key with the Viewer role is enough. Stored as a secret.'],
+    ],
+    notes: [
+      'Lists parity, data and cache drives.',
+      'Unraid reports disabled and missing drives, not SMART warnings. Use Scrutiny for SMART warnings.',
+      'A spun-down drive shows no temperature.',
+    ],
+    links: [{ label: 'unraid.net', href: 'https://unraid.net/' }],
+  },
 ]} />
 
 <SettingList title="Settings" items={[
-  { name: 'Source', text: 'Scrutiny or TrueNAS. Defaults to Scrutiny.' },
+  { name: 'Source', text: 'Scrutiny, TrueNAS or Unraid. Defaults to Scrutiny.' },
   { name: 'Link URL', text: 'Where clicking the widget opens. Leave blank to use the service address, if your browser can reach it.', optional: true },
   { name: 'Bays', text: 'Which drive sits in which bay. Enter the URL, load the drives, then assign each bay.' },
 ]} />
 
 ## Drive states
 
-A bay shows Healthy or Failed. Any failed check in Scrutiny counts as Failed. A drive with no SMART data reports that. It is never shown as healthy.
+A bay shows Healthy or Failed. Any failed check in Scrutiny counts as Failed. In Unraid, a disabled, wrong or invalid drive counts as Failed. Unraid does not list a missing drive, so a bay whose drive Unraid no longer lists counts as Failed. After removing a drive on purpose, clear its bay. A drive with no SMART data reports that. It is never shown as healthy.
 
-A bay shows `Not reporting` when its drive is no longer in the monitoring service list. The other bays are unaffected.
+With Scrutiny or TrueNAS, a bay shows `Not reporting` when its drive is no longer in the service's list. The other bays are unaffected.

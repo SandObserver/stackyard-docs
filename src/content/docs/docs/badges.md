@@ -15,8 +15,8 @@ A badge is the small pill on an app tile. Each app can have three kinds.
 
 Shows whether the service is up.
 
-- **Ping** reads the HTTP status of a URL.
-- **Container** reads the container state from Docker. It needs a socket proxy such as [docker-socket-proxy](https://github.com/tecnativa/docker-socket-proxy) and its address in Docker Socket URL in General, or in `SOCKET_PROXY_URL`. Never mount the Docker socket into Stackyard.
+- **Ping** reads the HTTP status of a URL. A link-local address (`169.254.0.0/16`, `fe80::/10`) is never pinged, by address or by a name that resolves to one. That range holds the cloud metadata service.
+- **Container** reads the container state from Docker. It needs a socket proxy such as [docker-socket-proxy](https://github.com/tecnativa/docker-socket-proxy) and its address in Docker Socket URL in General, or in `SOCKET_PROXY_URL`. A proxy that allows only versioned API paths, such as `/v1.47/containers/json`, works too. Never mount the Docker socket into Stackyard.
 - **Proxmox** reads whether a Proxmox VE virtual machine or container is running. Pick it from the Guest list. It needs the Proxmox connection in General.
 
 Every check type needs **Health Checks** on in General.

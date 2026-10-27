@@ -148,9 +148,15 @@ Setting **Host IP** in **General** also allows that address through the SSRF gua
 
 ### The health check badge shows nothing for a container
 
-Container checks read the Docker daemon through a socket proxy. Set `SOCKET_PROXY_URL` to the proxy's address, then turn on **Docker Container Health Checks** in **General**.
+Turn on **Health Checks** in **General**. Every check type needs it.
 
-A ping check needs neither. Switch the check type to Ping and give it a URL.
+Container checks read the Docker daemon through a socket proxy. Enter the proxy's address in **Docker Socket URL**, or set `SOCKET_PROXY_URL`.
+
+A ping check needs no proxy. Switch the check type to Ping and give it a URL.
+
+### Every Proxmox tile says Guest not found
+
+The token sees no guests. Press <span class="sy-btn sy-btn--ghost">Test</span> under **Health Checks**. `Connected · 0 guests` means the token has no role. If **Privilege Separation** is on for the token, give PVEAuditor to the token itself, not only to its user.
 
 ### Every app with a container shows as unhealthy at once
 
@@ -264,10 +270,15 @@ Messages shown in the admin, and what each one means.
 | `Nothing at that address answered.` | The socket proxy address is unreachable from inside the container. Usually a proxy published on the host's loopback. |
 | `That name is resolved by Docker, which answers only for containers on a shared network.` | The socket proxy service name is not on a network Stackyard shares. |
 | `Saved, but the socket proxy did not answer` | The address was stored, but nothing responded. Docker health checks will not work until it does. |
-| `Enter the socket proxy address, or turn Docker monitoring off.` | Docker health checks are on with no proxy address set. |
 | `Settings unavailable` | The widget's definition could not be loaded. The stored config is kept. |
 | `N widgets could not be loaded, so they are not listed below.` | Those definitions were refused at startup. The reason is in the container log. |
 | `Container not found` | The socket proxy answered, but no container matched that name. |
+| `Guest not found` | Proxmox answered, but lists no guest with that number. Templates are never listed. See [above](#every-proxmox-tile-says-guest-not-found). |
+| `Guest stopped` | The Proxmox virtual machine or container is not running. |
+| `No data from Proxmox` | Proxmox lists the guest but has no current status for it. Its node is usually offline or has just started. |
+| `Proxmox refused the token. Check the token ID and secret.` | The token ID or secret is wrong. |
+| `The token cannot read this. Give it the PVEAuditor role.` | The token is valid but lacks a permission. |
+| `Enter the Proxmox address, token ID and secret under Health Checks in General.` | An app has a Proxmox check, but no Proxmox connection is set. |
 | `Enter the username and password under Sign In. A login in the URL is not sent.` | The Live Activity URL holds a username or password before the host. Stackyard does not send it. Enter them under Authentication, Sign In. |
 | `This address has no API path. Enter the service's full API URL.` | The Live Activity address names a host only. Badges read a value from an API response, so the address needs the service's API path. |
 | `Connected, but this address has no API path. Enter the service's full API URL.` | The address answered, but nothing numeric was found in the response. Same cause as above. |

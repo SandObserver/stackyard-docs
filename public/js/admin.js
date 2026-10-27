@@ -1,8 +1,14 @@
-import { buildAppForm, buildFolderForm, captureActLabels, serializeKvRows } from '/js/admin-app-form.js?v=f0da79cf';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=5246ff39';
+import {
+  buildAppForm,
+  buildFolderForm,
+  buildSettingsTileForm,
+  captureActLabels,
+  serializeKvRows,
+} from '/js/admin-app-form.js?v=925a4b11';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=ec5cd673';
 import { recoveryShown } from '/js/config-recovery.js?v=85138697';
-import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=411d6f37';
-import { resolveAdminSection } from '/js/admin-logic.js?v=1cca36f5';
+import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=511689a7';
+import { resolveAdminSection, settleDock } from '/js/admin-logic.js?v=28471483';
 import {
   afterImport,
   buildAppItem,
@@ -15,7 +21,7 @@ import {
   serialWrites,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=5613a9fa';
+} from '/js/admin-save-logic.js?v=b83791fb';
 import {
   loadSettings,
   savedWallpaperUrl,
@@ -23,7 +29,9 @@ import {
   showBgFields,
   showWallpaperFile,
   wireUnsplashKey,
-} from '/js/admin-settings.js?v=4b374391';
+  wireProxmox,
+  applyHealthChecks,
+} from '/js/admin-settings.js?v=8eb7db69';
 import {
   apiGet,
   apiPost,
@@ -37,28 +45,30 @@ import {
   setReauthHandler,
   toast,
   withheldText,
-} from '/js/admin-shared.js?v=1c01be9a';
-import { collapsedFolders, filter, state } from '/js/admin-state.js?v=af772a1b';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=1cb745cf';
-import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
+} from '/js/admin-shared.js?v=f4752f33';
+import { collapsedFolders, filter, state } from '/js/admin-state.js?v=064b9b85';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=a5539971';
+import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
-import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=8b39e9d0';
-import { createListbox } from '/js/listbox.js?v=f814170f';
+import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=75a71ab4';
+import { createListbox } from '/js/listbox.js?v=b9f71853';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=ed7c5565';
 import { loadLocalIcons } from '/js/icons.js?v=5ac01d72';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=628341d4';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=26655aca';
 import {
   clearSkipTls,
   convert,
+  convertDockerLabels,
   detectSource,
   ImportTooLargeError,
   insecureApps,
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=3b635c16';
-import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
+} from '/js/import-foreign.js?v=20baac2a';
+import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
+import { clampName } from '/js/limits.js?v=ea61a441';
 import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6b0320bd';
 import {
   THEME_KEY,
@@ -82,8 +92,8 @@ import {
   storeGet,
   storeSet,
   tgt,
-} from '/js/utils.js?v=705ca896';
-import { applyBackground, resolveBackground } from '/js/background.js?v=25428bf2';
+} from '/js/utils.js?v=ab3cac1d';
+import { applyBackground, resolveBackground } from '/js/background.js?v=288bfc2a';
 import { parseYamlTolerant, YamlLiteError, YamlTooLargeError } from '/js/yaml-lite.js?v=a42ef914';
 
 ensureSprite();
@@ -166,6 +176,7 @@ async function writeItems(asked) {
     if (asked !== _replaced || JSON.stringify(full.items || []) !== _serverItems) {
       throw Object.assign(new Error('stale'), { status: 409 });
     }
+    settleDock(state.items);
     const sent = JSON.stringify(state.items);
     full.items = JSON.parse(sent);
     const r = await apiPost('/api/config', full);
@@ -344,6 +355,7 @@ function _renderEditBody(focusKind) {
   body.replaceChildren();
   if (state.ctype === 'widget') buildWidgetForm(body, state._evItem);
   else if (state.ctype === 'folder') buildFolderForm(body, state._evItem);
+  else if (state.ctype === 'settings') buildSettingsTileForm(body, state._evItem);
   else buildAppForm(body, state._evItem);
   if (!state._evIsEdit) body.insertBefore(buildAddNewCard(), body.firstChild);
   setTimeout(() => {
@@ -357,7 +369,7 @@ function openModal(idx) {
   const editing = idx != null ? state.items[idx] : null;
   state.eid = editing?.id ?? null;
   const item = editing ? structuredClone(editing) : null;
-  state.ctype = item?.type || 'app';
+  state.ctype = item?.system === 'settings' ? 'settings' : item?.type || 'app';
   state.siurl = item?.iconUrl || '';
   state.scol = item ? item.color || 'dark' : 'auto';
   state._customUrl = item?.url || '';
@@ -412,7 +424,7 @@ function openModal(idx) {
   const delBtn = el('ev-delete');
   const saveBtn = el('ev-save');
   if (delBtn) {
-    delBtn.classList.toggle('d-none', !isEdit);
+    delBtn.classList.toggle('d-none', !isEdit || state.ctype === 'settings');
     delBtn.onclick = () => _evDelete(item, idx);
   }
   if (saveBtn) {
@@ -580,13 +592,14 @@ function openFolderPicker(appId, targetFolderId = null) {
         cancelLabel: t('common.cancel'),
       });
       if (!name) return;
+      const label = clampName(name);
       const fid = newItemId(
-        name,
+        label,
         'folder',
         state.items.map(i => i.id),
       );
       const before = snapshotItems(state.items);
-      state.items.push({ id: fid, type: 'folder', label: name, children: [appId] });
+      state.items.push({ id: fid, type: 'folder', label, children: [appId] });
       state.items.forEach(f => {
         if (f.type === 'folder' && f.id !== fid) f.children = (f.children || []).filter(id => id !== appId);
       });
@@ -612,7 +625,7 @@ async function doSave(orig) {
     /** @type {Record<string, any>} */
     let item;
     if (state.ctype === 'widget') {
-      const wlabel = state._wlabel.trim() || state._widgetReg?.[state._wtype]?.label || t('type.widget');
+      const wlabel = clampName(state._wlabel.trim() || state._widgetReg?.[state._wtype]?.label || t('type.widget'));
       if (state._autoForm && state._autoFormType === state._wtype && state._widgetReg[state._wtype]) {
         const missing = state._autoForm.validate();
         if (missing.length) {
@@ -660,8 +673,13 @@ async function doSave(orig) {
         };
         if (Object.keys(ifo).length) item.iframe = ifo;
       }
+    } else if (state.ctype === 'settings') {
+      const shown = !!inp('f-shown')?.checked;
+      item = { ...orig, dock: shown && !!inp('f-dock')?.checked };
+      if (shown) delete item.hidden;
+      else item.hidden = true;
     } else if (state.ctype === 'folder') {
-      const label = inp('f-fname')?.value?.trim();
+      const label = clampName(inp('f-fname')?.value?.trim() || '');
       if (!label) {
         toast(t('toast.nameRequired'), 'err');
         return;
@@ -683,19 +701,22 @@ async function doSave(orig) {
       };
     } else {
       const isPing = inp('hc-type-ping')?.checked;
+      const isPve = inp('hc-type-pve')?.checked;
       captureActLabels();
       const v = {
-        label: inp('f-lbl')?.value?.trim(),
+        label: clampName(inp('f-lbl')?.value?.trim() || ''),
         href: inp('f-href')?.value?.trim(),
         hcEn: inp('hc-en')?.checked,
-        hcCon: isPing ? '' : inp('hc-con')?.value?.trim() || '',
+        hcCon: isPing || isPve ? '' : inp('hc-con')?.value?.trim() || '',
         hcPing: isPing ? inp('hc-ping')?.value?.trim() || '' : '',
+        hcPve: isPve ? Number(state._pveGuest?.getValue()) || 0 : 0,
         skipTlsVerify: inp('f-skip-tls')?.checked || false,
         actEn: inp('act-en')?.checked,
         actUrl: inp('f-burl')?.value?.trim() || '',
         actInt: Math.min(3600, Math.max(10, parseInt(inp('f-bint')?.value || '30', 10))),
         actParams: serializeKvRows(state._bpar),
         actHeaders: serializeKvRows(state._bhdr),
+        actLogin: { username: inp('f-buser')?.value?.trim() || '', password: inp('f-bpass')?.value || '' },
         staticEn: inp('static-en')?.checked || false,
         staticLabel: inp('f-static-label')?.value?.trim() || '',
         staticColor: inp('static-col-val')?.value || 'info',
@@ -761,9 +782,11 @@ function initNav() {
 }
 
 function initAllInlineEdits() {
-  initInlineEdit('ie-ip', 'srv-ip', { placeholder: '192.168.1.100' });
-  initInlineEdit('ie-socket', 'srv-socket', { placeholder: 'http://socket-proxy:2375' });
-  initInlineEdit('ie-hosts', 'srv-hosts', { placeholder: () => t('general.allowedHostsNone') });
+  initInlineEdit('ie-ip', 'srv-ip', { placeholder: '192.168.1.100', plain: true });
+  initInlineEdit('ie-socket', 'srv-socket', { placeholder: 'http://socket-proxy:2375', plain: true });
+  initInlineEdit('ie-pve-url', 'srv-pve-url', { type: 'url', placeholder: 'https://192.168.1.10:8006', plain: true });
+  initInlineEdit('ie-pve-token', 'srv-pve-token', { placeholder: 'stackyard@pve!dashboard', plain: true });
+  initInlineEdit('ie-hosts', 'srv-hosts', { placeholder: () => t('general.allowedHostsNone'), plain: true });
 
   initInlineEdit('ie-pw', 'sec-pw', {
     type: 'password',
@@ -791,11 +814,12 @@ function initAllInlineEdits() {
   }
 
   wireUnsplashKey();
+  wireProxmox();
 
   const colInp = document.createElement('input');
   colInp.id = 'bg-col-inp';
   document.body.appendChild(colInp);
-  initInlineEdit('ie-bgcol', 'bg-col-inp', { placeholder: 'AGVpqBZnzUE' });
+  initInlineEdit('ie-bgcol', 'bg-col-inp', { placeholder: 'AGVpqBZnzUE', plain: true });
 
   const urlInp = document.createElement('input');
   urlInp.id = 'bg-url-inp';
@@ -803,6 +827,7 @@ function initAllInlineEdits() {
   document.body.appendChild(urlInp);
   initInlineEdit('ie-bgurl', 'bg-url-inp', {
     placeholder: 'https://example.com/photo.jpg',
+    plain: true,
     onCommit(v) {
       fetchWallpaperLink(v.trim());
     },
@@ -875,15 +900,11 @@ function initSecToggle() {
   en.addEventListener('change', () => apply(en.checked));
 }
 
-function initDockerToggle() {
-  const en = inp('srv-docker-en');
+function initHealthChecksToggle() {
+  const en = inp('srv-hc-en');
   if (!en) return;
-  function apply(on, now = false) {
-    reveal(el('srv-docker-rows'), on, now);
-    reveal(el('socket-hint-wrap'), on, now);
-  }
-  apply(en.checked, true);
-  en.addEventListener('change', () => apply(en.checked));
+  applyHealthChecks(en.checked, true);
+  en.addEventListener('change', () => applyHealthChecks(en.checked));
 }
 
 function initBgType() {
@@ -1206,6 +1227,7 @@ const SKIP_TEXT = {
   [SKIP.RELATIVE_HREF]: 'importForeign.skipRelativeHref',
   [SKIP.UNREADABLE]: 'importForeign.skipUnreadable',
   [SKIP.UNPARSABLE]: 'importForeign.skipUnparsable',
+  [SKIP.NO_NAME_OR_GROUP]: 'importForeign.skipNoNameOrGroup',
 };
 const NOTE_TEXT = {
   [NOTE.ICON_DROPPED]: 'importForeign.noteIcon',
@@ -1220,6 +1242,8 @@ const NOTE_TEXT = {
   [NOTE.PAGES_NOT_FOLLOWED]: 'importForeign.notePages',
   [NOTE.SCHEME_ADDED]: 'importForeign.noteSchemeAdded',
   [NOTE.HEALTH_URL_DROPPED]: 'importForeign.noteHealthUrl',
+  [NOTE.NAME_SHORTENED]: 'importForeign.noteNameShortened',
+  [NOTE.LOGIN_REMOVED]: 'importForeign.noteLoginRemoved',
 };
 
 /** One "Heading (n)" block followed by a line per entry.
@@ -1284,107 +1308,127 @@ el('imp-foreign').onchange = async e => {
       skipped.push(...parseErrorsAsSkipped(parseErrors, file.name), ...out.skipped);
       notes.push(...out.notes);
     }
-
-    const apps = items.filter(i => i.type === 'app').length;
-    const folders = items.length - apps;
-    if (!apps) {
-      toast(t('toast.importForeignNothing'), 'err');
-      input.value = '';
-      return;
-    }
-
-    const body = document.createElement('div');
-    const lead = document.createElement('p');
-    lead.className = 'dlg-lead';
-    lead.textContent = t('importForeign.lead');
-    body.appendChild(lead);
-    dlgSection(
-      body,
-      t('importForeign.willAdd'),
-      items
-        .filter(i => i.type === 'app')
-        .map(i => {
-          const ping = i.monitoring?.healthcheck?.pingUrl;
-          return {
-            name: i.label,
-            group: '',
-            why: ping ? `${i.href}  ${t('importForeign.monitors', { url: ping })}` : i.href,
-          };
-        }),
-    );
-    dlgSection(
-      body,
-      t('importForeign.willCreate'),
-      items
-        .filter(i => i.type === 'folder')
-        .map(i => ({
-          name: i.label,
-          group: '',
-          why: t('importForeign.appCount', { n: formatNumber(i.children.length) }),
-        })),
-    );
-    dlgSection(
-      body,
-      t('importForeign.changed'),
-      notes.map(n => ({ name: n.name, group: n.group, why: t(NOTE_TEXT[n.code], { detail: n.detail || '' }) })),
-    );
-    dlgSection(
-      body,
-      t('importForeign.notImported'),
-      skipped.map(s => ({ name: s.name, group: s.group, why: t(SKIP_TEXT[s.reason], { detail: s.detail || '' }) })),
-    );
-
-    /* Never take certificate skipping from the file on its say-so. It stays off
-       unless it is turned on here. */
-    const insecure = insecureApps(items);
-    /** @type {HTMLInputElement|null} */
-    let skipTlsChoice = null;
-    if (insecure.length) {
-      const heading = document.createElement('div');
-      heading.className = 'dlg-sec';
-      heading.textContent = `${t('app.allowSelfSigned')} (${formatNumber(insecure.length)})`;
-      const choice = document.createElement('label');
-      choice.className = 'dlg-choice';
-      skipTlsChoice = document.createElement('input');
-      skipTlsChoice.type = 'checkbox';
-      const why = document.createElement('span');
-      why.className = 'dlg-why';
-      why.textContent = t('app.selfSignedTip');
-      choice.append(skipTlsChoice, why);
-      const ul = document.createElement('ul');
-      ul.className = 'dlg-ul';
-      for (const item of insecure) {
-        const li = document.createElement('li');
-        li.className = 'dlg-li';
-        const nm = document.createElement('span');
-        setUserText(nm, item.label);
-        li.appendChild(nm);
-        ul.appendChild(li);
-      }
-      body.append(heading, choice, ul);
-    }
-
-    const ok = await confirmModal({
-      title: t('importForeign.title'),
-      body,
-      confirmLabel: t('common.import'),
-      cancelLabel: t('common.cancel'),
-      className: 'wide',
-    });
-    if (!ok) {
-      input.value = '';
-      return;
-    }
-    if (skipTlsChoice && !skipTlsChoice.checked) clearSkipTls(items);
-    /* Appended, never merged. An import must not rename, reorder or remove
-       anything already on the dashboard. */
-    await appendAndSave(items);
-    toast(t('toast.importForeignDone', { apps: formatNumber(apps), folders: formatNumber(folders) }));
+    await reviewImport(items, skipped, notes, 'toast.importForeignNothing');
   } catch (err) {
     toast(t('toast.importFailed', { err: errorText(err) }), 'err');
   }
   input.value = '';
 };
+
+let dockerImporting = false;
+el('btn-imp-docker').onclick = async () => {
+  if (dockerImporting) return;
+  dockerImporting = true;
+  try {
+    const r = await apiGet('/api/docker/labels');
+    let out;
+    try {
+      out = convertDockerLabels(r.containers, new Set(state.items.map(i => i.id)));
+    } catch (err) {
+      if (err instanceof ImportTooLargeError) throw new ShownError(t('toast.importDockerTooLarge'));
+      throw err;
+    }
+    await reviewImport(out.items, out.skipped, out.notes, 'toast.importDockerNothing');
+  } catch (err) {
+    toast(t('toast.importFailed', { err: errorText(err) }), 'err');
+  }
+  dockerImporting = false;
+};
+
+/** @param {any[]} items @param {any[]} skipped @param {any[]} notes @param {string} nothingKey */
+async function reviewImport(items, skipped, notes, nothingKey) {
+  const apps = items.filter(i => i.type === 'app').length;
+  const folders = items.length - apps;
+  if (!apps) {
+    toast(t(nothingKey), 'err');
+    return;
+  }
+
+  const body = document.createElement('div');
+  const lead = document.createElement('p');
+  lead.className = 'dlg-lead';
+  lead.textContent = t('importForeign.lead');
+  body.appendChild(lead);
+  dlgSection(
+    body,
+    t('importForeign.willAdd'),
+    items
+      .filter(i => i.type === 'app')
+      .map(i => {
+        const ping = i.monitoring?.healthcheck?.pingUrl;
+        return {
+          name: i.label,
+          group: '',
+          why: ping ? `${i.href}  ${t('importForeign.monitors', { url: ping })}` : i.href,
+        };
+      }),
+  );
+  dlgSection(
+    body,
+    t('importForeign.willCreate'),
+    items
+      .filter(i => i.type === 'folder')
+      .map(i => ({
+        name: i.label,
+        group: '',
+        why: t('importForeign.appCount', { n: formatNumber(i.children.length) }),
+      })),
+  );
+  dlgSection(
+    body,
+    t('importForeign.changed'),
+    notes.map(n => ({ name: n.name, group: n.group, why: t(NOTE_TEXT[n.code], { detail: n.detail || '' }) })),
+  );
+  dlgSection(
+    body,
+    t('importForeign.notImported'),
+    skipped.map(s => ({ name: s.name, group: s.group, why: t(SKIP_TEXT[s.reason], { detail: s.detail || '' }) })),
+  );
+
+  /* Never take certificate skipping from the file on its say-so. It stays off
+     unless it is turned on here. */
+  const insecure = insecureApps(items);
+  /** @type {HTMLInputElement|null} */
+  let skipTlsChoice = null;
+  if (insecure.length) {
+    const heading = document.createElement('div');
+    heading.className = 'dlg-sec';
+    heading.textContent = `${t('app.allowSelfSigned')} (${formatNumber(insecure.length)})`;
+    const choice = document.createElement('label');
+    choice.className = 'dlg-choice';
+    skipTlsChoice = document.createElement('input');
+    skipTlsChoice.type = 'checkbox';
+    const why = document.createElement('span');
+    why.className = 'dlg-why';
+    why.textContent = t('app.selfSignedTip');
+    choice.append(skipTlsChoice, why);
+    const ul = document.createElement('ul');
+    ul.className = 'dlg-ul';
+    for (const item of insecure) {
+      const li = document.createElement('li');
+      li.className = 'dlg-li';
+      const nm = document.createElement('span');
+      setUserText(nm, item.label);
+      li.appendChild(nm);
+      ul.appendChild(li);
+    }
+    body.append(heading, choice, ul);
+  }
+
+  const ok = await confirmModal({
+    title: t('importForeign.title'),
+    body,
+    confirmLabel: t('common.import'),
+    cancelLabel: t('common.cancel'),
+    className: 'wide',
+  });
+  if (!ok) return;
+  if (skipTlsChoice && !skipTlsChoice.checked) clearSkipTls(items);
+  /* Appended, never merged. An import must not rename, reorder or remove
+     anything already on the dashboard. */
+  await appendAndSave(items);
+  toast(t('toast.importForeignDone', { apps: formatNumber(apps), folders: formatNumber(folders) }));
+}
 
 el('btn-add').onclick = () => openModal(null);
 
@@ -1392,7 +1436,7 @@ initList({ openModal, openFolderPicker, save: saveOrRevert });
 initNav();
 initAllInlineEdits();
 initSecToggle();
-initDockerToggle();
+initHealthChecksToggle();
 initBgType();
 initBgFit();
 initWallpaperUpload();

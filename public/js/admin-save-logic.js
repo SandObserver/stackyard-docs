@@ -11,6 +11,7 @@ export function cleanId(label, fallback = 'item') {
     String(label || '')
       .replace(/[^a-zA-Z0-9]/g, '_')
       .replace(/_+/g, '_')
+      .slice(0, 32)
       .replace(/^_|_$/g, '') || fallback
   );
 }
@@ -285,12 +286,20 @@ export function buildAppItem(v, orig, takenIds = []) {
       dock: v.dock || false,
       skipTlsVerify: v.skipTlsVerify || undefined,
       monitoring: {
-        healthcheck: { enabled: v.hcEn && (!!v.hcCon || !!v.hcPing), container: v.hcCon, pingUrl: v.hcPing },
+        healthcheck: {
+          enabled: v.hcEn && (!!v.hcCon || !!v.hcPing || !!v.hcPve),
+          container: v.hcCon,
+          pingUrl: v.hcPing,
+          proxmoxGuest: v.hcPve || undefined,
+        },
         activity: {
           enabled: v.actEn && !!v.actUrl,
           url: v.actUrl,
           params: v.actParams?.length ? v.actParams : undefined,
           headers: v.actHeaders?.length ? v.actHeaders : undefined,
+          login: v.actLogin?.username
+            ? { username: v.actLogin.username, password: v.actLogin.password || undefined }
+            : undefined,
           extract: spaths.length === 1 ? spaths[0] : spaths.length > 1 ? spaths.map(p => ({ path: p })) : undefined,
           labels: combine ? undefined : labels,
           combine: combine || undefined,

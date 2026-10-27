@@ -8,6 +8,7 @@ function diskDevices(ctx) {
     {
       scrutiny: scrutinyDeviceOptions,
       truenas: truenasPoolOptions,
+      unraid: unraidDiskOptions,
     },
     { field: 'diskProvider', default: 'scrutiny' },
   );
@@ -59,25 +60,57 @@ async function scrutinyDeviceOptions(ctx) {
   return { options };
 }
 
-function truenasStatus(ctx, r) {
-  if (r.status === 401 || r.status === 403) ctx.fail('TrueNAS auth failed, check API key', { kind: ctx.KIND.AUTH });
-  if (r.status === 404) ctx.fail('TrueNAS REST API not found (supported on 25.x only, or use Scrutiny)');
+/* Never send the key over http. TrueNAS revokes it. */
+function truenasBase(ctx) {
+  const raw = String(ctx.config.truenasUrl || '')
+    .trim()
+    .replace(/[?#].*$/, '');
+  if (!raw) ctx.fail('Enter the TrueNAS URL first.', { kind: ctx.KIND.INVALID });
+  if (/^http:\/\//i.test(raw))
+    ctx.fail('Use an https:// address. TrueNAS revokes an API key sent over http.', { kind: ctx.KIND.INVALID });
+  return ctx.normalizeBase(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : `https://${raw}`);
+}
+
+function truenasKey(ctx) {
+  const key = String(ctx.config.truenasKey || '').trim();
+  if (!key) ctx.fail('Enter the TrueNAS API key first.', { kind: ctx.KIND.INVALID });
+  return key;
+}
+
+function truenasRestStatus(ctx, r) {
+  if (r.status === 401 || r.status === 403) ctx.fail('TrueNAS refused the API key', { kind: ctx.KIND.AUTH });
+  if (r.status === 404) ctx.fail('That address is not TrueNAS');
   if (r.status >= 400) ctx.fail('TrueNAS HTTP ' + r.status);
 }
 
+/* Keep the REST read. TrueNAS before 25.04 has no WebSocket API. */
+async function truenasPools(ctx) {
+  const base = truenasBase(ctx);
+  const key = truenasKey(ctx);
+  const skipTls = ctx.config.truenasSkipTls === true;
+  let pools;
+  try {
+    pools = await ctx.jsonRpc(`${base}/api/current`, { skipTls }, async session => {
+      if ((await session.call('auth.login_with_api_key', [key])) !== true)
+        ctx.fail('TrueNAS refused the API key', { kind: ctx.KIND.AUTH });
+      return session.call('pool.query');
+    });
+  } catch (e) {
+    if (e?.kind !== 'upstream' || typeof e.status !== 'number') throw e;
+    const r = await ctx.fetchJSON(`${base}/api/v2.0/pool`, {
+      headers: { Authorization: 'Bearer ' + key },
+      skipTls,
+      timeout: 8000,
+    });
+    truenasRestStatus(ctx, r);
+    pools = r.data;
+  }
+  return (Array.isArray(pools) ? pools : []).filter(p => p && typeof p.name === 'string' && p.name);
+}
+
 async function truenasPoolOptions(ctx) {
-  const { config, fetchJSON, normalizeBase } = ctx;
-  if (!config.truenasUrl) ctx.fail('Enter the TrueNAS URL first.', { kind: ctx.KIND.INVALID });
-  if (!config.truenasKey) ctx.fail('Enter the TrueNAS API key first.', { kind: ctx.KIND.INVALID });
-  const r = await fetchJSON(normalizeBase(config.truenasUrl) + '/api/v2.0/pool', {
-    headers: { Authorization: 'Bearer ' + config.truenasKey },
-    timeout: 8000,
-  });
-  truenasStatus(ctx, r);
-  const options = (Array.isArray(r.data) ? r.data : [])
-    .filter(p => p && p.name)
-    .map(p => ({ value: p.name, label: p.name }));
-  return { options };
+  const pools = await truenasPools(ctx);
+  return { options: pools.map(p => ({ value: p.name, label: p.name })) };
 }
 
 function diskHealth(ctx) {
@@ -85,6 +118,7 @@ function diskHealth(ctx) {
     {
       scrutiny: diskHealthScrutiny,
       truenas: diskHealthTrueNas,
+      unraid: diskHealthUnraid,
     },
     { field: 'diskProvider', default: 'scrutiny' },
   );
@@ -130,24 +164,10 @@ function scrutinyFailed(status) {
 /* A pool's `healthy` flag becomes the per-bay status, in the codes the widget
    already uses for Scrutiny. */
 async function diskHealthTrueNas(ctx) {
-  const { config, fetchJSON, normalizeBase } = ctx;
-  const url = config.truenasUrl;
-  const key = config.truenasKey;
-  if (!url) ctx.fail('truenasUrl not configured', { kind: ctx.KIND.INVALID });
-  if (!key) ctx.fail('TrueNAS API key not configured', { kind: ctx.KIND.INVALID });
+  const { config } = ctx;
   const bays = config.bays || [];
-
-  const base = normalizeBase(url);
-  const r = await fetchJSON(base + '/api/v2.0/pool', {
-    headers: { Authorization: 'Bearer ' + key },
-    timeout: 8000,
-  });
-  truenasStatus(ctx, r);
-
   const byName = {};
-  (Array.isArray(r.data) ? r.data : []).forEach(p => {
-    if (p && p.name) byName[p.name] = p;
-  });
+  for (const p of await truenasPools(ctx)) byName[p.name] = p;
 
   const result = bays.map(name => {
     if (!name) return null;
@@ -164,5 +184,95 @@ async function diskHealthTrueNas(ctx) {
     };
   });
 
-  return { bays: result, href: ctx.serviceLink(config.truenasHref, url), provider: 'truenas' };
+  return { bays: result, href: ctx.serviceLink(config.truenasHref, truenasBase(ctx)), provider: 'truenas' };
+}
+
+/* Unraid's own web server proxies the API at /graphql, and refuses GET unless
+   its sandbox is on, so every request here is a POST carrying the key. */
+async function unraidQuery(ctx, query) {
+  const { config, fetchJSON, normalizeBase } = ctx;
+  if (!config.unraidUrl) ctx.fail('Enter the Unraid URL first.', { kind: ctx.KIND.INVALID });
+  if (!config.unraidApiKey) ctx.fail('Enter the Unraid API key first.', { kind: ctx.KIND.INVALID });
+  const r = await fetchJSON(normalizeBase(config.unraidUrl) + '/graphql', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': config.unraidApiKey },
+    body: JSON.stringify({ query }),
+    timeout: 8000,
+  });
+  if (r.status === 401 || r.status === 403) ctx.fail('Unraid rejected the API key', { kind: ctx.KIND.AUTH });
+  if (r.status >= 400) ctx.fail('Unraid HTTP ' + r.status);
+  /* Both a refused key and a key without the role answer 200 with an errors
+     array, so the status code alone never reports an auth problem. */
+  const problem = r.data?.errors?.[0];
+  if (problem) {
+    const code = problem.extensions?.code;
+    const denied =
+      code === 'FORBIDDEN' ||
+      code === 'UNAUTHENTICATED' ||
+      /permission|forbidden|unauthor|api key/i.test(problem.message || '');
+    if (denied) ctx.fail('Unraid refused this API key or its role', { kind: ctx.KIND.AUTH });
+    ctx.fail('Unraid could not answer the query');
+  }
+  if (!r.data?.data) ctx.fail('Unraid returned no data');
+  return r.data.data;
+}
+
+const UNRAID_DISK = 'name device size status temp';
+const UNRAID_ARRAY = `{ array { parities { ${UNRAID_DISK} } disks { ${UNRAID_DISK} } caches { ${UNRAID_DISK} } } }`;
+
+async function unraidSlots(ctx) {
+  const array = (await unraidQuery(ctx, UNRAID_ARRAY)).array || {};
+  return [...(array.parities || []), ...(array.disks || []), ...(array.caches || [])].filter(
+    d => d && typeof d.name === 'string' && d.name && d.status !== 'DISK_NP',
+  );
+}
+
+async function unraidDiskOptions(ctx) {
+  const options = (await unraidSlots(ctx)).map(d => ({
+    value: d.name,
+    label: d.device ? `${d.name} (${d.device})` : d.name,
+  }));
+  return { options };
+}
+
+const UNRAID_HEALTHY = new Set(['DISK_OK', 'DISK_NEW']);
+const UNRAID_FAILED = new Set(['DISK_INVALID', 'DISK_WRONG', 'DISK_DSBL', 'DISK_DSBL_NEW']);
+
+async function diskHealthUnraid(ctx) {
+  const { config } = ctx;
+  if (!config.unraidUrl) ctx.fail('unraidUrl not configured', { kind: ctx.KIND.INVALID });
+  const bays = config.bays || [];
+
+  const byName = {};
+  for (const d of await unraidSlots(ctx)) byName[d.name] = d;
+
+  const result = bays.map(name => {
+    if (!name) return null;
+    const d = byName[name];
+    /* Unraid leaves a slot with no drive out of the reply, so a missing
+       drive is an absent bay. Reading it as not found hides a degraded array. */
+    if (!d)
+      return {
+        device_id: name,
+        device_status: 2,
+        hasSmart: true,
+        model_name: name,
+        device_name: name,
+        temp: null,
+        capacity: null,
+      };
+    const known = UNRAID_HEALTHY.has(d.status) || UNRAID_FAILED.has(d.status);
+    const kb = Number(d.size);
+    return {
+      device_id: name,
+      device_status: UNRAID_FAILED.has(d.status) ? 2 : 0,
+      hasSmart: known,
+      model_name: name,
+      device_name: name,
+      temp: Number.isFinite(d.temp) ? d.temp : null,
+      capacity: kb > 0 ? kb * 1024 : null,
+    };
+  });
+
+  return { bays: result, href: ctx.serviceLink(config.unraidHref, config.unraidUrl), provider: 'unraid' };
 }

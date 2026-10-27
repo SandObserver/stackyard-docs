@@ -31,6 +31,8 @@ const BY_CODE = Object.freeze({
   'invalid.url': 'adminError.invalidUrl',
   'upstream.refused': 'adminError.socketRefused',
   'upstream.not-docker': 'adminError.notSocketProxy',
+  'invalid.socket-missing': 'adminError.socketMissing',
+  'upstream.too-many-containers': 'toast.importDockerTooLarge',
   'blocked.unresolved': 'adminError.unreachable',
   'invalid.duplicate-id': 'adminError.duplicateId',
   'invalid.missing-children': 'adminError.missingChildren',
@@ -47,6 +49,11 @@ const BY_CODE = Object.freeze({
   'network.tls-expired': 'adminError.tlsExpired',
   'timeout.no-answer': 'adminError.timedOut',
   'blocked.demo': 'adminError.demoOutbound',
+  'invalid.proxmox-token': 'adminError.proxmoxToken',
+  'invalid.proxmox-missing': 'adminError.proxmoxMissing',
+  'upstream.proxmox-refused': 'adminError.proxmoxRefused',
+  'upstream.proxmox-permission': 'adminError.proxmoxPermission',
+  'upstream.not-proxmox': 'adminError.notProxmox',
 });
 
 const BY_KIND = Object.freeze({

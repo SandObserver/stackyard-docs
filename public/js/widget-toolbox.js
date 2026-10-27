@@ -300,10 +300,23 @@ function reducedMotion() {
   }
 }
 
-/** Shrink a figure's type until its text fits its box, down to `min` px. The
-    element must clip its overflow. Starts again from the stylesheet size.
+const _fitted = new Map();
+function refit() {
+  for (const [el, min] of _fitted) el.isConnected ? fit(el, min) : _fitted.delete(el);
+}
+
+/** Shrink a figure's type until its text fits its box, down to `min` px, and
+    again whenever the page is resized. The element must clip its overflow.
+    Starts again from the stylesheet size.
     @param {HTMLElement} el @param {number} [min] */
 export function fitText(el, min = 20) {
+  if (!_fitted.size) addEventListener('resize', refit);
+  _fitted.set(el, min);
+  fit(el, min);
+}
+
+/** @param {HTMLElement} el @param {number} min */
+function fit(el, min) {
   el.style.fontSize = '';
   let size = parseFloat(getComputedStyle(el).fontSize) || min;
   while (el.scrollWidth > el.clientWidth && size > min) {
@@ -312,10 +325,20 @@ export function fitText(el, min = 20) {
   }
 }
 
+const BAR_STYLE_ID = 'wt-bar-css';
+const BAR_CSS =
+  '.tb-bar-fill{transform:translateX(calc(var(--tb-pct) - 100%))}' +
+  '.tb-bar-fill:dir(rtl){transform:translateX(calc(100% - var(--tb-pct)))}';
+
 /* opts: { color='#0a84ff', track='rgba(255,255,255,0.10)', height=6, radius=3 }
    track: null paints no track, so the page styles .tb-bar per theme. */
 export function barFill(percent, opts = {}) {
-  const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+  if (!document.getElementById(BAR_STYLE_ID)) {
+    const s = document.createElement('style');
+    s.id = BAR_STYLE_ID;
+    s.textContent = BAR_CSS;
+    document.head.appendChild(s);
+  }
   const h = opts.height != null ? opts.height : 6;
   const radius = opts.radius != null ? opts.radius : 3;
   const track = document.createElement('div');
@@ -325,11 +348,18 @@ export function barFill(percent, opts = {}) {
   const fill = document.createElement('div');
   fill.className = 'tb-bar-fill';
   fill.style.cssText =
-    `position:absolute;left:0;top:0;bottom:0;width:${pct}%;border-radius:${radius}px` +
-    (reducedMotion() ? '' : ';transition:width .4s ease');
+    `position:absolute;inset:0;border-radius:${radius}px` +
+    (reducedMotion() ? '' : ';transition:transform .4s cubic-bezier(.23,1,.32,1)');
   fill.style.backgroundColor = colorOrFallback(opts.color, '#0a84ff');
   track.appendChild(fill);
+  setBar(track, percent);
   return track;
+}
+
+/** @param {HTMLElement} track @param {unknown} percent */
+export function setBar(track, percent) {
+  const pct = Math.max(0, Math.min(100, Number(percent) || 0));
+  /** @type {HTMLElement} */ (track.firstElementChild).style.setProperty('--tb-pct', `${pct}%`);
 }
 
 /** Rounded columns, newest on the right, for a short history at a glance.
@@ -568,7 +598,8 @@ const PH_STYLE_ID = 'wt-ph-css';
 const PH_CSS =
   '.wt-ph{display:inline-block;vertical-align:middle;flex:none;border-radius:4px;' +
   'background:var(--wt-ph,rgba(235,235,245,0.16))}' +
-  'html[data-theme="light"] .wt-ph{background:var(--wt-ph,rgba(60,60,67,0.12))}';
+  'html[data-theme="light"] .wt-ph{background:var(--wt-ph,rgba(60,60,67,0.12))}' +
+  '@media (forced-colors:active){.wt-ph{forced-color-adjust:none;background:GrayText}}';
 
 /** A soft rounded shape that stands in for content still loading. Set --wt-ph
     on an ancestor to recolour it for a light surface.

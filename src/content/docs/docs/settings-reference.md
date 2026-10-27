@@ -28,9 +28,11 @@ At the top, before any group:
 | Setting | What it does |
 | --- | --- |
 | Logging Level | How much detail goes to the container log. Errors shows warnings and errors. Security events are always logged. See [Support](/docs/support/#reading-the-logs). |
-| Docker Container Health Checks | Turns on container status for apps. Needs a socket proxy address below. See [Badges](/docs/badges/). |
+| Health Checks | Turns on the health badge for every app with a check. On by default. Off hides the settings below. See [Health check](/docs/badges/#health-check). |
 | Hide Healthy Badge | Shows the health dot only when something is wrong. |
-| Socket URL | Where your Docker socket proxy is. Never the Docker socket itself. See [Health check](/docs/badges/#health-check). |
+| Docker Socket URL | Where your Docker socket proxy is. Needed for Container checks only. Never the Docker socket itself. |
+| Proxmox Address, Token ID, Secret | The Proxmox VE server for Proxmox checks, for example `https://pve.local:8006`. The token needs the PVEAuditor role. The secret stays on the server. |
+| Allow self-signed certificate | Proxmox only. Turn on for the certificate Proxmox installs by default. |
 
 If every app suddenly shows as unhealthy, the socket proxy address is the usual cause. See [Troubleshooting](/docs/troubleshooting/#every-app-with-a-container-shows-as-unhealthy-at-once).
 

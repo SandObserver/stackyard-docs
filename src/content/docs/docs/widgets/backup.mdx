@@ -1,6 +1,6 @@
 ---
 title: Backup widget
-description: Last run, next run and live status of Duplicati and Kopia backup jobs on your Stackyard dashboard.
+description: Last run, next run and live status of Duplicati, Kopia, Proxmox Backup Server and Backrest backup jobs on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
@@ -42,10 +42,51 @@ Small holds one slot. Medium holds three. Each slot reads one job.
     ],
     links: [{ label: 'kopia/kopia', href: 'https://github.com/kopia/kopia' }],
   },
+  {
+    name: 'Proxmox Backup Server', icon: 'proxmox',
+    kind: 'Backup server',
+    needs: 'URL, API token',
+    fields: [
+      ['URL', 'The server address, for example `https://pbs.local:8007`.'],
+      ['Token ID', 'The API token, for example `stackyard@pbs!dashboard`.'],
+      ['Token Secret', 'Stored as a secret.'],
+      ['Allow Self-Signed Certificate', 'Turn on if the server uses its default certificate.'],
+      ['Backup Group', 'Optional. Enter the URL and token, then load the groups and pick one. Lists up to 20 datastores, and up to 20 namespaces in each.'],
+    ],
+    links: [{ label: 'Proxmox Backup Server', href: 'https://www.proxmox.com/en/products/proxmox-backup-server/overview' }],
+  },
+  {
+    name: 'Backrest', icon: 'backrest',
+    kind: 'Backup software',
+    needs: 'URL, login if set',
+    fields: [
+      ['URL', 'The Backrest address, for example `http://backrest:9898`.'],
+      ['Username', 'Optional. Leave blank if sign-in is off.'],
+      ['Password', 'Optional. Stored as a secret.'],
+      ['Plan', 'Optional. Enter the URL and credentials, then load the plans and pick one.'],
+    ],
+    links: [{ label: 'garethgeorge/backrest', href: 'https://github.com/garethgeorge/backrest' }],
+  },
 ]} />
 
+
 <SettingList title="Settings for each slot" items={[
-  { name: 'Provider', text: 'Duplicati, Kopia, or None for an empty slot.' },
+  { name: 'Provider', text: 'Duplicati, Kopia, Proxmox Backup Server, Backrest, or None for an empty slot.' },
   { name: 'Display name', text: 'Replaces the job name shown on the card.', optional: true },
-  { name: 'Link URL', text: 'Where clicking the slot opens. Duplicati opens the job log and Kopia the snapshot list under it. Leave blank to use the service address, if your browser can reach it.', optional: true },
+  { name: 'Link URL', text: 'Where clicking the slot opens. Duplicati opens the job log, Kopia the snapshot list and Backrest the plan under it. Proxmox Backup Server opens the address itself. Leave blank to use the service address, if your browser can reach it.', optional: true },
 ]} />
+
+## Proxmox Backup Server
+
+A slot reads one backup group, such as `vm/100`. The card is named from the newest backup's notes, else the group.
+
+- Give the token the Audit role. On the datastore, the card shows the last backup, and failed if the newest backup failed verification. On `/`, it also shows running and failed backup tasks.
+- A backup older than 25 hours shows a warning.
+- Proxmox Backup Server does not hold the backup schedule, so the card shows no next run.
+- A group moved to another namespace of its datastore is found again when exactly one namespace holds it. Pick the group again if two do.
+
+## Backrest
+
+A slot reads one plan. The card shows the last run, the next run, and missed when Backrest marks the plan overdue. Missed needs Backrest 1.14 or newer.
+
+Backrest has no read-only user. Any Backrest login has full control of Backrest. Stackyard only reads from it.

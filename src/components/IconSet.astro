@@ -3,7 +3,7 @@ import { iconSprite, loadIconSet } from '../lib/icon-set';
 import { SIDEBAR_ICON_IDS } from '../lib/sidebar-icons';
 
 const mod = await loadIconSet();
-const ids = mod ? Object.keys(mod.ICONS) : [];
+const ids = mod ? Object.keys(mod.ICONS).sort() : [];
 /* The sidebar sprite defines these ids on every docs page. Repeating them duplicates ids. */
 const sprite = await iconSprite(ids.filter((id) => !SIDEBAR_ICON_IDS.includes(id)));
 ---

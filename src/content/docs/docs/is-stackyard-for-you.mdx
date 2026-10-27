@@ -1,18 +1,18 @@
 ---
 title: Stackyard vs Homepage, Dashy and Homarr
-description: How Stackyard compares to gethomepage, Dashy and Homarr on setup, integrations and dependencies, and who each one suits.
+description: Stackyard compared with gethomepage, Dashy and Homarr on settings, supported services and dependencies, and who each one suits.
 ---
 
 import CompareTable from '../../../components/CompareTable.astro';
 import CalmContrast from '../../../components/CalmContrast.astro';
 
-How Stackyard compares with the three dashboards it is most often weighed against.
+Stackyard next to the three dashboards people most often compare it with.
 
 <CompareTable
   rivals={['gethomepage', 'Dashy', 'Homarr']}
   footnotes={[
     'Point a tile at any API and pick a value. No code. See <a href="/docs/badges/">Badges</a>.',
-    'From each project\u2019s docs and source, October 2026.',
+    'From each project\u2019s docs and source, October 2026. Each service counts once, however many widgets read it.',
     'One password per instance. Link instances with the <a href="/docs/widgets/dashboard-switch/">Dashboard switch</a>.',
   ]}
   rows={[
@@ -30,9 +30,9 @@ How Stackyard compares with the three dashboards it is most often weighed agains
       values: ['HTTP, Docker, Proxmox', 'HTTP, ICMP, Docker, Kubernetes, Proxmox', 'HTTP, ICMP', 'HTTP'],
     },
     {
-      label: 'Self-hosted integrations',
+      label: 'Self-hosted services',
       labelNote: 2,
-      values: ['24', '137', '19', '76'],
+      values: ['38', '137', '19', '76'],
     },
     {
       label: 'User accounts',

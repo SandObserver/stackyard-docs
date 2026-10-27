@@ -14,6 +14,7 @@ export default defineConfig({
     '/docs/development': '/docs/contributing/',
     '/docs/adding-services': '/docs/apps-and-folders/',
     '/docs/advanced-configuration': '/docs/installation/docker/',
+    '/docs/widgets/github': '/docs/widgets/git/',
   },
   markdown: {
     rehypePlugins: [
@@ -103,7 +104,7 @@ export default defineConfig({
             { label: 'Disk health', link: '/docs/widgets/disk-health/' },
             { label: 'DNS', link: '/docs/widgets/dns/' },
             { label: 'Downloads', link: '/docs/widgets/downloads/' },
-            { label: 'GitHub', link: '/docs/widgets/github/' },
+            { label: 'Git', link: '/docs/widgets/git/' },
             { label: 'Now Playing', link: '/docs/widgets/now-playing/' },
             { label: 'System summary', link: '/docs/widgets/system-summary/' },
             { label: 'Up Next', link: '/docs/widgets/up-next/' },

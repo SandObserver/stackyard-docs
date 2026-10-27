@@ -99,7 +99,7 @@ Check that the service is reachable and the credential is still valid.
 
 ### A credential stopped working after an edit
 
-Changing where or how a credential would be sent clears the stored value. Editing a badge URL, its non-secret headers, or a widget field that decides where the credential goes all count. Display settings such as units, colours and links do not. These count too: turning **Allow self-signed certificate** on or off for an app, and in the config, turning `settings.server.skipTlsVerify` on or off or changing or removing the port map (`settings.server.portMap`). Unticking **Secret** on a header row clears it on the next save.
+Changing where or how a credential would be sent clears the stored value. Editing a badge URL, its non-secret headers, its sign-in username, or a widget field that decides where the credential goes all count. Display settings such as units, colours and links do not. These count too: turning **Allow self-signed certificate** on or off for an app, and in the config, turning `settings.server.skipTlsVerify` on or off or changing or removing the port map (`settings.server.portMap`). Unticking **Secret** on a header row clears it on the next save.
 
 Stackyard names the items to re-enter. Enter the credential again and save.
 
@@ -279,6 +279,7 @@ Messages shown in the admin, and what each one means.
 | `Proxmox refused the token. Check the token ID and secret.` | The token ID or secret is wrong. |
 | `The token cannot read this. Give it the PVEAuditor role.` | The token is valid but lacks a permission. |
 | `Enter the Proxmox address, token ID and secret under Health Checks in General.` | An app has a Proxmox check, but no Proxmox connection is set. |
+| `Enter the username and password under Sign In. A login in the URL is not sent.` | The Live Activity URL holds a username or password before the host. Stackyard does not send it. Enter them under Authentication, Sign In. |
 | `This address has no API path. Enter the service's full API URL.` | The Live Activity address names a host only. Badges read a value from an API response, so the address needs the service's API path. |
 | `Connected, but this address has no API path. Enter the service's full API URL.` | The address answered, but nothing numeric was found in the response. Same cause as above. |
 | `The address answered with a redirect (HTTP <status>). Enter the address it points to.` | Redirects are not followed. Use the final address, which is often a login page when the API path is missing. |

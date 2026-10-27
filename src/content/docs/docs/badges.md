@@ -40,7 +40,9 @@ Badge colours are Accent, Success, Warning, Danger and Info. Each is drawn for t
 
 ## Live activity
 
-A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response. Pick one.
+A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response, including a number sent as text, such as `"21.5"`. Pick one.
+
+If the API asks for a username and password, turn on **Authentication** and enter them under **Sign In**. The password stays on the server. A username and password typed into the URL are not sent.
 
 Tick **Secret** on a header to keep its value on the server. Poll sets how often it reads, in seconds. Every open dashboard shares that reading.
 

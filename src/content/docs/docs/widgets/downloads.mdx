@@ -7,7 +7,7 @@ import WidgetGroup from '../../../../components/WidgetGroup.astro';
 import ServiceList from '../../../../components/ServiceList.astro';
 import SettingList from '../../../../components/SettingList.astro';
 
-Shows each active download as a box on a conveyor belt. Tape over the lid is the progress. Each label shows the percent done and the time left. The heading shows when the last download finishes.
+Shows each active download as a box on a conveyor belt, with the percent done and the time left.
 
 <WidgetGroup caption="Small shows one download. Medium shows three at a time, here with one stalled."
   items={[
@@ -15,17 +15,7 @@ Shows each active download as a box on a conveyor belt. Tape over the lid is the
     { type: 'downloads', file: 'index.html', id: 'w-downloads-md', size: 'medium', card: 'dark', title: 'Downloads widget, medium', label: 'Medium' },
   ]} />
 
-The widget reads one download client. It shows up to 12 downloads, closest to done first. More than fit on the card page with the arrows on the belt. The heading counts every download, including ones not shown.
-
-States:
-
-- **Stalled:** a download with no peers. Its tape turns amber.
-- **Error:** a download the client reports as failed. Its tape turns red.
-- **Paused:** the whole client is paused. Listed downloads turn grey and show no time left. qBittorrent reports this from 5.3. Transmission has no such pause.
-- **Waiting:** downloads are moving, but the client has no estimate yet.
-- **All done:** nothing is downloading. The heading shows how many finished today.
-
-The widget only reads. One exception: if the Deluge web interface is not connected to a daemon and lists exactly one, the widget connects it. With several daemons listed, it shows an error instead.
+The widget reads one download client and shows up to 12 downloads, closest to done first.
 
 <ServiceList items={[
   {
@@ -88,3 +78,15 @@ The widget only reads. One exception: if the Deluge web interface is not connect
   { name: 'Heading shows', text: 'Finish time, the clock time the last download finishes, or Time left. Defaults to Finish time.' },
   { name: 'Link URL', text: 'Where clicking the widget opens. Leave blank to use the server address, if your browser can reach it.', optional: true },
 ]} />
+
+## What it shows
+
+Tape over the lid is the progress. The heading shows when the last download finishes, and counts every download, including ones not shown. More downloads than fit on the card page with the arrows on the belt.
+
+- **Stalled:** a download with no peers. Its tape turns amber.
+- **Error:** a download the client reports as failed. Its tape turns red.
+- **Paused:** the whole client is paused. Listed downloads turn grey and show no time left. qBittorrent reports this from 5.3. Transmission has no such pause.
+- **Waiting:** downloads are moving, but the client has no estimate yet.
+- **All done:** nothing is downloading. The heading shows how many finished today.
+
+The widget only reads. One exception: if the Deluge web interface is not connected to a daemon and lists exactly one, the widget connects it. With several daemons listed, it shows an error instead.

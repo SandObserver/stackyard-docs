@@ -1,6 +1,6 @@
 ---
 title: System summary widget
-description: CPU, memory, disk, temperature and network stats from the host, Glances, Beszel or Unraid, on your Stackyard dashboard.
+description: CPU, memory, disk, temperature and network stats from the host, Glances, Beszel, Unraid, Proxmox VE or TrueNAS, on your Stackyard dashboard.
 ---
 
 import WidgetGroup from '../../../../components/WidgetGroup.astro';
@@ -66,6 +66,32 @@ Sizes: Small, Medium.
     notes: ['Unraid reports neither IO wait nor a process count.'],
     links: [{ label: 'unraid.net', href: 'https://unraid.net/' }],
   },
+  {
+    name: 'Proxmox',
+    kind: 'Virtualization server',
+    needs: 'URL, API token',
+    fields: [
+      ['Proxmox URL', 'For example `https://pve.local:8006`. An address without `https://` gets it.'],
+      ['Token ID', 'For example `stackyard@pve!dashboard`. Give the token the PVEAuditor role.'],
+      ['Token Secret', 'Stored as a secret.'],
+      ['Allow Self-Signed Certificate', 'Turn on for the certificate Proxmox installs by default.'],
+      ['Node', 'Load the list and pick one. Leave empty on a server with one node.'],
+    ],
+    notes: ['Proxmox reports neither temperature nor a process count. A Disk slot reads a storage ID, or the root filesystem when empty.'],
+    links: [{ label: 'proxmox.com', href: 'https://www.proxmox.com/en/proxmox-virtual-environment' }],
+  },
+  {
+    name: 'TrueNAS', icon: 'truenas-scale',
+    kind: 'NAS operating system',
+    needs: 'URL, API key',
+    fields: [
+      ['TrueNAS URL', 'For example `truenas.local`. An address without `https://` gets it. An `http://` address is refused, because TrueNAS revokes an API key sent over HTTP.'],
+      ['TrueNAS API Key', 'Stored as a secret. Create it for an account whose privilege has the `REPORTING_READ`, `POOL_READ` and `DATASET_READ` roles.'],
+      ['Allow Self-Signed Certificate', 'Turn on for the certificate TrueNAS installs by default.'],
+    ],
+    notes: ['TrueNAS 25.04 or later. TrueNAS reports neither IO wait nor a process count. A Disk slot reads a pool, or the first pool when empty. Memory leaves out the ZFS cache. Uptime needs the `READONLY_ADMIN` role, and is empty without it.'],
+    links: [{ label: 'truenas.com', href: 'https://www.truenas.com/' }],
+  },
 ]} />
 
 <SettingList title="Settings" items={[
@@ -91,7 +117,7 @@ The widget always shows three slots.
 <SettingList title="Settings for each slot" items={[
   { name: 'Resource', text: 'CPU, RAM, Temperature, Disk Mount, IO Wait or Processes.' },
   { name: 'Thermal Zone or Sensor', text: 'Temperature only. A thermal zone number for This Machine, 0 by default. A sensor picked from the loaded list for the other sources.' },
-  { name: 'First and second disk', text: 'Disk Mount only. Mount paths for This Machine and Glances, filesystem names for Beszel, share names for Unraid. The second is optional. An empty Unraid share reads the whole array.' },
+  { name: 'First and second disk', text: 'Disk Mount only. Mount paths for This Machine and Glances, filesystem names for Beszel, share names for Unraid, storage IDs such as `local-lvm` for Proxmox, pool names for TrueNAS. The second is optional. An empty Unraid share reads the whole array. An empty TrueNAS pool reads the first pool.' },
   { name: 'Color', text: 'The slot colour. Defaults to blue.' },
 ]} />
 
@@ -101,7 +127,7 @@ Medium size only.
 
 <SettingList title="Network row settings" items={[
   { name: 'Show Network Row', text: 'Off by default.' },
-  { name: 'Mode', text: 'Speed shows the last speed test. Throughput shows live traffic on one interface. Uptime shows uptime.' },
+  { name: 'Mode', text: 'Speed shows the last speed test. Throughput shows live traffic on one interface, except for Proxmox and TrueNAS. Uptime shows uptime.' },
   { name: 'Interface', text: 'Throughput only, for Glances, Beszel and Unraid. Load the list, then pick one.' },
 ]} />
 

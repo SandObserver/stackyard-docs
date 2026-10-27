@@ -41,7 +41,7 @@ Stackyard never adds a name to the list by itself. Open a fresh install by its I
 
 Stored secrets are stripped from the config before it reaches the browser. A populated field reports as set without returning its value, in config responses and in exports alike.
 
-A secret is restored only for the request it was stored for. If a save changes where the credential would be sent, by editing a badge URL, its non-secret headers, or a widget field that decides where it goes, the stored value is not restored and Stackyard names what must be re-entered. Matching on an item's id alone would let an imported config point an existing credential somewhere new. These count as such a change too: turning **Allow self-signed certificate** on or off for an app, turning `settings.server.skipTlsVerify` on or off for widgets, changing a widget's type, and changing or removing the port map (`settings.server.portMap`).
+A secret is restored only for the request it was stored for. If a save changes where the credential would be sent, by editing a badge URL, its non-secret headers, its sign-in username, or a widget field that decides where it goes, the stored value is not restored and Stackyard names what must be re-entered. Matching on an item's id alone would let an imported config point an existing credential somewhere new. These count as such a change too: turning **Allow self-signed certificate** on or off for an app, turning `settings.server.skipTlsVerify` on or off for widgets, changing a widget's type, and changing or removing the port map (`settings.server.portMap`). The Proxmox secret in General is cleared when its address, token ID or **Allow self-signed certificate** changes.
 
 Secrets are stored in plain text in `apps.json` on the data volume. Protect that volume with filesystem permissions and backups.
 
@@ -49,7 +49,7 @@ Secrets are stored in plain text in `apps.json` on the data volume. Protect that
 
 The server blocks outbound requests to private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
 
-`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address, but not at a loopback or link-local one. The host IP set in General is trusted. Only `http` and `https` URLs are fetched.
+`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address, but not at a loopback or link-local one. The host IP set in General is trusted. Only `http` and `https` URLs are fetched. The WebSocket connection TrueNAS widgets use opens on the same URL and passes the same check.
 
 | Range | Why |
 | --- | --- |

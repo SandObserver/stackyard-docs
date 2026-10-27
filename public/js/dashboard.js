@@ -23,21 +23,21 @@ import {
   qa,
   qi,
   scrollsSideways,
-  setUserText,
+  setCentredText,
   storeGet,
   storeSet,
   teardownWidgets,
   titleWhenTruncated,
-} from '/js/utils.js?v=705ca896';
-import { initFluidHover } from '/js/fluid-hover.js?v=cb886e86';
-import { initSpotlight } from '/js/spotlight.js?v=ad660003';
+} from '/js/utils.js?v=ab3cac1d';
+import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
+import { initSpotlight } from '/js/spotlight.js?v=93d9e423';
 import { html, setHtml, raw } from '/js/html.js?v=c71f8903';
 import { initI18n, t, currentLang } from '/js/i18n.js?v=ed7c5565';
 import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=85138697';
 import { pwStrength, passwordMismatch } from '/js/password-strength.js?v=389e0ed0';
-import { setupErrorKey } from '/js/admin-error.js?v=b0881957';
+import { setupErrorKey } from '/js/admin-error.js?v=1c258dc1';
 import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
-import { DOCK_MAX } from '/js/limits.js?v=31048a24';
+import { DOCK_MAX } from '/js/limits.js?v=ea61a441';
 import {
   initUI,
   mkFolder,
@@ -46,8 +46,9 @@ import {
   buildMobile,
   resetMobileChrome,
   mkFolderGlyph,
-} from '/js/ui.js?v=049178d3';
-import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=5c72bd4c';
+  swipePager,
+} from '/js/ui.js?v=dbd45ff7';
+import { badgeMinimum, badgeSignature, computeBadgeVisual, readBadgeUpdate } from '/js/badge-logic.js?v=85b1bc96';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
 import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=23793736';
 import { observeGlass } from '/js/glass-rim.js?v=3faec233';
@@ -58,13 +59,14 @@ import {
   landingAfterSetup,
   restorePage,
   wheelPager,
-} from '/js/dashboard-logic.js?v=6a29cedc';
-import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=25428bf2';
+} from '/js/dashboard-logic.js?v=5fa66027';
+import { applyBackground, BACKDROP, resolveBackground } from '/js/background.js?v=288bfc2a';
+import { creditPlacement, showPhotoCredit } from '/js/photo-credit.js?v=1801451c';
 import { repeatJittered } from '/js/jitter.js?v=087a1fcf';
-import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=e9f4b607';
+import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
 import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
-import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=0b1ebb19';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=628341d4';
+import { applyLabelTones, loadSamplingImage, sampleImage, toneForColor } from '/js/label-contrast.js?v=46ab91e5';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=26655aca';
 import { pageTheme, paletteColor } from '/js/palette.js?v=3fb8ae43';
 import { THEME_KEY, applyTheme, prefersDark, readMode, resolveTheme } from '/js/theme.js?v=eeafa4b5';
 
@@ -77,7 +79,7 @@ if (!('GestureEvent' in window)) {
 }
 
 /* Recomputed, never stored: the window can cross the breakpoint after load. */
-let MOB = isMobileLayout();
+let MOB = isMobileLayout(true);
 
 const wCols = { d: WIDGET_COLS.desktop, m: WIDGET_COLS.mobile };
 const wRows = { d: WIDGET_ROWS.desktop, m: WIDGET_ROWS.mobile };
@@ -126,7 +128,7 @@ function desktopRows(hasDock) {
   return Math.max(1, Math.min(4, Math.floor((ih - top - bottom + gm.rowGap) / (gm.tile + gm.rowGap))));
 }
 
-const CB = { spotOpen: null, spotClose: null, mobPillBump: null };
+const CB = { spotOpen: null, spotClose: null, mobPillBump: null, homeSwipe: null };
 
 /* A touch produces a compatibility mouse event after it. */
 const COMPAT_POINTER_MS = 500;
@@ -178,7 +180,8 @@ function bupd(id) {
   const hideHealthy = S.server?.hideHealthyBadge !== false;
   const custom = item?.monitoring?.activity?.custom || {};
   const staticBdg = item?.monitoring?.staticBadge || {};
-  const hasHC = !!(item?.monitoring?.healthcheck?.enabled || item?.container || item?.ping);
+  const hasHC =
+    S.server?.healthChecks !== false && !!(item?.monitoring?.healthcheck?.enabled || item?.container || item?.ping);
 
   const act = item?.monitoring?.activity || {};
   const isFolder = item?.type === 'folder';
@@ -322,9 +325,8 @@ function mkIcon(item) {
   if (showLabel) {
     const l = mk('div');
     l.className = 'ilabel';
-    l.dir = 'auto';
     l.style.width = iw + 12 + 'px';
-    setUserText(l, item.label || item.id);
+    setCentredText(l, item.label || item.id);
     a.appendChild(l);
   }
   return a;
@@ -538,8 +540,30 @@ function syncMobPages() {
    the labels as they are. */
 let bgTone = { grid: null, tone: null };
 
+const CREDIT_EDGE = 20;
+
+function placeCredit() {
+  const credit = el('photo-credit');
+  if (!credit || credit.hidden) return;
+  if (document.body.classList.contains('is-mob')) {
+    credit.removeAttribute('data-place');
+    credit.style.removeProperty('max-width');
+    return;
+  }
+  const dock = document.body.classList.contains('no-dock') ? null : el('dock').getBoundingClientRect();
+  const { place, maxWidth } = creditPlacement(
+    window.innerWidth,
+    dock,
+    document.documentElement.dir === 'rtl',
+    CREDIT_EDGE,
+  );
+  credit.dataset.place = place;
+  credit.style.maxWidth = `${maxWidth}px`;
+}
+
 function retone() {
   requestAnimationFrame(() => {
+    placeCredit();
     applyLabelTones(bgTone);
     /* Same frame: both need the layout the build produced, and both re-run on a
        rebuild and a resize for the same reason. */
@@ -581,6 +605,7 @@ async function applyBg() {
   bgTone = { grid: null, tone: themeTone() };
   retone();
   const bg = await resolveBackground(S.background || {});
+  showPhotoCredit(el('photo-credit'), bg?.credit ?? null);
   if (!bg) return;
   applyBackground(root, bg);
   if (bg.url) {
@@ -914,9 +939,9 @@ async function boot() {
      what a narrow window gets, and there its own swipe is the only pager, so a
      mouse and a keyboard cannot leave page one. */
   document.addEventListener('keydown', e => {
-    if (el('spot').classList.contains('on')) return;
+    if (el('spot').hasAttribute('open')) return;
     /* The overlay covers the page it would scroll behind. */
-    if (document.querySelector('.folder-overlay')) return;
+    if (document.querySelector('.folder-overlay[open]')) return;
     if (e.key === 'ArrowRight') goTo(pg + pageDir());
     if (e.key === 'ArrowLeft') goTo(pg - pageDir());
   });
@@ -927,8 +952,8 @@ async function boot() {
     'wheel',
     e => {
       if (e.ctrlKey) return;
-      if (el('spot').classList.contains('on')) return;
-      if (document.querySelector('.folder-overlay, .folder-overlay-mobile')) return;
+      if (el('spot').hasAttribute('open')) return;
+      if (document.querySelector('.folder-overlay[open], .folder-overlay-mobile[open]')) return;
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerWidth : 1;
       const dx = e.deltaX * unit,
         dy = e.deltaY * unit;
@@ -958,27 +983,30 @@ async function boot() {
     const dx = e.clientX - _dMx;
     if (Math.abs(dx) > 60) goTo(pg + (dx < 0 ? 1 : -1) * pageDir());
   });
-  let _dTx = 0;
   document.addEventListener(
     'touchstart',
-    e => {
-      _dTx = e.touches[0].clientX;
+    () => {
       _lastTouch = Date.now();
     },
     { passive: true },
   );
-  /* The mobile layout has its own swipe, in ui.js. Both would advance two
-     pages for one gesture. */
   document.addEventListener(
     'touchend',
-    e => {
+    () => {
       _lastTouch = Date.now();
-      if (MOB) return;
-      const dx = e.changedTouches[0].clientX - _dTx;
-      if (Math.abs(dx) > 50) goTo(pg + (dx < 0 ? 1 : -1) * pageDir());
     },
     { passive: true },
   );
+  const strip = el('pages');
+  CB.homeSwipe = swipePager(document, strip, {
+    width: () => innerWidth,
+    page: () => pg,
+    total: () => strip.children.length,
+    turn: n => goTo(n),
+    enabled: () =>
+      !el('spot').hasAttribute('open') &&
+      !document.querySelector('.folder-overlay[open], .folder-overlay-mobile[open]'),
+  });
 
   applyBg();
 
@@ -996,10 +1024,14 @@ async function boot() {
     if (e.key === THEME_KEY) onTheme();
   });
 
-  onLayoutChange(mobile => {
-    MOB = mobile;
-    buildLayout();
-  }, MOB);
+  onLayoutChange(
+    mobile => {
+      MOB = mobile;
+      buildLayout();
+    },
+    MOB,
+    true,
+  );
 
   /* The platform reports its safe-area insets after the first paint, and again after a
      rotation. The probe is sized by them, so its box changing is the signal
@@ -1103,7 +1135,9 @@ async function boot() {
   /* Keep. Without it Safari leaves the tile scaled after a new tab opens. */
   document.addEventListener('click', e => {
     if (!(e.target instanceof Element)) return;
-    const a = e.target.closest('a[target="_blank"]:is(.icon, .di, .folder-icon-link)');
+    const a = e.target.closest(
+      'a[target="_blank"]:is(.icon, .di, .folder-icon-link, .dyn-mob-icon, .dyn-dock-icon, .dyn-fold-anchor)',
+    );
     if (!a) return;
     a.classList.add('settled');
     a.addEventListener('pointerleave', () => a.classList.remove('settled'), { once: true });

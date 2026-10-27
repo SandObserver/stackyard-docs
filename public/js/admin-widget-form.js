@@ -1,12 +1,12 @@
-import { state } from '/js/admin-state.js?v=af772a1b';
-import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=1c01be9a';
-import { createListbox } from '/js/listbox.js?v=f814170f';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=1807c371';
+import { state } from '/js/admin-state.js?v=064b9b85';
+import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=f4752f33';
+import { createListbox } from '/js/listbox.js?v=b9f71853';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=92ca09de';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=1cca36f5';
+import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=28471483';
 import { t } from '/js/i18n.js?v=ed7c5565';
-import { focusFirst, q, qi, qa } from '/js/utils.js?v=705ca896';
-import { iconSvg } from '/js/icon-set.js?v=628341d4';
+import { focusFirst, q, qi, qa } from '/js/utils.js?v=ab3cac1d';
+import { iconSvg } from '/js/icon-set.js?v=26655aca';
 
 const SIZES_WITH_ICONS = new Set(['small', 'medium', 'large', 'xlarge']);
 
@@ -199,6 +199,7 @@ function _renderCustomConfig(body) {
   body.appendChild(tip);
   initInlineEdit('cust-url-row', 'f-url', {
     placeholder: 'https://app.example.com/widget.html',
+    plain: true,
     onCommit(v) {
       state._customUrl = v;
     },
@@ -251,6 +252,7 @@ function _renderCustomConfig(body) {
   q('#if-fs', adv).onchange = sync;
   initInlineEdit('if-allow-row', 'if-allow', {
     placeholder: 'autoplay; fullscreen',
+    plain: true,
     onCommit() {
       sync();
     },

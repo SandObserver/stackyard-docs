@@ -115,6 +115,18 @@ export function sameIconName(a, b) {
   return !!x && x === norm(b);
 }
 
+/** @param {string} key @returns {boolean} */
+export function isPlainTextKey(key) {
+  return /(?:url|href|user(?:name)?|id|profile)$/i.test(String(key || ''));
+}
+
+/** A manifest field marked `"plain": true`, or one whose key names an address
+    or an identifier.
+    @param {{ key?: string, plain?: unknown }} [field] @returns {boolean} */
+export function isPlainField(field) {
+  return field?.plain === true || isPlainTextKey(field?.key);
+}
+
 export function nextActiveIndex(key, active, len) {
   if (len <= 0) return null;
   const clamp = i => Math.max(0, Math.min(i, len - 1));
@@ -229,19 +241,62 @@ export function groupBounds(field, size) {
   return { min, max };
 }
 
-/* Mutates `items` in place. */
+/** The top-level rows of one list group, in order. A docked app is drawn in
+    the dock group even when a folder lists it.
+    @param {any[]} items @param {boolean} docked @returns {any[]} */
+export function topLevelRows(items, docked) {
+  const inF = new Set(items.filter(i => i.type === 'folder').flatMap(ff => ff.children || []));
+  return items.filter(it => {
+    const isDocked = it.type === 'app' && !!it.dock;
+    if (isDocked !== docked) return false;
+    return docked || it.type === 'folder' || !inF.has(it.id);
+  });
+}
+
+/** Whether a folder child id is drawn under its folder. A docked app is drawn
+    in the dock instead.
+    @param {any[]} items @param {string} id @returns {boolean} */
+export function isShownChild(items, id) {
+  const it = items.find(i => i.id === id);
+  return !!it && !(it.type === 'app' && it.dock);
+}
+
+/** The folder's children drawn under it, in order.
+    @param {any[]} items @param {any} folder @returns {any[]} */
+export function shownChildren(items, folder) {
+  return (folder?.children || []).filter(id => isShownChild(items, id)).map(id => items.find(i => i.id === id));
+}
+
+/** Mutates `items` in place. A hidden app leaves the dock, and a docked app
+    leaves its folders.
+    @param {any[]} items @returns {void} */
+export function settleDock(items) {
+  const docked = new Set();
+  for (const it of items) {
+    if (it.type !== 'app' || !it.dock) continue;
+    if (it.hidden) it.dock = false;
+    else docked.add(it.id);
+  }
+  for (const f of items) {
+    if (f.type === 'folder' && (f.children || []).some(id => docked.has(id))) {
+      f.children = f.children.filter(id => !docked.has(id));
+    }
+  }
+}
+
+/* Mutates `items` in place. A top-level row moves only within its group. */
 export function reorderItems(items, item, dir, { folderId = null, childIdx = null } = {}) {
   if (folderId != null) {
     const f = items.find(i => i.id === folderId);
     if (!f) return false;
     const ch = f.children || [];
-    const j = childIdx + dir;
+    let j = childIdx + dir;
+    while (j >= 0 && j < ch.length && !isShownChild(items, ch[j])) j += dir;
     if (j < 0 || j >= ch.length) return false;
     [ch[childIdx], ch[j]] = [ch[j], ch[childIdx]];
     return true;
   }
-  const inF = new Set(items.filter(i => i.type === 'folder').flatMap(ff => ff.children || []));
-  const top = items.filter(it => it.type === 'folder' || !inF.has(it.id));
+  const top = topLevelRows(items, item.type === 'app' && !!item.dock);
   const p = top.indexOf(item);
   const nb = top[p + dir];
   if (!nb) return false;
@@ -304,6 +359,21 @@ export function isBareHostUrl(url) {
     return false;
   }
   return parsed.pathname === '/';
+}
+
+/** True when the address carries a username or password before the host.
+
+    @param {string} url
+    @returns {boolean} */
+export function urlHasLogin(url) {
+  const raw = typeof url === 'string' ? url.trim() : '';
+  if (!raw) return false;
+  try {
+    const parsed = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw) ? raw : 'http://' + raw);
+    return !!(parsed.username || parsed.password);
+  } catch {
+    return false;
+  }
 }
 
 /** Whether a failed badge fetch should report the missing API path instead of

@@ -1,4 +1,4 @@
-import { clr, el, focusFirst, initial, inp as inpById, isolate, q as qSel, qa, qi, tgt } from '/js/utils.js?v=705ca896';
+import { clr, el, focusFirst, initial, inp as inpById, isolate, q as qSel, qa, qi, tgt } from '/js/utils.js?v=ab3cac1d';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import {
   loadLocalIcons,
@@ -8,17 +8,18 @@ import {
   splitIconRef,
   throughServer,
 } from '/js/icons.js?v=5ac01d72';
-import { state } from '/js/admin-state.js?v=af772a1b';
-import { DOCK_MAX } from '/js/limits.js?v=31048a24';
+import { state } from '/js/admin-state.js?v=064b9b85';
+import { DOCK_MAX } from '/js/limits.js?v=ea61a441';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
 import {
   isDockBlocked,
   clearsStoredSecret,
   isBareHostUrl,
+  urlHasLogin,
   failureIsMissingApiPath,
   nextActiveIndex,
   sameIconName,
-} from '/js/admin-logic.js?v=1cca36f5';
+} from '/js/admin-logic.js?v=28471483';
 import { t } from '/js/i18n.js?v=ed7c5565';
 import {
   toast,
@@ -28,16 +29,17 @@ import {
   apiPost,
   PE_SVG,
   initInlineEdit,
+  wireInlineEdit,
   reveal,
   setTogDisabled,
   swapContent,
-} from '/js/admin-shared.js?v=1c01be9a';
-import { createListbox } from '/js/listbox.js?v=f814170f';
-import { MAX_LABELS } from '/js/badge-logic.js?v=5c72bd4c';
-import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=4083ea3b';
-import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=b0881957';
-import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=cb886e86';
-import { iconSvg } from '/js/icon-set.js?v=628341d4';
+} from '/js/admin-shared.js?v=f4752f33';
+import { createListbox } from '/js/listbox.js?v=b9f71853';
+import { MAX_LABELS } from '/js/badge-logic.js?v=85b1bc96';
+import { renderColorControl, BADGE_DEFAULT } from '/js/admin-color-control.js?v=7d6a7623';
+import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=1c258dc1';
+import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=eb6cc81c';
+import { iconSvg } from '/js/icon-set.js?v=26655aca';
 
 export function buildFolderForm(body, item) {
   const children = item?.children || [];
@@ -90,9 +92,40 @@ function _wireFolderApps(apps, children) {
   row.appendChild(box.el);
 }
 
+export function buildSettingsTileForm(body, item) {
+  const dockBlocked = isDockBlocked(state.items, item, DOCK_MAX);
+  const tog = (id, on, name) =>
+    html`<label class="tog"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${name}"><div class="tr"></div></label>`;
+  setHtml(
+    body,
+    html`
+    <div class="grp">
+      <div class="row"><span class="rl">${t('general.showSettingsAria')}</span>${tog('f-shown', !item?.hidden, t('general.showSettingsAria'))}</div>
+      <div class="row"><span class="rl">${t('app.showInDock')}</span>${tog('f-dock', !!item?.dock, t('app.showInDock'))}</div>
+    </div>
+    <p class="grp-tip d-none" id="dock-tip"></p>`,
+  );
+  const shown = inpById('f-shown');
+  const dock = inpById('f-dock');
+  const tip = el('dock-tip');
+  const sync = () => {
+    const reason = !shown.checked
+      ? t('general.dockNeedsShown')
+      : dockBlocked
+        ? t('app.dockFull', { max: formatNumber(DOCK_MAX) })
+        : '';
+    if (!shown.checked) dock.checked = false;
+    tip.textContent = reason;
+    tip.classList.toggle('d-none', !reason);
+    setTogDisabled(dock, !!reason, 'dock-tip');
+  };
+  shown.addEventListener('change', sync);
+  sync();
+}
+
 export function buildAppForm(body, item) {
   const dockBlocked = isDockBlocked(state.items, item, DOCK_MAX);
-  const globalHealthOn = !!inpById('srv-docker-en')?.checked;
+  const globalHealthOn = inpById('srv-hc-en')?.checked !== false;
   const mon = item?.monitoring || {};
   const hc = mon.healthcheck || {
     enabled: !!(item?.container || item?.ping),
@@ -106,8 +139,10 @@ export function buildAppForm(body, item) {
   };
   const staticBadge = mon.staticBadge || {};
   const hasStatic = !!staticBadge.enabled;
-  const isPing = !!hc.pingUrl;
+  const hcType = hc.proxmoxGuest ? 'pve' : hc.pingUrl ? 'ping' : 'con';
   const skipTls = !!item?.skipTlsVerify;
+  const login = act.login?.username ? act.login : null;
+  const hasAuth = !!(act.params?.length || act.headers?.length || login);
 
   const ier = _ieRow;
   /* Split the string around its placeholder. Word order differs per language. */
@@ -123,13 +158,14 @@ export function buildAppForm(body, item) {
       ${ier('ie-name', t('app.name'), 'f-lbl', item?.label, t('app.namePh'))}
       ${ier('ie-url', t('app.url'), 'f-href', item?.href, t('app.urlPh'), 'url')}
     </div>
+    <div id="href-login" class="reveal${urlHasLogin(item?.href || '') ? ' open' : ''}"><div class="reveal-in"><p class="grp-tip warn" id="href-login-tip">${t('app.hrefHasLogin')}</p></div></div>
 
     <p class="grp-hdr" role="heading" aria-level="2">${t('app.icon')}</p>
     <div class="grp" id="ipw">
       <div class="icon-src-anchor">
       <div class="row icon-src-row">
         <span class="icon-prev" id="ipv">${state.siurl ? html`<img src="${throughServer(resolveIcon(state.siurl))}" alt="" id="ipv-img">` : html`<span>${initial(item?.label)}</span>`}</span>
-        <input class="icon-srch" id="ip-in" type="text" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="iprs" aria-autocomplete="list" aria-describedby="ip-status" aria-label="${t('app.icon')}" placeholder="${t('app.iconPh')}" value="${state.siurl}">
+        <input class="icon-srch" id="ip-in" type="text" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="iprs" aria-autocomplete="list" aria-describedby="ip-status" aria-label="${t('app.icon')}" placeholder="${t('app.iconPh')}" value="${state.siurl}">
         <button type="button" class="row-btn" id="ip-upload-lbl">${t('app.upload')}</button>
         <input type="file" id="ip-upload" class="file-hidden" tabindex="-1" aria-hidden="true" accept=".svg,.png,.ico,image/svg+xml,image/png,image/x-icon">
       </div>
@@ -150,11 +186,16 @@ export function buildAppForm(body, item) {
       <div class="row"><span class="rl">${t('app.healthCheck')}</span>${tog('hc-en', hc.enabled, t('app.healthCheck'))}</div>
       <div id="hc-sub" class="reveal${hc.enabled ? ' open' : ''}"><div class="reveal-in">
         <div class="row"><span class="rl" id="hc-type-lbl">${t('app.type')}</span><div class="segr" role="group" aria-labelledby="hc-type-lbl">
-          <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-con" ${isPing ? '' : 'checked'}><span class="segr-dot"></span><span>${t('app.container')}</span></label>
-          <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-ping" ${isPing ? 'checked' : ''}><span class="segr-dot"></span><span>${t('app.ping')}</span></label>
+          <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-con" ${hcType === 'con' ? 'checked' : ''}><span class="segr-dot"></span><span>${t('app.container')}</span></label>
+          <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-ping" ${hcType === 'ping' ? 'checked' : ''}><span class="segr-dot"></span><span>${t('app.ping')}</span></label>
+          <label class="segr-opt"><input type="radio" name="hc-type" id="hc-type-pve" ${hcType === 'pve' ? 'checked' : ''}><span class="segr-dot"></span><span>${t('app.proxmox')}</span></label>
         </div></div>
-        <div id="hc-con-row" ${isPing ? 'hidden' : ''}>${ier('ie-hc-con', t('app.container'), 'hc-con', hc.container, t('app.containerPh'))}</div>
-        <div id="hc-ping-row" ${isPing ? '' : 'hidden'}>
+        <div id="hc-con-row" ${hcType === 'con' ? '' : 'hidden'}>${ier('ie-hc-con', t('app.container'), 'hc-con', hc.container, t('app.containerPh'))}</div>
+        <div id="hc-pve-row" ${hcType === 'pve' ? '' : 'hidden'}>
+          <div class="row"><span class="rl">${t('app.guest')}</span><div id="hc-pve-slot"></div></div>
+          <div class="row"><span class="rl"></span><span id="hc-pve-status" class="row-status" role="status"></span></div>
+        </div>
+        <div id="hc-ping-row" ${hcType === 'ping' ? '' : 'hidden'}>
           ${ier('ie-hc-ping', t('app.pingUrl'), 'hc-ping', hc.pingUrl, t('app.pingUrlPh'), 'url')}
           <div class="row"><span class="rl"></span><span id="hc-ping-status" class="row-status" role="status"></span><button type="button" class="row-btn" id="hc-ping-test">${t('app.test')}</button></div>
         </div>
@@ -176,8 +217,11 @@ export function buildAppForm(body, item) {
         ${ier('ie-burl', t('app.apiUrl'), 'f-burl', act.url, t('app.apiUrlPh'), 'url')}
         <div class="row"><span class="rl"></span><span id="bst" class="row-status" role="status"></span><button type="button" class="row-btn" id="bfetch">${t('app.fetch')}</button></div>
         <div id="auth-row-wrap">
-          <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', !!(act.params || act.headers), t('app.authentication'))}</div>
-          <div id="auth-sub" class="reveal${act.params?.length || act.headers?.length ? ' open' : ''}"><div class="reveal-in">
+          <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', !!(act.params || act.headers || login), t('app.authentication'))}</div>
+          <div id="auth-sub" class="reveal${hasAuth ? ' open' : ''}"><div class="reveal-in">
+            <div class="row kv-hdr"><span class="rl">${t('app.signIn')}</span></div>
+            ${ier('ie-buser', t('app.username'), 'f-buser', login?.username, t('common.notSet'))}
+            <div class="row ie-row" id="ie-bpass"><span class="rl">${t('app.password')}</span><span class="rv is-ph">${login?.passwordSet ? t('common.configured') : t('common.notSet')}</span><input id="f-bpass" type="password" autocomplete="new-password" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>
             <div class="row kv-hdr"><span class="rl">${t('app.addToUrl')} <span class="rl-sub">${t('app.queryParams')}</span></span></div>
             <div id="bpar-rows" class="kv-rows"></div>
             <div class="row kv-hdr"><span class="rl">${t('app.addToHeader')}</span></div>
@@ -210,11 +254,30 @@ export function buildAppForm(body, item) {
       updPrev();
     },
   });
-  initInlineEdit('ie-url', 'f-href', { placeholder: t('app.urlPh') });
-  initInlineEdit('ie-hc-con', 'hc-con', { placeholder: t('app.containerPh') });
-  initInlineEdit('ie-hc-ping', 'hc-ping', { placeholder: t('app.pingUrlPh') });
+  initInlineEdit('ie-url', 'f-href', {
+    placeholder: t('app.urlPh'),
+    plain: true,
+    onCommit(value) {
+      reveal(el('href-login'), urlHasLogin(value));
+    },
+  });
+  initInlineEdit('ie-hc-con', 'hc-con', { placeholder: t('app.containerPh'), plain: true });
+  initInlineEdit('ie-hc-ping', 'hc-ping', { placeholder: t('app.pingUrlPh'), plain: true });
   initInlineEdit('ie-static-label', 'f-static-label', { placeholder: t('app.labelPh') });
-  initInlineEdit('ie-burl', 'f-burl', { placeholder: t('app.apiUrlPh') });
+  initInlineEdit('ie-burl', 'f-burl', { placeholder: t('app.apiUrlPh'), onCommit: warnUrlLogin, plain: true });
+  initInlineEdit('ie-buser', 'f-buser', { placeholder: t('common.notSet'), plain: true });
+  const passSet = !!login?.passwordSet;
+  const passRow = el('ie-bpass');
+  const passInp = inpById('f-bpass');
+  if (passRow && passInp)
+    wireInlineEdit(passRow, passInp, {
+      type: 'password',
+      placeholder: passSet ? t('widgetCfg.replaceSecret') : '',
+      fill: false,
+      render: (valEl, v) => {
+        valEl.textContent = v ? t('widgetCfg.newValueSet') : passSet ? t('common.configured') : t('common.notSet');
+      },
+    });
 
   /* The markup carries no style attribute, so the preview is painted here. */
   const pv0 = el('ipv');
@@ -255,13 +318,18 @@ export function buildAppForm(body, item) {
   hcEn?.addEventListener('change', e => {
     showHide('hc-sub', tgt(e).checked);
   });
+  const guests = wireGuestPicker(item?.monitoring?.healthcheck?.proxmoxGuest);
+  if (inpById('hc-type-pve')?.checked) guests.load();
   document.querySelectorAll('input[name="hc-type"]').forEach(r =>
     r.addEventListener('change', () => {
-      const ping = inpById('hc-type-ping')?.checked;
+      const ping = !!inpById('hc-type-ping')?.checked;
+      const pve = !!inpById('hc-type-pve')?.checked;
       swapContent(el('hc-con-row')?.parentElement, () => {
-        showHide('hc-con-row', !ping);
+        showHide('hc-con-row', !ping && !pve);
         showHide('hc-ping-row', ping);
+        showHide('hc-pve-row', pve);
       });
+      if (pve) guests.load();
     }),
   );
   el('hc-ping-test')?.addEventListener('click', testPing);
@@ -887,6 +955,42 @@ function updPrev(explicit) {
   p.replaceChildren(img);
 }
 
+/** @param {unknown} saved */
+function wireGuestPicker(saved) {
+  const slot = el('hc-pve-slot');
+  const st = el('hc-pve-status');
+  const current = Number.isInteger(Number(saved)) && Number(saved) > 0 ? String(saved) : '';
+  const fallback = current ? [{ value: current, label: current }] : [];
+  const box = createListbox({
+    id: 'hc-pve',
+    label: t('app.guest'),
+    options: fallback,
+    value: current,
+    placeholder: t('app.chooseGuest'),
+    emptyText: t('app.noGuests'),
+  });
+  state._pveGuest = box;
+  slot?.appendChild(box.el);
+  let loaded = false;
+  return {
+    async load() {
+      if (loaded) return;
+      loaded = true;
+      if (st) st.textContent = t('app.loadingGuests');
+      try {
+        const r = await apiGet('/api/proxmox/guests');
+        const options = (r.guests || []).map(g => ({ value: String(g.vmid), label: `${g.name} (${g.vmid})` }));
+        if (current && !options.some(o => o.value === current)) options.unshift(...fallback);
+        box.setOptions(options, box.getValue() || current);
+        if (st) st.textContent = '';
+      } catch (e) {
+        loaded = false;
+        if (st) st.textContent = '✗ ' + errorText(e);
+      }
+    },
+  };
+}
+
 async function testPing() {
   const url = inpById('hc-ping')?.value?.trim();
   const st = el('hc-ping-status');
@@ -958,8 +1062,8 @@ function kvRowEl(host, rows, row, ph) {
   setHtml(
     rowEl,
     html`
-    <input class="kv-k" type="text" placeholder="${t('app.headerKeyPh')}" value="${row.key}" aria-label="${t('app.headerKey')}">
-    <input class="kv-v" type="${row.secret ? 'password' : 'text'}" placeholder="${valPh}" value="${row.value}" autocomplete="off" aria-label="${t('app.headerValue')}">
+    <input class="kv-k" type="text" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="${t('app.headerKeyPh')}" value="${row.key}" aria-label="${t('app.headerKey')}">
+    <input class="kv-v" type="${row.secret ? 'password' : 'text'}" placeholder="${valPh}" value="${row.value}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="${t('app.headerValue')}">
     <label class="kv-cred" title="${t('app.secretTip')}"><input type="checkbox" ${row.secret ? 'checked' : ''} aria-label="${t('app.secret')}"><span class="kv-box"></span><span class="kv-cred-lbl">${t('app.secret')}</span></label>
     <button class="kv-del" type="button" aria-label="${t('widgetCfg.remove')}">✕</button>`,
   );
@@ -996,6 +1100,25 @@ function kvRowEl(host, rows, row, ph) {
   return rowEl;
 }
 
+/** @returns {{ username: string, password?: string }|undefined} */
+function badgeLogin() {
+  const username = inpById('f-buser')?.value?.trim() || '';
+  const password = inpById('f-bpass')?.value || '';
+  return username ? { username, password: password || undefined } : undefined;
+}
+
+/** @returns {boolean} whether the warning is shown */
+function warnUrlLogin() {
+  const st = el('bst');
+  if (!st) return false;
+  const has = urlHasLogin(inpById('f-burl')?.value || '');
+  if (has) {
+    st.style.cssText = 'margin-top:4px;color:var(--warning)';
+    st.textContent = t('app.urlHasLogin');
+  } else if (st.textContent === t('app.urlHasLogin')) st.textContent = '';
+  return has;
+}
+
 async function fetchBadge() {
   const url = inpById('f-burl')?.value?.trim();
   const st = el('bst');
@@ -1004,6 +1127,7 @@ async function fetchBadge() {
     if (st) st.textContent = t('app.enterUrlFirst');
     return;
   }
+  if (warnUrlLogin()) return;
   if (st) {
     st.style.cssText = 'margin-top:4px;color:var(--dm)';
     st.textContent = t('app.fetching');
@@ -1018,6 +1142,7 @@ async function fetchBadge() {
       url,
       params,
       headers,
+      login: badgeLogin(),
       skipTls,
       itemId: state.eid ?? undefined,
     });

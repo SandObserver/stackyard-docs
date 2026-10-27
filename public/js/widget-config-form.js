@@ -3,9 +3,9 @@
 
 import { t } from '/js/i18n.js?v=ed7c5565';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=1c01be9a';
-import { createListbox } from '/js/listbox.js?v=f814170f';
-import { renderColorControl } from '/js/admin-color-control.js?v=4083ea3b';
+import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=f4752f33';
+import { createListbox } from '/js/listbox.js?v=b9f71853';
+import { renderColorControl } from '/js/admin-color-control.js?v=7d6a7623';
 import {
   seedCarried,
   applyOptionSet,
@@ -13,9 +13,10 @@ import {
   requiredFieldMissing,
   groupBounds,
   visibleFieldFlags,
-} from '/js/admin-logic.js?v=1cca36f5';
-import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=b0881957';
-import { qi } from '/js/utils.js?v=705ca896';
+  isPlainField,
+} from '/js/admin-logic.js?v=28471483';
+import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=1c258dc1';
+import { qi } from '/js/utils.js?v=ab3cac1d';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
 import { SAVED_ROW } from '/js/saved-row.js?v=44039df6';
 
@@ -48,6 +49,7 @@ function _ieRow(field, value, inputType) {
     type: inputType,
     placeholder: ph,
     fill: false,
+    plain: isPlainField(field),
     onCommit: () => inp.dispatchEvent(new Event('change', { bubbles: true })),
   });
   const get = () => {
@@ -158,7 +160,13 @@ async function _fetchOptions(field, ctx) {
     if (d.detail && typeof d.detail === 'object') err.detail = d.detail;
     throw err;
   }
-  return Array.isArray(d.options) ? d.options : [];
+  return { options: Array.isArray(d.options) ? d.options : [], truncated: d.truncated === true };
+}
+
+/** @param {{ options: any[], truncated: boolean }} got */
+function _loadedText(got) {
+  if (!got.options.length) return t('widgetCfg.noOptions');
+  return t(got.truncated ? 'widgetCfg.loadedSome' : 'widgetCfg.loaded', { count: got.options.length });
 }
 
 function _picklist(field, value, ctx, size) {
@@ -229,10 +237,11 @@ function _picklist(field, value, ctx, size) {
       status.className = 'row-status';
       btn.disabled = true;
       try {
-        opts = await _fetchOptions(field, ctx);
+        const got = await _fetchOptions(field, ctx);
+        opts = got.options;
         paint();
-        status.textContent = opts.length ? t('widgetCfg.loaded', { count: opts.length }) : t('widgetCfg.noOptions');
-        status.className = 'row-status ok';
+        status.textContent = _loadedText(got);
+        status.className = 'row-status ' + (got.truncated ? 'warn' : 'ok');
       } catch (e) {
         const advice = optionsErrorAdvice(e);
         status.textContent = t(advice.key, advice.vars);
@@ -319,12 +328,13 @@ function _select(field, value, ctx, config = {}) {
       status.className = 'row-status';
       btn.disabled = true;
       try {
-        opts = await _fetchOptions(field, ctx);
+        const got = await _fetchOptions(field, ctx);
+        opts = got.options;
         chosen = lb.getValue() || chosen;
         paint();
         syncCarried();
-        status.textContent = opts.length ? t('widgetCfg.loaded', { count: opts.length }) : t('widgetCfg.noOptions');
-        status.className = 'row-status ok';
+        status.textContent = _loadedText(got);
+        status.className = 'row-status ' + (got.truncated ? 'warn' : 'ok');
       } catch (e) {
         const advice = optionsErrorAdvice(e);
         status.textContent = t(advice.key, advice.vars);

@@ -1,6 +1,12 @@
 /* Load as a blocking classic script in <head>. A module runs after the page has
    painted, and the theme then arrives as a flash of the wrong one. */
 (function () {
+  /* Keep. iOS Safari enlarges frame text on a sideways phone and the widgets clip. */
+  document.documentElement.style.webkitTextSizeAdjust = '100%';
+  try {
+    const lang = new URLSearchParams(location.search).get('lang');
+    if (lang) document.documentElement.lang = Intl.getCanonicalLocales(lang)[0];
+  } catch {}
   try {
     const frame = window.frameElement;
     const dark =

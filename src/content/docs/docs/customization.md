@@ -33,7 +33,7 @@ Browsers only allow Keep Screen Awake over HTTPS. On a plain HTTP address the to
 | --- | --- |
 | Image | Upload a file, or paste a link that is downloaded once. |
 | Solid color | A single colour behind the grid. |
-| Unsplash | A random image, or one from a collection. Needs an Unsplash API key. |
+| Unsplash | A random image, or one from a collection. Needs an Unsplash API key. The dashboard credits the photographer and Unsplash in a corner. |
 
 Brightness dims the wallpaper so tiles and labels stay readable. Fit chooses Fill or Fit.
 

@@ -71,7 +71,9 @@ No password is set, and the address in your browser is not an IP address, a loca
 
 ### My dashboard is empty after a restart
 
-Confirm both volumes are mounted. Without `./data` nothing persists.
+Confirm both volumes are mounted. Without `/data` nothing persists.
+
+If you replaced your Compose file with the current one, it stores data in the `data` and `icons` volumes, while earlier versions used `./data` and `./icons`. Put the two old volume lines back; the data is still in those folders.
 
 ### I updated the image but the UI looks the same
 
@@ -231,9 +233,20 @@ Request sizes are limited so one request cannot consume the memory of a small ma
 
 nginx allows 3 MB, above both, so the API is always the component that refuses and can say what the limit is.
 
+### The container stops at start, or cannot save, as another account
+
+The container log names the account and what it cannot do:
+
+| Log line | What to do |
+| --- | --- |
+| `UID 2000 cannot write /data; config and icon writes will fail. Make it writable by 2000:2000 on the host.` | The dashboard serves but nothing saves, and the health check fails. Give the folder to that account on the host, for example `chown -R 2000:2000 ./data ./icons`, and restart. A named volume does not have this problem. |
+| `UID 2000 cannot listen on port 80 here; this system allows ports from 1024 up for accounts other than root.` | Set `LISTEN_PORT` to a port the message allows and map that port. |
+| `UID 2000 cannot write /run/stackyard. If the container's root filesystem is read-only, mount a tmpfs on /run/stackyard.` | Add a tmpfs mount on `/run/stackyard`. |
+| `cannot take ownership of /data; config and icon writes will fail` | The container runs as root without `CAP_CHOWN`. Add `CHOWN` under `cap_add`, or make the folder writable by UID 1000 yourself. |
+
 ### The container health check is failing
 
-The health check runs through nginx to the API, so it covers both processes. Check the logs for either failing to start. A data volume the container's `node` user cannot write to is a common cause.
+The health check runs through nginx to the API, so it covers both processes. It also fails while the API cannot write `/data` or `/icons`. Check the logs for a process that failed to start or a folder the API cannot write.
 
 ## Messages a widget shows
 

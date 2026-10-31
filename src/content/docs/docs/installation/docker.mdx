@@ -21,8 +21,12 @@ services:
     ports:
       - "8700:80"
     volumes:
-      - ./data:/data
-      - ./icons:/icons
+      - data:/data
+      - icons:/icons
+
+volumes:
+  data:
+  icons:
 ```
 
 ```sh
@@ -31,7 +35,13 @@ docker compose up -d
 
 Open `http://<host>:8700`.
 
-`/data` holds the config file. `/icons` holds uploaded icons and wallpapers. The container runs as UID 1000 and must be able to write both.
+`/data` holds the config file. `/icons` holds uploaded icons and wallpapers. The container runs as the image's `node` account, UID 1000. A named volume belongs to that account from creation. A bind mount such as `./data:/data` must be writable by UID 1000 before the first start:
+
+```sh
+mkdir -p data icons && sudo chown -R 1000:1000 data icons
+```
+
+Earlier versions of the Compose file used `./data` and `./icons`. Keep those lines if yours has them; the data stays where it is.
 
 The [compose file in the repository](https://github.com/SandObserver/stackyard/blob/main/docker-compose.yml) adds hardening and lists every variable below.
 
@@ -39,9 +49,21 @@ The [compose file in the repository](https://github.com/SandObserver/stackyard/b
 
 ```sh
 docker run -d --name stackyard --restart unless-stopped \
-  -p 8700:80 -v ./data:/data -v ./icons:/icons \
+  -p 8700:80 -v stackyard_data:/data -v stackyard_icons:/icons \
   ghcr.io/sandobserver/stackyard:latest
 ```
+
+## Running as another account
+
+Set `user: "<uid>:<gid>"` in Compose, or `--user <uid>:<gid>` with `docker run`. The two volumes must be writable by that account. No capability is needed.
+
+A system that reserves ports below 1024 for root refuses port 80 for other accounts. Host networking and Linux kernels older than 4.11 do this. Set `LISTEN_PORT` to a higher port and map that port instead, or run as root. The container says so and stops when it cannot bind.
+
+Earlier versions started as root. An install on host networking or an older kernel needs one of these two changes after the upgrade.
+
+For a read-only root filesystem, set `read_only: true` and mount a tmpfs on `/run/stackyard`.
+
+To run as root, set `user: "0:0"` and add `NET_BIND_SERVICE`, `CHOWN`, `SETUID`, `SETGID`, `DAC_OVERRIDE` and `KILL` under `cap_add`. The container then takes ownership of the two volumes at start, and runs the API as `node` and the nginx workers as `nginx`.
 
 ## Environment variables
 
@@ -65,7 +87,8 @@ All optional.
   { name: '`ICONS_PATH`', text: 'Default `/icons`.' },
   { name: '`WIDGETS_PATH`', text: 'Default `/usr/share/nginx/html/widgets`. A wrong path loads no widgets.' },
   { name: '`NODE_OPTIONS`', text: 'Default `--max-old-space-size=192`. Keep near half the container memory limit.' },
-  { name: '`PORT`', text: 'Only for platforms that route by `PORT`. Must be `80`.' },
+  { name: '`LISTEN_PORT`', text: 'The port nginx listens on inside the container. Default `80`. Set it when the container runs as another account on a system that reserves ports below 1024, and map the same port.' },
+  { name: '`PORT`', text: 'Only for platforms that route by `PORT`. Give it the `LISTEN_PORT` value.' },
   { name: '`DEMO_MODE`', text: 'Runs a read-only public demo.' },
 ]} />
 

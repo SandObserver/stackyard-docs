@@ -26,7 +26,10 @@ Small holds four bays. Medium holds ten.
       ['Scrutiny URL', 'For example `scrutiny:8080`.'],
       ['Scrutiny API Token', 'Optional. Needed when Scrutiny requires a login, which is the default from Scrutiny 2.0. A token with read scope is enough. Stored as a secret.'],
     ],
-    notes: ['Works with the original project and with the maintained fork. Original builds before and after 0.9.0 name drives differently, and the widget reads all three.'],
+    notes: [
+      'Works with the original project and with the maintained fork. Original builds before and after 0.9.0 name drives differently, and the widget reads all three.',
+      'The tooltip shows free space per drive with the maintained fork 1.78.0 or later and its filesystem collector on. A drive with a btrfs filesystem, or with a filesystem on several drives, shows none.',
+    ],
     links: [
       { label: 'AnalogJ/scrutiny (original)', href: 'https://github.com/AnalogJ/scrutiny' },
       { label: 'Starosdev/scrutiny (maintained fork)', href: 'https://github.com/Starosdev/scrutiny' },

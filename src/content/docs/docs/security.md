@@ -43,7 +43,7 @@ Stored secrets are stripped from the config before it reaches the browser. A pop
 
 A secret is restored only for the request it was stored for. If a save changes where the credential would be sent, by editing a badge URL, its non-secret headers, its sign-in username, or a widget field that decides where it goes, the stored value is not restored and Stackyard names what must be re-entered. Matching on an item's id alone would let an imported config point an existing credential somewhere new. These count as such a change too: turning **Allow self-signed certificate** on or off for an app, turning `settings.server.skipTlsVerify` on or off for widgets, changing a widget's type, and changing or removing the port map (`settings.server.portMap`). The Proxmox secret in General is cleared when its address, token ID or **Allow self-signed certificate** changes.
 
-Secrets are stored in plain text in `apps.json` on the data volume. Protect that volume with filesystem permissions and backups.
+Secrets are stored in plain text in `apps.json` on the data volume. Stackyard writes the file readable by its owner only, mode `0600`, and tightens an older file on first read. Protect that volume with filesystem permissions and backups.
 
 ## The SSRF guard
 
@@ -93,9 +93,9 @@ Icons load through the server, which caches each one for 24 hours, so the CDN do
 
 ## The container
 
-The provided Compose file drops all capabilities, adds back only what is needed, sets `no-new-privileges`, and bounds memory, process count and log size.
+The image runs as the unprivileged `node` account, UID 1000, with no capability. The provided Compose file drops all capabilities, sets `no-new-privileges`, and bounds memory, process count and log size. Any other account works the same way; see [Running as another account](/docs/installation/docker/#running-as-another-account).
 
-Inside, supervisord runs as root to bind port 80 and start both processes. It drops the API to the unprivileged `node` user, and nginx drops its workers to `nginx`. The API, which parses untrusted input, never runs as root.
+Started as root, which the Unraid template does so the container can take ownership of the folders Unraid creates, supervisord drops the API to `node` and nginx drops its workers to `nginx`. The API, which parses untrusted input, never runs as root.
 
 ## Verifying a release image
 

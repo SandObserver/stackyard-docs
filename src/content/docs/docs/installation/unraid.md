@@ -12,6 +12,8 @@ Search for Stackyard in the Apps tab, then install it. The template fills in the
 
 The template also sets `ALLOW_PRIVATE_IPS`, `SOCKET_PROXY_URL` and `TRUST_PROXY`. Each is described under [Environment variables](/docs/installation/docker/#environment-variables).
 
+The template starts the container as root so it can take ownership of the two appdata folders Unraid creates. Inside, the API runs as the `node` account. See [Security](/docs/security/#the-container).
+
 The template is kept in the repo at [`templates/stackyard.xml`](https://github.com/SandObserver/stackyard/blob/main/templates/stackyard.xml).
 
 ## After installing

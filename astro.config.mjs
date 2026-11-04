@@ -78,6 +78,7 @@ export default defineConfig({
             { label: 'Comparison', link: '/docs/is-stackyard-for-you/' },
             { label: 'Install with Docker', link: '/docs/installation/docker/' },
             { label: 'Install on Unraid', link: '/docs/installation/unraid/' },
+            { label: 'Install on TrueNAS', link: '/docs/installation/truenas/' },
             { label: 'Build from source', link: '/docs/installation/build-from-source/' },
             { label: 'First setup', link: '/docs/first-setup/' },
           ],

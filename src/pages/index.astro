@@ -18,6 +18,7 @@ const install = {
   compose: { fname: 'compose.yml', code: markValues(composeBlock[1]), start: esc(composeBlock[2]) },
   run: { fname: 'Terminal', code: markValues(runBlock[1]), start: '' },
   unraid: { fname: 'Unraid', code: esc('Apps tab › search "Stackyard" › Install'), start: '' },
+  truenas: { fname: 'TrueNAS', code: esc('Apps › Discover Apps › search "Stackyard" › Install'), start: '' },
 };
 const sprite = await iconSprite(['external', 'general']);
 const iconMasks = sprite.match(/<defs>([\s\S]*?)<\/defs>/)?.[1] ?? '';
@@ -396,10 +397,10 @@ const schema = {
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
   };
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
-  const methods = { compose: 'Docker Compose', run: 'docker run', unraid: 'Unraid' };
+  const methods = { compose: 'Docker Compose', run: 'docker run', unraid: 'Unraid', truenas: 'TrueNAS' };
   const row = (icon, name, text) => `<li><div class="irow">${icons[icon]}<span class="imain"><span class="iname">${name}</span><span class="itext">${text}</span></span></div></li>`;
   const next = (m) =>
-    row('external', m === 'unraid' ? 'Click WebUI in the Docker tab' : 'Open <code>http://&lt;server-ip&gt;:8700</code>', 'You can set a password on the first visit, or skip it.')
+    row('external', m === 'unraid' ? 'Click WebUI in the Docker tab' : m === 'truenas' ? "Click Web UI on the app's page" : 'Open <code>http://&lt;server-ip&gt;:8700</code>', 'You can set a password on the first visit, or skip it.')
     + row('general', 'Set it up in Settings', "Add apps, folders, badges and widgets, or import a backup or another dashboard's config.");
 
   function morph(el, mutate, animate = true) {

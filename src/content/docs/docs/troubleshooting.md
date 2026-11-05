@@ -34,6 +34,28 @@ The dashboard opens without a password. Set a new one in **General**, **Password
 
 Back the file up before editing it. See [Backup and restore](/docs/import-export/backup-and-restore/).
 
+### No password works
+
+The saved password is damaged, so Stackyard cannot check any password. The dashboard stays locked.
+
+1. Try to sign in once. Stackyard prints a setup code to the container log, and the page shows **Set a password here**.
+2. Enter the code from the log and a new password twice.
+3. Choose **Set password**.
+
+A restart makes a new code. Copy the newest one.
+
+### The container stops with "Stackyard did not start"
+
+`INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` is set, but Stackyard could not store it on the first start. The container stops rather than start without a password. The log line names the reason:
+
+- `INITIAL_PASSWORD_FILE could not be read`: the file is not mounted, or the container's account cannot read it.
+- `Password must be at least 15 characters`: use a longer password. In the compose file or `.env`, a `$` must be written as `$$`, or the password arrives shorter.
+- `Password must be at most 1024 characters`: use a shorter password.
+- `This password is too common or too easy to guess`: the password is on the list of common passwords or is made only of words such as stackyard, dashboard or homelab. Choose another one.
+- `holds control characters or text that is not UTF-8`: save the file as plain UTF-8 text.
+
+Fix the value and start the container again.
+
 ## The dashboard
 
 ### Could not connect to dashboard API
@@ -64,10 +86,13 @@ The container log shows `config file cannot be used; sign-in and saving are refu
 
 No password is set, and the address in your browser is not an IP address, a local name, or an entry in **Allowed Addresses**. Stackyard refuses it so a web page on another site cannot reach your settings. See [Security](/docs/security/#addresses-without-a-password).
 
+To set a password on this address, use **Set a password here**: enter the setup code from the container log and a new password twice, then choose **Set password**. Stackyard prints the code when it first refuses an address. A restart makes a new code. With a password, every address works.
+
+Other ways:
+
 1. Open Stackyard by its IP address, or by an address you already allowed.
 2. In **General**, add the address to **Allowed Addresses** and save.
-3. Or set a password. With a password, every address works.
-4. Choose **Check again**.
+3. Choose **Check again**.
 
 ### My dashboard is empty after a restart
 
@@ -278,6 +303,8 @@ Messages shown in the admin, and what each one means.
 | `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
 | `Stackyard cannot use its settings file` | The config file is damaged or cannot be read. Sign-in and saving are off until it is fixed. See [above](#stackyard-cannot-read-its-settings-file). |
 | `Stackyard does not answer on this address` | No password is set and this address is not allowed. See [above](#stackyard-does-not-answer-on-this-address). |
+| `The setup code is incorrect. Copy it again from the container log.` | The code does not match the newest one in the log. A restart makes a new code. |
+| `No password works` | The saved password is damaged. See [above](#no-password-works). |
 | `Keep ... in Allowed Addresses, or this page stops working.` | The save would drop the address this page is open on while no password is set. Remove it from another address. |
 | `Enter the credential again for: ...` | The request a secret belonged to changed, so the secret was cleared. Re-enter and save. |
 | `Nothing at that address answered.` | The socket proxy address is unreachable from inside the container. Usually a proxy published on the host's loopback. |

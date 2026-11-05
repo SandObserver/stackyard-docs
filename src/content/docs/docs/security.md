@@ -37,6 +37,19 @@ While no password is set, Stackyard answers only on IP addresses, `localhost`, s
 
 Stackyard never adds a name to the list by itself. Open a fresh install by its IP address or a local name, then add other names in **General**. With a password set, every address works and the list is not checked.
 
+On a refused address, the page can set a password with a one-time setup code. Stackyard prints the code to the container log the first time it refuses an address, and never sends it anywhere else. Reading the log is the proof of owning the server.
+
+- The code has 24 characters, about 118 bits. Wrong codes are not counted, so nobody can lock the owner out by guessing.
+- A restart makes a new code. Setting or removing a password retires it.
+- Rejected codes are logged at most once a minute, with a count.
+- A damaged saved password is replaced the same way, on any address. See [Troubleshooting](/docs/troubleshooting/#no-password-works).
+
+### Initial password
+
+`INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` sets the password on the first start, before Stackyard answers any request. It never applies again once a password was set, skipped or removed. If it cannot be stored, the container stops instead of starting without a password.
+
+An environment variable stays visible in the container's environment and in `docker inspect`. Prefer `INITIAL_PASSWORD_FILE` with a Docker secret, or change the password in **General** after the first sign-in.
+
 ## Secrets
 
 Stored secrets are stripped from the config before it reaches the browser. A populated field reports as set without returning its value, in config responses and in exports alike.

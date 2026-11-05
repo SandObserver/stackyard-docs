@@ -79,6 +79,8 @@ All optional.
 <SettingList title="Sessions and logs" items={[
   { name: '`SESSION_MAX_AGE_DAYS`', text: 'Idle session lifetime. Default `0.5`, 12 hours. A session in use ends 30 days after sign-in, or after this lifetime if longer.' },
   { name: '`PASSWORD_HASH_MEMORY`', text: 'Memory per password hash: `8mib` to `128mib`. Default `16mib`.' },
+  { name: '`INITIAL_PASSWORD`', text: 'The dashboard password, set on the first start only. 15 to 1024 characters, and not a common password. In the compose file or `.env`, write a `$` as `$$`. See [Security](/docs/security/#initial-password).' },
+  { name: '`INITIAL_PASSWORD_FILE`', text: 'A file holding the first password, such as a Docker secret. Wins over `INITIAL_PASSWORD`. If either cannot be used, the container stops at the first start.' },
   { name: '`LOG_LEVEL`', text: '`debug`, `info`, `warn` or `error`. Default `info`. The General setting overrides it.' },
 ]} />
 

@@ -49,7 +49,9 @@ A restart makes a new code. Copy the newest one.
 `INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` is set, but Stackyard could not store it on the first start. The container stops rather than start without a password. The log line names the reason:
 
 - `INITIAL_PASSWORD_FILE could not be read`: the file is not mounted, or the container's account cannot read it.
-- `must be 8 to 1024 characters`: in the compose file or `.env`, a `$` must be written as `$$`.
+- `Password must be at least 15 characters`: use a longer password. In the compose file or `.env`, a `$` must be written as `$$`, or the password arrives shorter.
+- `Password must be at most 1024 characters`: use a shorter password.
+- `This password is too common or too easy to guess`: the password is on the list of common passwords or is made only of words such as stackyard, dashboard or homelab. Choose another one.
 - `holds control characters or text that is not UTF-8`: save the file as plain UTF-8 text.
 
 Fix the value and start the container again.

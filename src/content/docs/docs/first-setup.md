@@ -9,7 +9,7 @@ A dashboard with nothing on it shows a welcome screen instead of tiles. Its **Op
 
 ## Set a password first
 
-In **General**, turn on Password Protection. The length must be between 8 and 1024 characters.
+In **General**, turn on Password Protection, then type the password twice. It must be 15 to 1024 characters. A common password, or one made only of the dashboard's name or address, is refused. A passphrase of a few unrelated words is easy to remember and long enough.
 
 :::caution
 Until a password is set, the endpoint that sets one accepts the first caller with no authentication. On a shared network, the first person to reach a fresh install can claim the account.

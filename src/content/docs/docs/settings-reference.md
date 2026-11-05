@@ -40,7 +40,7 @@ If every app suddenly shows as unhealthy, the socket proxy address is the usual 
 
 | Setting | What it does |
 | --- | --- |
-| Password Protection | Sets or changes the dashboard password. Between 8 and 1024 characters. Leave blank to keep the existing one. Changing the password, or turning protection off, asks for the current password. |
+| Password Protection | Sets or changes the dashboard password. A new password needs 15 to 1024 characters and is refused if it is common or made only of the dashboard's name or address. A password set before these rules keeps working. Type it again under **Confirm Password**. The eye button shows both. Leave blank to keep the existing one. Changing the password, or turning protection off, asks for the current password. |
 | Sign out all devices | Ends every session everywhere, including the one you are using. Use it if you think a session may be compromised. |
 | Allowed Addresses | Host names Stackyard answers on while no password is set, separated by commas. IP addresses and local names such as `nas` or `nas.local` always work and need no entry. While a password is set and the page is open on a name that is not listed, **+ Add** puts that name in the list. See [Security](/docs/security/#addresses-without-a-password). |
 

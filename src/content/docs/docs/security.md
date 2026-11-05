@@ -19,14 +19,17 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 
 ## Authentication
 
-- Passwords are hashed with scrypt and a per-password salt, stored in PHC string format.
+- Passwords are hashed with scrypt and a per-password salt, stored in PHC string format. Accented letters are normalized first, so a password signs in however a device composes them.
+- A new password needs 15 to 1024 characters. It is checked against a list of common passwords and refused if it is made only of the dashboard's name or address. There are no rules about character types. A password set before these rules keeps working.
+- Each password screen is a form with a hidden username holding the host name, so a password manager saves one entry per install.
 - Session tokens are HMAC-signed and verified with a constant-time comparison.
 - Sessions expire after an idle lifetime, 12 hours by default. A session in use is reissued past the halfway mark.
 - A session ends 30 days after sign-in even while in use, or after the idle lifetime if that is longer.
 - Signing out ends the session on the server. A copy of its cookie stops working too.
-- Login is rate-limited to 5 attempts per IP per 15 minutes. Counters are in memory, so a restart clears them and they are not shared across replicas. Run a single instance behind any proxy.
+- Login is rate-limited to 5 attempts per IP per 15 minutes. IPv6 addresses in one /64 network count as one. Counters are in memory, so a restart clears them and they are not shared across replicas. Run a single instance behind any proxy.
 - Attempts made under an address that is not local and not in **Allowed Addresses** share a separate limit. A page on another site that points its own name at your server cannot use up yours. Add your reverse proxy's name to the list to keep it on your own limit. While you are signed in on a name that is not listed, **General** offers to add it.
-- Changing the password rotates the session secret, signing out every other device. Sign out all devices does the same without changing the password.
+- Changing the password rotates the session secret, signing out every other device. Sign out all devices signs out every device, this one included, without changing the password.
+- A sign-in checked against a password that changes meanwhile is refused.
 - Changing the password, or turning protection off, needs the current password as well as a session. Wrong attempts count toward the login limit of 5 per IP per 15 minutes.
 
 Authentication is only in force once a password is stored. Until then, the endpoint that sets one accepts the first caller. See [First setup](/docs/first-setup/).

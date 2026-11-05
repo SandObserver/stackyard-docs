@@ -275,6 +275,10 @@ Messages shown in the admin, and what each one means.
 | `The current password is incorrect.` | The current password typed to change or remove the password did not match. Nothing was saved. |
 | `The password was changed elsewhere. Reload the page and try again.` | The password changed on another device while this save ran. Nothing was saved. |
 | `The dashboard was changed elsewhere. Reload the page and try again.` | Another tab or device changed the dashboard after this page loaded it. Nothing was saved. |
+| `Use at least 15 characters.` | A new password needs 15 to 1024 characters. A password set earlier keeps working. |
+| `This password is too common. Choose another one.` | The new password is on the list of common passwords. Choose a longer or less predictable one. |
+| `Too easy to guess. Avoid the name or address of this dashboard.` | The new password is made only of the dashboard's name or address. |
+| `Passwords do not match.` | The password and its confirmation differ. Nothing was saved. |
 | `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
 | `Stackyard cannot use its settings file` | The config file is damaged or cannot be read. Sign-in and saving are off until it is fixed. See [above](#stackyard-cannot-read-its-settings-file). |
 | `Stackyard does not answer on this address` | No password is set and this address is not allowed. See [above](#stackyard-does-not-answer-on-this-address). |

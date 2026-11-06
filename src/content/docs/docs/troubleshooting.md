@@ -36,11 +36,11 @@ Back the file up before editing it. See [Backup and restore](/docs/import-export
 
 ## The dashboard
 
-### Could not connect to dashboard API
+### Stackyard Isn't Responding
 
 The page loaded but the API behind it did not answer. The UI is served by nginx and the data comes from the API, and they are separate processes in the same container.
 
-Check `docker logs <container>` for either process failing to start. A data volume that the container's `node` user cannot write to is a common cause.
+Check `docker logs <container>` for either process failing to start. A data volume that the container's `node` user cannot write to is a common cause. Press Try Again once the container runs.
 
 ### Stackyard cannot read its settings file
 
@@ -271,11 +271,12 @@ Messages shown in the admin, and what each one means.
 
 | Message | Meaning |
 | --- | --- |
-| `Could not connect to dashboard API` | The UI loaded but the API did not answer. See [above](#could-not-connect-to-dashboard-api). |
+| `Stackyard Isn't Responding` | The UI loaded but the API did not answer. See [above](#stackyard-isnt-responding). |
 | `The current password is incorrect.` | The current password typed to change or remove the password did not match. Nothing was saved. |
 | `The password was changed elsewhere. Reload the page and try again.` | The password changed on another device while this save ran. Nothing was saved. |
 | `The dashboard was changed elsewhere. Reload the page and try again.` | Another tab or device changed the dashboard after this page loaded it. Nothing was saved. |
-| `Too many attempts. Try again later.` | 5 wrong passwords from this IP in 15 minutes. Wait, then try again. See [above](#one-persons-failed-logins-lock-everyone-out). |
+| `Too many attempts. Try again in <n> minutes.` | 5 wrong passwords from this IP in 15 minutes. Sign-in opens again after the time shown. See [above](#one-persons-failed-logins-lock-everyone-out). |
+| `Too many attempts. Wait a few minutes, then try again.` | The same, when the wait is not known. |
 | `Stackyard cannot use its settings file` | The config file is damaged or cannot be read. Sign-in and saving are off until it is fixed. See [above](#stackyard-cannot-read-its-settings-file). |
 | `Stackyard does not answer on this address` | No password is set and this address is not allowed. See [above](#stackyard-does-not-answer-on-this-address). |
 | `Keep ... in Allowed Addresses, or this page stops working.` | The save would drop the address this page is open on while no password is set. Remove it from another address. |
@@ -310,9 +311,9 @@ Messages shown in the admin, and what each one means.
 | `The service did not answer in time.` | The service is slow or the network drops packets. |
 | `Ping failed` / `Ping returned <status>` | The URL was reached but did not answer as expected. |
 | `That image is too large for the server to accept.` | Over the 2 MB upload limit. |
-| `That is not a color. Use #rrggbb or a CSS color name.` | The wallpaper colour field rejects anything else. |
+| `Enter a color as #rrggbb or as a CSS color name, such as teal.` | The wallpaper colour field rejects anything else. |
 | `The wallpaper could not be loaded.` | Settings could not get the Unsplash photo. Check the API key and the Collection ID. |
-| `Wallpaper failed: <reason>` | The image was not stored. The link was unreachable, the file is not a JPEG, PNG, WebP, AVIF or GIF, or it is over 16 MB. |
+| `Could not save the wallpaper. <reason>` | The image was not stored. The link was unreachable, the file is not a JPEG, PNG, WebP, AVIF or GIF, or it is over 16 MB. |
 | `Set a password before turning authentication on.` | Authentication needs a password to exist first. |
 | `Some items in the folder <id> are not in the file.` | A folder in the imported config lists apps that are not in the same file. Usually a hand-edited or partly merged export. |
 | `Stackyard cannot read the list of items in the folder <id>.` | A folder in the imported config lists its contents as something other than a list of item ids. Nothing was saved. |
@@ -322,7 +323,7 @@ Messages shown in the admin, and what each one means.
 | `<name> is already on the dashboard. Reload the page and import again.` | An item with the same id was added from another tab while the import preview was open. |
 | `<file>: the importer cannot read the YAML on line <line>.` | The file uses YAML the importer does not support, such as tab indentation or more than one document. |
 | `That file type is not supported.` | Icons must be SVG, PNG or ICO. Wallpapers must be JPEG, PNG, WebP, AVIF or GIF. |
-| `That is not a valid http or https address.` | The address is not an http or https URL. |
+| `Enter an address that starts with http:// or https://.` | The address is not an http or https URL. |
 | `The socket proxy refused the request.` | The socket proxy answered with 401 or 403, with and without an API version in the path. For Import from Docker labels, the proxy needs read access to containers. |
 | `Something answered there, but it is not a Docker socket proxy.` | The address answered, but not with a Docker API version or a container list. |
 | `Turn on Health Checks in General and enter the Docker Socket URL.` | Import from Docker labels has no socket proxy address to read from. |

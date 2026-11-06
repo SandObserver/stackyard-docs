@@ -92,7 +92,7 @@ Choosing Image or Solid color means Unsplash is never contacted.
 
 The contents of your dashboard, and the only place you add things.
 
-Search narrows the list. The **All**, **Apps**, **Widgets** and **Folders** filters limit it by kind. Drag the handle on a row to reorder.
+Search narrows the list. The **All**, **Apps**, **Widgets** and **Folders** filters limit it by kind. Drag the handle on a row to reorder, or press **Reorder** to move rows with up and down buttons.
 
 | To do this | See |
 | --- | --- |

@@ -30,7 +30,7 @@ Every check type needs **Health Checks** on in General.
 
 One request to Proxmox serves every Proxmox tile.
 
-A problem shows a red `!`. Hover it for the reason. Turn on Hide Healthy Badge in General to hide the green state.
+A problem shows a red `!`. Hover, tap or focus it for the reason. Turn on Hide Healthy Badge in General to hide the green state.
 
 ## Fixed label
 
@@ -74,8 +74,8 @@ A tile draws one badge. If an app has a health check, a fixed label and live act
 
 The others stay available in the list that opens on hover or tap.
 
-A folder shows the badge of the app inside it that is reporting.
+A folder shows the badge of the app inside it that is reporting. Its list names that app.
 
 ## Stale values
 
-When a poll fails, the last value stays on the tile, dimmed with a dashed outline. A failed poll never reads as zero. An error answer from the service, such as a rejected API key, counts as a failed poll. A folder is dimmed the same way when an app inside it fails.
+When a poll fails, the last value stays on the tile, dimmed with a dashed outline. Its list adds May be out of date. A failed poll never reads as zero. An error answer from the service, such as a rejected API key, counts as a failed poll. A folder is dimmed the same way when an app inside it fails.

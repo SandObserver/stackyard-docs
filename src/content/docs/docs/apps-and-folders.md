@@ -29,11 +29,11 @@ Color shows the system colours, sliders for hue, saturation and brightness, and 
 
 An icon that is a white shape can disappear on White, Auto in light mode, or Clear. Pick Dark or Color for those.
 
-Drag rows in the Dashboard list to reorder the grid.
+Drag rows in the Dashboard list to reorder the grid. To move rows without dragging, press Reorder, then the up and down buttons on each row. Press Done to finish.
 
 ## Folders
 
-A folder holds apps behind one tile. Press Add, choose Folder, then Add Apps. Folders do not nest, and widgets cannot go in one.
+A folder holds apps behind one tile. Press Add (+), choose Folder, then Add Apps. Folders do not nest, and widgets cannot go in one.
 
 ## Dock
 
@@ -41,4 +41,4 @@ Turn on Show in Dock on an app to pin it to the bar at the bottom. The dock hold
 
 The Dashboard list shows docked apps in a Dock group above Home screen. Drag an app into the Dock group to dock it, or out of it to undock it. A docked app leaves its folder.
 
-The Settings tile can go in the dock too. Press Edit on it and turn on Show in Dock. Show in Dock stays off while Show Settings on dashboard is off.
+The Settings tile can go in the dock too. Open it in the Dashboard list and turn on Show in Dock. Show in Dock stays off while Show Settings on dashboard is off.

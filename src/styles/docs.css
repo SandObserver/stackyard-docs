@@ -213,15 +213,6 @@
   color: var(--sy-red-hi);
 }
 
-.expressive-code .frame pre {
-  border-radius: var(--sy-radius-lg);
-  border: 1px solid var(--sl-color-hairline);
-}
-.expressive-code .frame .copy > [aria-live] {
-  display: flex;
-  align-items: center;
-}
-
 .sl-markdown-content table {
   border-collapse: collapse;
   width: 100%;
@@ -326,13 +317,11 @@ starlight-toc nav a {
   background: color-mix(in srgb, var(--sl-color-text-accent) 14%, transparent);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  @view-transition {
-    navigation: auto;
-  }
-  :root {
-    view-transition-name: none;
-  }
+@view-transition {
+  navigation: auto;
+}
+:root {
+  view-transition-name: none;
 }
 @media (prefers-reduced-motion: no-preference) and (min-width: 50em) {
   #starlight__sidebar a[aria-current='page'] {
@@ -340,7 +329,7 @@ starlight-toc nav a {
   }
 }
 ::view-transition-group(sy-current-page) {
-  animation-duration: 0.32s;
+  animation-duration: 0.25s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -1116,6 +1105,9 @@ summary.sy-nl .sy-icon,
     background: var(--sy-hover);
   }
 }
+.sy-nl:active {
+  background: var(--sy-hover);
+}
 .sy-nl[aria-current='page'] {
   background: var(--sy-sel);
   color: var(--sy-tx);
@@ -1206,15 +1198,6 @@ h1#_top {
 .sl-markdown-content .starlight-aside {
   border-radius: 22px;
   padding: 16px 18px;
-}
-
-.expressive-code .frame pre {
-  border: 0;
-  border-radius: 20px;
-  background: var(--sy-card);
-}
-.expressive-code .frame .copy button {
-  border-radius: 999px;
 }
 
 .sl-markdown-content table {
@@ -1407,4 +1390,358 @@ mobile-starlight-toc .dropdown a {
 }
 :root[data-theme='light'] .starlight-aside--danger .starlight-aside__title {
   color: #b80011;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sy-accent);
+  outline-offset: 2px;
+}
+
+.sl-markdown-content > :is(p, ul, ol, dl, blockquote) {
+  max-width: 33em;
+}
+
+html:not(:has(mobile-starlight-toc a)) {
+  --sl-mobile-toc-height: 0rem;
+}
+mobile-starlight-toc:not(:has(a)),
+.right-sidebar-panel:not(:has(a)) {
+  display: none;
+}
+
+.expressive-code .frame {
+  overflow: hidden;
+  border: 1px solid #38383a;
+  border-radius: 12px;
+  background: #0d1117;
+}
+.expressive-code .frame pre {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.expressive-code .frame .header::before,
+.expressive-code .frame .header::after {
+  border: 0;
+}
+.expressive-code .frame .header {
+  display: flex;
+  border: 0;
+  border-bottom: 1px solid #38383a;
+  border-radius: 0;
+  background: transparent;
+  align-items: center;
+  min-height: 39px;
+  padding-block: 0;
+  padding-inline: 16px 96px;
+  color: #a3a3a8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.expressive-code .frame .header .title {
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  background: none;
+}
+.expressive-code .frame .header .title::after {
+  display: none;
+}
+.expressive-code .frame:not(.has-title) .header::before {
+  content: 'Code';
+  position: static;
+  inset: auto;
+  border: 0;
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='sh']) .header::before {
+  content: 'Terminal';
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='yaml']) .header::before {
+  content: 'YAML';
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='json']) .header::before {
+  content: 'JSON';
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='js']) .header::before {
+  content: 'JavaScript';
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='html']) .header::before {
+  content: 'HTML';
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='css']) .header::before {
+  content: 'CSS';
+}
+.expressive-code .frame:not(.has-title):has(pre[data-language='txt']) .header::before {
+  content: 'Text';
+}
+.expressive-code .frame .copy {
+  inset-block-start: 5px;
+  inset-inline-end: 6px;
+}
+.expressive-code .frame .copy button {
+  display: inline-grid;
+  place-items: center;
+  width: auto;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: transparent;
+  color: #ffffff;
+  font: 600 13px var(--sy-font);
+  opacity: 1;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+.expressive-code .frame .copy button:not(:hover) {
+  opacity: 1;
+}
+.expressive-code .frame .copy button div {
+  display: none;
+}
+.expressive-code .frame .copy button::before,
+.expressive-code .frame .copy button::after {
+  position: static;
+  inset: auto;
+  grid-area: 1 / 1;
+  margin: 0;
+  border: 0;
+  background: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+  line-height: normal;
+  opacity: 1;
+  transition: opacity 0.1s ease 0.1s;
+}
+.expressive-code .frame .copy button::after {
+  content: 'Copy';
+}
+.expressive-code .frame .copy button::before {
+  content: 'Copied';
+  opacity: 0;
+}
+.expressive-code .frame .copy:has(.feedback.show) button::after {
+  opacity: 0;
+  transition-delay: 0s;
+}
+.expressive-code .frame .copy:not(:has(.feedback.show)) button::before {
+  transition-delay: 0s;
+}
+.expressive-code .frame .copy:has(.feedback.show) button::before {
+  opacity: 1;
+}
+.expressive-code .frame .copy button:hover {
+  background: rgba(120, 120, 128, 0.32);
+}
+.expressive-code .frame .copy button:active {
+  transform: scale(0.97);
+}
+.expressive-code .frame .copy button:focus-visible {
+  outline: 2px solid #00d2e0;
+  outline-offset: 1px;
+}
+.expressive-code .frame pre:focus-visible {
+  outline: 2px solid #00d2e0;
+  outline-offset: -2px;
+}
+.expressive-code .frame .copy [aria-live] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.expressive-code pre.wrap .ec-line .code {
+  overflow-wrap: normal;
+}
+@media (min-width: 50rem) {
+  .expressive-code pre.wrap .ec-line .code {
+    white-space: pre;
+  }
+}
+
+#starlight__search {
+  --sl-search-corners: var(--sy-radius-lg);
+  --pagefind-ui-border-radius: var(--sy-radius-lg);
+}
+#starlight__search input:focus {
+  --pagefind-ui-border: var(--sl-color-gray-5);
+}
+#starlight__search .pagefind-ui__result-inner {
+  gap: 0;
+}
+#starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)),
+#starlight__search .pagefind-ui__result-nested {
+  background-color: var(--sy-card);
+}
+#starlight__search .pagefind-ui__result-nested {
+  border-top: 1px solid var(--sy-row-sep);
+}
+#starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)):hover,
+#starlight__search .pagefind-ui__result-nested:hover {
+  outline: 0;
+  background-color: color-mix(in srgb, var(--sy-card), var(--sl-color-white) 6%);
+}
+#starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)):focus-within,
+#starlight__search .pagefind-ui__result-nested:focus-within {
+  outline: 2px solid var(--sy-accent);
+  outline-offset: -2px;
+}
+#starlight__search .pagefind-ui__result-link:focus-visible {
+  outline: 0;
+}
+site-search dialog {
+  border: 0;
+  background-color: var(--sl-color-bg);
+}
+@media (min-width: 50rem) {
+  site-search dialog {
+    min-height: 0;
+    border-radius: 22px;
+  }
+}
+
+site-search dialog,
+site-search dialog::backdrop {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    overlay 0.15s allow-discrete,
+    display 0.15s allow-discrete;
+}
+site-search dialog:not([open]),
+site-search dialog:not([open])::backdrop {
+  opacity: 0;
+}
+site-search dialog[open],
+site-search dialog[open]::backdrop {
+  opacity: 1;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+@starting-style {
+  site-search dialog[open],
+  site-search dialog[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 49.99rem) {
+  .sidebar-pane {
+    opacity: 0;
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease,
+      visibility 0s linear 0.15s;
+  }
+  starlight-menu-button[aria-expanded='true'] ~ .sidebar-pane {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+      transform 0.2s cubic-bezier(0.32, 0.72, 0, 1),
+      visibility 0s;
+  }
+}
+
+#starlight__mobile-toc::details-content {
+  transition: content-visibility 0.15s allow-discrete;
+}
+#starlight__mobile-toc .dropdown {
+  transform-origin: top left;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+[dir='rtl'] #starlight__mobile-toc .dropdown {
+  transform-origin: top right;
+}
+#starlight__mobile-toc:not([open]) .dropdown {
+  opacity: 0;
+}
+#starlight__mobile-toc[open] .dropdown {
+  opacity: 1;
+  transform: none;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+@starting-style {
+  #starlight__mobile-toc[open] .dropdown {
+    opacity: 0;
+  }
+}
+
+main {
+  view-transition-name: sy-main;
+}
+.right-sidebar-panel {
+  view-transition-name: sy-toc;
+}
+@media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 50rem) {
+    site-search dialog:not([open]) {
+      transform: scale(0.98);
+    }
+    @starting-style {
+      site-search dialog[open] {
+        transform: scale(0.98);
+      }
+    }
+  }
+  @media (max-width: 49.99rem) {
+    .sidebar-pane {
+      transform: translateY(-8px);
+    }
+  }
+  #starlight__mobile-toc:not([open]) .dropdown {
+    transform: scale(0.96) translateY(-6px);
+  }
+  @starting-style {
+    #starlight__mobile-toc[open] .dropdown {
+      transform: scale(0.96) translateY(-6px);
+    }
+  }
+}
+::view-transition-group(sy-main),
+::view-transition-group(sy-toc) {
+  animation-duration: 0.22s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+::view-transition-old(sy-main),
+::view-transition-old(sy-toc) {
+  animation: sy-fade-out 0.1s ease-out both;
+}
+::view-transition-new(sy-main),
+::view-transition-new(sy-toc) {
+  animation: sy-rise-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(sy-main),
+  ::view-transition-new(sy-toc) {
+    animation-name: sy-fade-out;
+    animation-direction: reverse;
+  }
+}
+@keyframes sy-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes sy-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  site-search dialog,
+  site-search dialog::backdrop,
+  .sidebar-pane,
+  #starlight__mobile-toc .dropdown {
+    transition-property: opacity, overlay, display, visibility;
+  }
 }

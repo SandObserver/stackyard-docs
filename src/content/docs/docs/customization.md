@@ -15,7 +15,7 @@ Turning titles off gives a denser grid of icons alone.
 
 Widget cards are white in light mode and near-black in dark mode. A few widgets are drawn only in dark and keep a dark card in both. The Weather widget follows its own day and night, never the display mode.
 
-Increased contrast and reduced motion are honoured. Reduced transparency drops the blur behind cards and keeps the motion.
+Increased contrast and reduced motion are honored. Reduced transparency drops the blur behind cards and keeps the motion.
 
 :::caution
 Browsers only allow **Keep Screen Awake** over HTTPS. On a plain HTTP address the toggle has no effect. See [Troubleshooting](/docs/troubleshooting/).
@@ -32,10 +32,10 @@ Browsers only allow **Keep Screen Awake** over HTTPS. On a plain HTTP address th
 | Source | What it does |
 | --- | --- |
 | Image | Upload a file, or paste a link that is downloaded once. |
-| Solid color | A single colour behind the grid. |
+| Solid color | A single color behind the grid. |
 | Unsplash | A random image, or one from a collection. Needs an Unsplash API key. The dashboard credits the photographer and Unsplash in a corner. |
 
-Brightness dims the wallpaper so tiles and labels stay readable. Fit chooses Fill or Fit.
+**Brightness** dims the wallpaper so tiles and labels stay readable. **Fit** chooses **Fill** or **Fit**.
 
 Uploaded and linked images are stored on your own server and served from it. Choosing Image or Solid color means Unsplash is never contacted. See [Security](/docs/security/).
 

@@ -19,7 +19,7 @@ Stackyard reads Homepage and Dashy YAML files, and Homepage labels on Docker con
 The app still imports without:
 
 - Widgets. A widget becomes a plain app.
-- Descriptions, abbreviations, tags, colours, icon fonts, emoji and other icon links.
+- Descriptions, abbreviations, tags, colors, icon fonts, emoji and other icon links.
 - A Homepage ICMP `ping`, a container on another Docker server, and a Dashy `localUrl` or extra page.
 - A health-check address that is only a path or uses a variable.
 - A username and password in an address.

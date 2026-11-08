@@ -8,11 +8,11 @@ const GROUPS: Record<string, string> = {
   'Create a widget': 'create',
   Contributing: 'heart',
   About: 'info',
+  'Get help': 'bug',
 };
 
 const LINKS: Record<string, string> = {
   '/docs/settings-reference/': 'general',
-  '/docs/troubleshooting/': 'bug',
   '/docs/widgets/': 'docs',
   '/docs/widgets/backup/': 'backup',
   '/docs/widgets/books/': 'books',

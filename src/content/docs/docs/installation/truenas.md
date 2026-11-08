@@ -4,6 +4,7 @@ description: Install Stackyard on TrueNAS from the Apps catalog.
 next:
   link: /docs/first-setup/
   label: First setup
+prev: false
 ---
 
 Install Stackyard from the [TrueNAS Apps catalog](https://apps.truenas.com/catalog/stackyard_community/). It is in the community train.

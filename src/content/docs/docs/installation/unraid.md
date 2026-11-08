@@ -4,6 +4,7 @@ description: Install Stackyard on Unraid from Community Applications.
 next:
   link: /docs/first-setup/
   label: First setup
+prev: false
 ---
 
 Install Stackyard from [Community Applications](https://ca.unraid.net/apps/stackyard-0ara4ku0sjjwqy).

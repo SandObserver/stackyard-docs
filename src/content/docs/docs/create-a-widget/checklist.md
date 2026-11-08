@@ -1,6 +1,7 @@
 ---
 title: Widget checklist
 description: What to check before opening a pull request for a new Stackyard widget.
+next: false
 ---
 
 CI validates every manifest. Run the same check locally with `cd api && node --test`.

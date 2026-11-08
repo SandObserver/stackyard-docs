@@ -17,7 +17,7 @@ Medium only. One marker per service, with an optional legend.
   { type: 'connections', file: 'connections-map.html', id: 'gh-connections', size: 'medium', title: 'Connections, map view', label: 'Map' },
 ]} />
 
-<ServiceList items={[
+<ServiceList title="Works with, map view" items={[
   { name: 'Gluetun', icon: 'gluetun', kind: 'VPN client', needs: 'Control server URL',
     fields: [['Control server URL', 'Such as `gluetun:8000`.']],
     links: [{ label: 'qdm12/gluetun', href: 'https://github.com/passteque/gluetun' }] },
@@ -54,7 +54,7 @@ Small or Medium. The state of one VPN connection.
   { type: 'connections', file: 'connections-vpn.html', id: 'gh-vpn', title: 'Connections, VPN view', label: 'VPN' },
 ]} />
 
-<ServiceList items={[
+<ServiceList title="Works with, VPN view" items={[
   { name: 'Gluetun', icon: 'gluetun', kind: 'VPN client', needs: 'Control server URL',
     fields: [['Control server URL', 'Such as `http://gluetun:8000`.'], ['API key', 'Only if Gluetun has one.']],
     links: [{ label: 'qdm12/gluetun', href: 'https://github.com/passteque/gluetun' }] },

@@ -3,11 +3,13 @@ title: Add apps and folders to your dashboard
 description: Add app tiles with icons by name, group them in folders, and pin them to the dock in Stackyard.
 ---
 
-**In the admin:** Dashboard.
+**In Settings:** Dashboard.
 
 ## Apps
 
-Press <span class="sy-btn sy-btn--primary">Add</span>, choose App, and enter a name, URL, icon and colour.
+1. Press <span class="sy-btn sy-btn--primary">Add</span> and choose App.
+2. Enter a name, URL, icon and colour.
+3. Press <span class="sy-btn sy-btn--primary">Save</span>.
 
 A name is up to 64 characters. Keep a username and password out of the URL: anyone who can open the dashboard can read it. Stackyard shows a warning when the URL holds one.
 
@@ -29,16 +31,20 @@ Color shows the system colours, sliders for hue, saturation and brightness, and 
 
 An icon that is a white shape can disappear on White, Auto in light mode, or Clear. Pick Dark or Color for those.
 
-Drag rows in the Dashboard list to reorder the grid.
+Drag rows in the Dashboard list to reorder the grid, or use the up and down arrow keys on a focused row. **Reorder** shows Move Up and Move Down buttons on each row. Press **Done** when finished.
 
 ## Folders
 
-A folder holds apps behind one tile. Press Add, choose Folder, then Add Apps. Folders do not nest, and widgets cannot go in one.
+A folder holds apps behind one tile. Folders do not nest, and widgets cannot go in one.
+
+1. Press <span class="sy-btn sy-btn--primary">Add</span> and choose Folder.
+2. Press **Add Apps** and pick the apps.
+3. Press <span class="sy-btn sy-btn--primary">Save</span>.
 
 ## Dock
 
-Turn on Show in Dock on an app to pin it to the bar at the bottom. The dock holds four apps.
+Turn on **Show in Dock** on an app to pin it to the bar at the bottom. The dock holds four apps.
 
-The Dashboard list shows docked apps in a Dock group above Home screen. Drag an app into the Dock group to dock it, or out of it to undock it. A docked app leaves its folder.
+The Dashboard list shows docked apps in a Dock group above Home Screen. Drag an app into the Dock group to dock it, or out of it to undock it. A docked app leaves its folder.
 
-The Settings tile can go in the dock too. Press Edit on it and turn on Show in Dock. Show in Dock stays off while Show Settings on dashboard is off.
+The Settings tile can go in the dock too. Press Edit on it and turn on **Show in Dock**. **Show in Dock** stays off while **Show Settings on dashboard** is off.

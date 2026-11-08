@@ -1,9 +1,10 @@
-import { apiGet, apiPost } from '/js/admin-shared.js?v=c0852eae';
+import { apiGet, apiPost } from '/js/admin-shared.js?v=290ab8cb';
 import { initI18n, t } from '/js/i18n.js?v=ed7c5565';
-import { loginErrorKey } from '/js/admin-error.js?v=1c258dc1';
-import { pwStrength } from '/js/password-strength.js?v=389e0ed0';
-import { el, inp as inpById, qa } from '/js/utils.js?v=ab3cac1d';
-import { blockingScreenFor } from '/js/config-recovery.js?v=85138697';
+import { loginErrorAdvice } from '/js/admin-error.js?v=0882cee9';
+import { passwordMeter, contextWords, meterColor } from '/js/password-policy.js?v=0c0fd0af';
+import { el, inp as inpById, qa } from '/js/utils.js?v=14d4695d';
+import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=c03e1465';
+import { fillUsernames } from '/js/password-reveal.js?v=37f218b4';
 
 export async function checkAuth(onLogin) {
   try {
@@ -68,8 +69,16 @@ function showLoginScreen(onLogin) {
       focusBefore = null;
       onLogin?.();
     } catch (e) {
+      const screen = blockingScreenFor(e);
+      if (screen) {
+        signedIn = true;
+        s?.close();
+        await showBlockingScreen(screen);
+        return;
+      }
       if (err) {
-        err.textContent = t(loginErrorKey(e));
+        const advice = loginErrorAdvice(e);
+        err.textContent = t(advice.key, advice.vars);
         err.style.display = 'block';
       }
       if (pw) {
@@ -81,13 +90,15 @@ function showLoginScreen(onLogin) {
     }
   }
 
-  if (btn) btn.onclick = doLogin;
-  if (pw) {
-    pw.focus();
-    pw.onkeydown = e => {
-      if (e.key === 'Enter') doLogin();
+  const form = /** @type {HTMLFormElement|null} */ (el('login-form'));
+  if (form) {
+    fillUsernames(form);
+    form.onsubmit = e => {
+      e.preventDefault();
+      if (!btn?.disabled) doLogin();
     };
   }
+  pw?.focus();
 }
 
 export function wirePasswordStrength(inputId, barsId, hintId) {
@@ -95,13 +106,14 @@ export function wirePasswordStrength(inputId, barsId, hintId) {
   const bars = qa('.pwbar', el(barsId));
   const hint = el(hintId);
   if (!inp || !bars?.length) return;
-  inp.addEventListener('input', () => {
-    const { score, labelKey, color } = pwStrength(inp.value);
+  const words = contextWords(location.hostname);
+  const paint = () => {
+    const { lit, tone, key, vars } = passwordMeter(inp.value, words);
     bars.forEach((b, i) => {
-      b.style.background = inp.value && i < score ? color : '';
+      b.style.background = i < lit ? meterColor(tone) : '';
     });
-    if (hint) {
-      hint.textContent = inp.value && labelKey ? t(labelKey) : '';
-    }
-  });
+    if (hint) hint.textContent = t(key, vars);
+  };
+  inp.addEventListener('input', paint);
+  paint();
 }

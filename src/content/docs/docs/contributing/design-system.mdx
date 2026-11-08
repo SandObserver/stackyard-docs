@@ -4,6 +4,7 @@ description: The Stackyard colors, logo, icons and the few design rules that go 
 ---
 
 import IconSet from '../../../../components/IconSet.astro';
+import ThemePanels from '../../../../components/ThemePanels.astro';
 
 Stackyard follows Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines) for type, spacing, controls and motion. This page covers only what is specific to Stackyard. Tokens live in `ui/css/tokens.css`.
 
@@ -11,34 +12,29 @@ Stackyard follows Apple's [Human Interface Guidelines](https://developer.apple.c
 
 Teal is the brand accent. Rules name a role below, never a raw color.
 
-<p class="sy-sw-label">Dark theme</p>
-<div class="sy-sw-row">
-  <div class="sy-sw-chip"><b style="--c:#00D2E0"></b><span>Accent</span>#00D2E0</div>
-  <div class="sy-sw-chip"><b style="--c:#30D158"></b><span>Success</span>#30D158</div>
-  <div class="sy-sw-chip"><b style="--c:#FF9230"></b><span>Warning</span>#FF9230</div>
-  <div class="sy-sw-chip"><b style="--c:#FF4245"></b><span>Danger</span>#FF4245</div>
-  <div class="sy-sw-chip"><b style="--c:#0091FF"></b><span>Info</span>#0091FF</div>
-</div>
-
-<p class="sy-sw-label">Light theme</p>
-<div class="sy-sw-row">
-  <div class="sy-sw-chip"><b style="--c:#0071A4"></b><span>Accent</span>#0071A4</div>
-  <div class="sy-sw-chip"><b style="--c:#238539"></b><span>Success</span>#238539</div>
-  <div class="sy-sw-chip"><b style="--c:#C93400"></b><span>Warning</span>#C93400</div>
-  <div class="sy-sw-chip"><b style="--c:#D70015"></b><span>Danger</span>#D70015</div>
-  <div class="sy-sw-chip"><b style="--c:#0040DD"></b><span>Info</span>#0040DD</div>
-</div>
+<ThemePanels />
 
 The other hues and grays are Apple's system colors.
 
-## What differs from the guidelines
+<div class="sy-guts">
+<section class="sy-gut">
+
+## What differs
+
+<div class="sy-gut__body">
 
 - **Both pages carry both themes.** **Display Mode** sets the theme on `<html>`, and the dashboard, the Settings pages and every widget follow it.
 - **Text on cards uses `--sy-a11y-dim`.** Apple's secondary label colors fail WCAG contrast on Stackyard's cards.
 - **Text on a user-picked tile color is black or white,** whichever contrasts more. It is measured, never fixed.
 - **Widgets cannot read tokens.** A widget copies the values it needs from the palette.
+</div>
+</section>
+
+<section class="sy-gut">
 
 ## Logo
+
+<div class="sy-gut__body">
 
 Use the files as they are. Do not recolor, stretch or redraw them.
 
@@ -77,8 +73,14 @@ Use the files as they are. Do not recolor, stretch or redraw them.
     <figcaption>SandObserver</figcaption>
   </figure>
 </div>
+</div>
+</section>
+
+<section class="sy-gut">
 
 ## Icons
+
+<div class="sy-gut__body">
 
 The interface draws one icon set, defined in [`ui/js/icon-set.js`](https://github.com/SandObserver/stackyard/blob/main/ui/js/icon-set.js). This list is built from that file, so it always matches the app.
 
@@ -86,16 +88,32 @@ The interface draws one icon set, defined in [`ui/js/icon-set.js`](https://githu
 
 Each icon is a short list of shapes on a 24-unit grid. The file turns the list into an SVG sprite. Icons follow the text color, and one part per icon takes the accent.
 
-| Rule | Value |
-| --- | --- |
-| Grid | 24 by 24. Draw inside 2 to 22. |
-| Coordinates | Whole numbers on every straight edge. |
-| Stroke and gap | 2 and 2. |
-| Corners | 4 for shapes 14 or larger, 3 medium, 2 small. |
-| Bars and dots | Bars 2 high, rows every 4. Dots radius 2, nodes radius 3. |
-| Accent | At most one part: the thing the icon is about. |
+</div>
+</section>
 
-### Adding an icon for a widget
+<section class="sy-gut">
+
+## Icon rules
+
+<div class="sy-gut__body">
+
+<dl class="sy-kv">
+  <dt>Grid</dt><dd>24 by 24. Draw inside 2 to 22.</dd>
+  <dt>Coordinates</dt><dd>Whole numbers on every straight edge.</dd>
+  <dt>Stroke and gap</dt><dd>2 and 2.</dd>
+  <dt>Corners</dt><dd>4 for shapes 14 or larger, 3 medium, 2 small.</dd>
+  <dt>Bars and dots</dt><dd>Bars 2 high, rows every 4. Dots radius 2, nodes radius 3.</dd>
+  <dt>Accent</dt><dd>At most one part: the thing the icon is about.</dd>
+</dl>
+
+</div>
+</section>
+
+<section class="sy-gut">
+
+## Add an icon
+
+<div class="sy-gut__body">
 
 1. Add an entry to `ICONS` in `ui/js/icon-set.js`. Draw what the widget shows, in as few shapes as read at 16 pixels.
 
@@ -112,3 +130,7 @@ Each icon is a short list of shapes on a 24-unit grid. The file turns the list i
 3. Set `"glyph"` in the widget's `widget.json`. See [List icon](/docs/create-a-widget/manifest/#list-icon).
 
 `rect`, `circle` and `shape` draw bodies. `detail`, `dot` and `bar` draw small parts. `line` and `ring` draw lines. A test rejects a glyph that points at no icon.
+
+</div>
+</section>
+</div>

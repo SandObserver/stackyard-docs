@@ -2,6 +2,9 @@
 title: Troubleshooting Stackyard
 description: Find a problem by its symptom, then the cause and the fix.
 prev: false
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 2
 ---
 
 Problems are grouped by what you see. If you have a message or a log line, see [Error messages](/docs/troubleshooting/messages/).
@@ -133,7 +136,7 @@ Check three things in order.
 
 ### A widget dims and shows a line instead of its data
 
-The widget keeps its layout, fades what it was showing, and puts one line where its own labels are. The line names the kind of failure, not the service's own message. See [Messages a widget shows](/docs/troubleshooting/messages/#on-a-widget).
+The widget keeps its layout, fades what it was showing, and puts one line where its own labels are. The line names the kind of failure, not the service's own message. See [Messages a widget shows](/docs/troubleshooting/messages/).
 
 Widgets keep the last good reading through a transient failure and only surface a line after repeated failures. A line that clears on its own means one poll timed out.
 

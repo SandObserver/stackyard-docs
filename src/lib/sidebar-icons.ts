@@ -30,7 +30,9 @@ const LINKS: Record<string, string> = {
   '/docs/widgets/weather/': 'weather',
 };
 
-export const SIDEBAR_ICON_IDS = [...new Set([...Object.values(GROUPS), ...Object.values(LINKS)])];
+const PAGE_ICONS = ['app', 'check', 'eye'];
+
+export const SIDEBAR_ICON_IDS = [...new Set([...Object.values(GROUPS), ...Object.values(LINKS), ...PAGE_ICONS])];
 
 export function sidebarIcon(entry: { type: string; label: string; href?: string }): string | undefined {
   return entry.type === 'group' ? GROUPS[entry.label] : LINKS[entry.href ?? ''];

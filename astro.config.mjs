@@ -128,6 +128,7 @@ export default defineConfig({
           label: 'Get help',
           items: [
             { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
+            { label: 'Docker and network', link: '/docs/troubleshooting/docker/' },
             { label: 'Error messages', link: '/docs/troubleshooting/messages/' },
             { label: 'Support', link: '/docs/support/' },
           ],

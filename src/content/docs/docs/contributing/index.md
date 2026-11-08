@@ -26,7 +26,7 @@ Without Docker, start the API with `npm start` in `api/`, setting `CONFIG_PATH`,
 
 ## Tests
 
-A behaviour change ships with its tests. A bug fix ships with a test that fails without it.
+A behavior change ships with its tests. A bug fix ships with a test that fails without it.
 
 ```sh
 cd api && npm test

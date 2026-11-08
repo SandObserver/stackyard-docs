@@ -29,7 +29,7 @@ The password is a gate between local users, not an authentication layer. See [Se
 
 ## Add your first app
 
-1. In **Dashboard**, press <span class="sy-btn sy-btn--primary">Add</span> and choose App.
+1. In **Dashboard**, press <span class="sy-btn sy-btn--primary">Add</span> and choose **App**.
 2. Enter a name and the app's URL.
 3. For the icon, type the service name, such as `sonarr`.
 4. Press <span class="sy-btn sy-btn--primary">Save</span>.
@@ -38,8 +38,8 @@ The password is a gate between local users, not an authentication layer. See [Se
 
 The Clock widget needs no service, so it works straight away.
 
-1. In **Dashboard**, press <span class="sy-btn sy-btn--primary">Add</span> and choose Widget.
-2. Choose Clock, then a card size.
+1. In **Dashboard**, press <span class="sy-btn sy-btn--primary">Add</span> and choose **Widget**.
+2. Choose **Clock**, then a card size.
 3. Press <span class="sy-btn sy-btn--primary">Save</span>.
 
 Open the dashboard. The app and the clock are on the grid.
@@ -48,7 +48,7 @@ Open the dashboard. The app and the clock are on the grid.
 
 | Section | What it covers |
 | --- | --- |
-| **General** | Server identity and behaviour: title, host IP, language, logging, password, health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
+| **General** | Server identity and behavior: title, host IP, language, logging, password, health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
 | **Appearance** | How the dashboard looks: wallpaper, labels, and theme. See [Wallpaper and themes](/docs/customization/). |
 | **Dashboard** | What is on the dashboard: apps, widgets, folders, and their order. See [Apps and folders](/docs/apps-and-folders/). |
 | **About** | Version, update notice, and links to the project. |

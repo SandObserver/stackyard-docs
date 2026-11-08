@@ -34,17 +34,22 @@ A problem shows a red `!`. Hover, tap or focus it for the reason. **Hide Healthy
 
 ## Fixed label
 
-Up to 10 characters of text, in a colour you pick.
+Up to 10 characters of text, in a color you pick.
 
-Badge colours are Accent, Success, Warning, Danger and Info. Each is drawn for the display mode it is shown in. The colour wheel opens the system colours and a colour code for anything else.
+Badge colors are Accent, Success, Warning, Danger and Info. Each is drawn for the display mode it is shown in. The color wheel opens the system colors and a color code for anything else.
 
 ## Live activity
 
-A number from any API. Enter the API URL, add a header if the API needs a key, and press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response, including a number sent as text, such as `"21.5"`. Pick one.
+A number from any API.
+
+1. Enter the **API URL**.
+2. Optional: Add a header if the API needs a key.
+3. Press <span class="sy-btn sy-btn--ghost">Fetch</span>. Stackyard lists every number in the response, including a number sent as text, such as `"21.5"`.
+4. Pick one.
 
 If the API asks for a username and password, turn on **Authentication** and enter them under **Sign In**. The password stays on the server. A username and password typed into the URL are not sent.
 
-Tick **Secret** on a header to keep its value on the server. Poll sets how often it reads, in seconds. Every open dashboard shares that reading.
+Tick **Secret** on a header to keep its value on the server. **Poll** sets how often it reads, in seconds. Every open dashboard shares that reading.
 
 ### More than one value
 

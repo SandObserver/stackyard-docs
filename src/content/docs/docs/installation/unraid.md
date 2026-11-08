@@ -9,7 +9,11 @@ prev: false
 
 Install Stackyard from [Community Applications](https://ca.unraid.net/apps/stackyard-0ara4ku0sjjwqy).
 
-Search for Stackyard in the Apps tab, then install it. The template fills in the port and the two volume mappings for you.
+1. Open the **Apps** tab.
+2. Search for Stackyard.
+3. Install it.
+
+The template fills in the port and the two volume mappings.
 
 The template also sets `ALLOW_PRIVATE_IPS`, `SOCKET_PROXY_URL` and `TRUST_PROXY`. Each is described under [Environment variables](/docs/installation/docker/#environment-variables).
 

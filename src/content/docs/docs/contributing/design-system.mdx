@@ -1,15 +1,15 @@
 ---
 title: Stackyard design system
-description: The Stackyard colours, logo, icons and the few design rules that go beyond Apple's Human Interface Guidelines.
+description: The Stackyard colors, logo, icons and the few design rules that go beyond Apple's Human Interface Guidelines.
 ---
 
 import IconSet from '../../../../components/IconSet.astro';
 
 Stackyard follows Apple's [Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines) for type, spacing, controls and motion. This page covers only what is specific to Stackyard. Tokens live in `ui/css/tokens.css`.
 
-## Colour
+## Color
 
-Teal is the brand accent. Rules name a role below, never a raw colour.
+Teal is the brand accent. Rules name a role below, never a raw color.
 
 <p class="sy-sw-label">Dark theme</p>
 <div class="sy-sw-row">
@@ -29,18 +29,18 @@ Teal is the brand accent. Rules name a role below, never a raw colour.
   <div class="sy-sw-chip"><b style="--c:#0040DD"></b><span>Info</span>#0040DD</div>
 </div>
 
-The other hues and greys are Apple's system colours.
+The other hues and grays are Apple's system colors.
 
 ## What differs from the guidelines
 
-- **Both pages carry both themes.** Display Mode sets the theme on `<html>`, and the dashboard, the Settings pages and every widget follow it.
-- **Text on cards uses `--sy-a11y-dim`.** Apple's secondary label colours fail WCAG contrast on Stackyard's cards.
-- **Text on a user-picked tile colour is black or white,** whichever contrasts more. It is measured, never fixed.
+- **Both pages carry both themes.** **Display Mode** sets the theme on `<html>`, and the dashboard, the Settings pages and every widget follow it.
+- **Text on cards uses `--sy-a11y-dim`.** Apple's secondary label colors fail WCAG contrast on Stackyard's cards.
+- **Text on a user-picked tile color is black or white,** whichever contrasts more. It is measured, never fixed.
 - **Widgets cannot read tokens.** A widget copies the values it needs from the palette.
 
 ## Logo
 
-Use the files as they are. Do not recolour, stretch or redraw them.
+Use the files as they are. Do not recolor, stretch or redraw them.
 
 <div class="sy-logo">
   <figure class="sy-logo__dark">
@@ -84,7 +84,7 @@ The interface draws one icon set, defined in [`ui/js/icon-set.js`](https://githu
 
 <IconSet />
 
-Each icon is a short list of shapes on a 24-unit grid. The file turns the list into an SVG sprite. Icons follow the text colour, and one part per icon takes the accent.
+Each icon is a short list of shapes on a 24-unit grid. The file turns the list into an SVG sprite. Icons follow the text color, and one part per icon takes the accent.
 
 | Rule | Value |
 | --- | --- |

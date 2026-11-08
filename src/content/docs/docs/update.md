@@ -36,11 +36,15 @@ Removing the container does not remove named volumes.
 
 ## Unraid
 
-In the **Docker** tab, select the update notice on the Stackyard container, then select **Apply Update**.
+1. Open the **Docker** tab.
+2. Select the update notice on the Stackyard container.
+3. Select **Apply Update**.
 
 ## TrueNAS
 
-Open **Apps**, select Stackyard, then select **Update**.
+1. Open **Apps**.
+2. Select Stackyard.
+3. Select **Update**.
 
 ## After updating
 

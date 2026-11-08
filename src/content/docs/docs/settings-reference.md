@@ -36,7 +36,7 @@ At the top, before any group:
 | Proxmox Address, Token ID, Secret | The Proxmox VE server for Proxmox checks, for example `https://pve.local:8006`. The token needs the PVEAuditor role. The secret stays on the server. |
 | Allow Self-Signed Certificate | Proxmox only. Turn on for the certificate Proxmox installs by default. |
 
-If every app suddenly shows as unhealthy, the socket proxy address is the usual cause. See [Troubleshooting](/docs/troubleshooting/#every-app-with-a-container-shows-as-unhealthy-at-once).
+If every app suddenly shows as unhealthy, the socket proxy address is the usual cause. See [Troubleshooting](/docs/troubleshooting/docker/#every-app-with-a-container-shows-as-unhealthy-at-once).
 
 ### Security
 
@@ -80,12 +80,12 @@ How the dashboard looks. Every change applies immediately. Explained in full on 
 
 | Setting | What it does |
 | --- | --- |
-| Source | Unsplash, an image, or a solid colour. |
+| Source | Unsplash, an image, or a solid color. |
 | API Key | Unsplash only. See [Getting an Unsplash key](/docs/customization/#getting-an-unsplash-key). |
 | Collection ID | Unsplash only. Leave blank for a random photo. See [Finding a Collection ID](/docs/customization/#finding-a-collection-id). |
 | Image | Upload a file, or link one by URL. Both are stored on your own server. |
 | Fit | Fill crops to cover the screen. Fit shows the whole image. |
-| Color | A solid background colour. Pick a swatch, or tune hue, saturation and brightness. Color Code takes `#rrggbb` or a CSS colour name. |
+| Color | A solid background color. Pick a swatch, or tune hue, saturation and brightness. **Color Code** takes `#rrggbb` or a CSS color name. |
 | Brightness | Dims the wallpaper so tiles and labels stay readable. |
 
 Choosing Image or Solid color means Unsplash is never contacted.

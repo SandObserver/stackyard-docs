@@ -64,7 +64,7 @@ genuinely crosses two categories.
 | `dependencies` | A dependency update |
 | `github_actions` | Workflow and CI changes |
 | `javascript` | Build scripts and page logic |
-| `refractor` | Cleanup with no behaviour change |
+| `refractor` | Cleanup with no behavior change |
 
 This repository has no `CHANGELOG.md`. The site publishes on merge, and the
 Changelog page it serves belongs to the application. Nothing here is versioned.

@@ -95,7 +95,7 @@ The guard limits what a compromised widget can reach. It does not protect agains
 
 Each widget also reaches the service it reads: the address you set, or the public API of Open-Meteo, OpenWeather, NextDNS or GitHub. Nothing else leaves your network, and no usage data is collected.
 
-Icons load through the server, which caches each one for 24 hours, so the CDN does not learn which services your dashboard shows. The browser keeps each catalog icon for a day. A catalog index is read only while you type in the icon picker, and is cached for 24 hours. A dashboard load fetches none of them. Set the wallpaper to an image or a solid colour and Unsplash is never contacted.
+Icons load through the server, which caches each one for 24 hours, so the CDN does not learn which services your dashboard shows. The browser keeps each catalog icon for a day. A catalog index is read only while you type in the icon picker, and is cached for 24 hours. A dashboard load fetches none of them. Set the wallpaper to an image or a solid color and Unsplash is never contacted.
 
 ## The container
 

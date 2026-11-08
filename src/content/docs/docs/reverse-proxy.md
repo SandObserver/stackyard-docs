@@ -22,9 +22,20 @@ If `TRUST_PROXY=true` is set while Stackyard is also reachable directly, a clien
 ```text
 TRUSTED_PROXY=172.18.0.0/16
 TRUSTED_PROXY="172.18.0.0/16 10.0.0.5"
+TRUSTED_PROXY=traefik
 ```
 
+A name is the proxy's container name. Stackyard resolves it when the container starts. A name that does not resolve is not trusted, and the log says so.
+
 Without it, every request through the proxy counts as the same client, and rate limiting becomes one shared bucket.
+
+## While no password is set
+
+A request through a proxy is answered only if its name is in **Allowed Addresses**. An IP address or a local name does not count. `X-Forwarded-Host` counts only from a proxy named in `TRUSTED_PROXY`.
+
+Stackyard detects a proxy from its forwarding headers. A proxy that sends none looks like a direct visit. Make the proxy send `X-Forwarded-For`, and set a password before you publish Stackyard.
+
+Turning protection off through a proxy is refused unless the current name is in **Allowed Addresses**.
 
 ## In Compose
 

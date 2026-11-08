@@ -29,6 +29,16 @@ A widget message is one line, in place of the widget's data. Each names a kind o
 | `No container has both a homepage.name and a homepage.group label.` | App status | **Import from Docker Labels** found no container it could turn into an app. |
 | `Saving is turned off in the live demo.` | App status | The public demo is read-only. |
 | `(may be out of date)` | App status | A stale reading. The last poll failed and the previous value is shown. |
+| `The item limit is N. Remove some first.` | App status | A config can hold 5,000 items and widget rows. An install already over the limit can save if it does not grow. |
+| `Two rows in NAME share an id. Remove one of them, then save again.` | App status | A new or edited widget repeats a row id. |
+| `The id settings is reserved for the Settings tile. Delete this item, then add it again.` | App status | An item uses the id of the Settings tile. |
+| `This backup was made by a newer version of Stackyard. Update first, then import it.` | App status | The backup's schema is newer than this version. |
+| `This configuration is larger than the 2 MB limit.` | App status | The import or save is over the size limit. |
+| `The disk is full. Free some space, then save again.` | App status | Nothing was saved. |
+| `Stackyard cannot write to its data folder. Give the user running Stackyard write access, and check that the folder is not read-only.` | App status | Nothing was saved. |
+| `The config file is mounted on its own. Mount its folder instead.` | App status | Saves fail on a single-file mount. The dashboard still loads. |
+| `Stackyard never connects to this address. It is reserved for link-local and cloud metadata use.` | App status | The address is refused on every outbound request, even with `ALLOW_PRIVATE_IPS=true`. |
+| `Your password was changed, but the other settings were not saved.` | Passwords and sign-in | The new password is active. Save the other settings again. |
 | `Enter the same password twice.` | Passwords and sign-in | **Password** and **Confirm Password** differ. Nothing was saved. |
 | `This password is too common. Choose another one.` | Passwords and sign-in | The password is on the list of common passwords. Choose another. |
 | `Too easy to guess. Avoid the name or address of this dashboard.` | Passwords and sign-in | The password is built from this install's name or host name. |

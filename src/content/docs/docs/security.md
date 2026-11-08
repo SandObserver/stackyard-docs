@@ -41,6 +41,8 @@ While no password is set, Stackyard answers only on IP addresses, `localhost`, s
 
 Stackyard never adds a name to the list by itself. Open a fresh install by its IP address or a local name, then add other names in **General**. With a password set, every address works and the list is not checked.
 
+The first password needs the setup code from the container log, on every address. `INITIAL_PASSWORD` needs no code.
+
 A refused address can still get a password. Stackyard prints a one-time setup code to the container log, and the refused page accepts that code. Reading the log proves ownership of the server. A restart makes a new code.
 
 ## Secrets
@@ -55,7 +57,7 @@ Secrets are stored in plain text in `apps.json` on the data volume. Stackyard wr
 
 The server blocks outbound requests to private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
 
-`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address, but not at a loopback or link-local one. The host IP set in **General** is trusted. Only `http` and `https` URLs are fetched. The WebSocket connection TrueNAS widgets use opens on the same URL and passes the same check.
+`localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address only on a network the container is on, and never at a loopback or link-local one. The host IP set in **General** is trusted only when it is an IP address. Only `http` and `https` URLs are fetched. The WebSocket connection TrueNAS widgets use opens on the same URL and passes the same check.
 
 | Range | Why |
 | --- | --- |
@@ -80,7 +82,7 @@ The server blocks outbound requests to private, loopback, link-local, carrier-gr
 
 An IPv4 address inside an IPv6 literal is checked against the same table.
 
-`ALLOW_PRIVATE_IPS=true` disables the guard entirely. Most homelab installs need it.
+`ALLOW_PRIVATE_IPS=true` disables the guard, except for link-local and cloud metadata addresses, which are refused on every outbound request. Most homelab installs need it.
 
 The guard limits what a compromised widget can reach. It does not protect against an admin, who can already point widgets anywhere.
 

@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import rehypeExternalLinks from 'rehype-external-links';
 import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
+import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
 
 const SITE = 'https://stackyard.sandobserver.com';
@@ -169,6 +170,14 @@ export default defineConfig({
         },
       ],
     }),
+    {
+      name: 'problem-pages',
+      hooks: {
+        'astro:config:setup': ({ updateConfig }) => {
+          updateConfig({ markdown: { rehypePlugins: [rehypeProblemPages] } });
+        },
+      },
+    },
     mdx(),
   ],
 });

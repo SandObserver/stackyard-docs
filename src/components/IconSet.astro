@@ -10,15 +10,13 @@ const sprite = await iconSprite(ids.filter((id) => !SIDEBAR_ICON_IDS.includes(id
 
 {
   mod ? (
-    <div class="sy-iconset not-content">
+    <div class="sy-iconset sy-iconset--plain not-content">
       <Fragment set:html={sprite} />
       {ids.map(id => (
-        <figure>
-          <svg class="sy-icon" width="28" height="28" aria-hidden="true" focusable="false">
-            <use href={`#sy-solid-${id}`} />
-          </svg>
-          <figcaption>{id}</figcaption>
-        </figure>
+        <svg class="sy-icon" width="22" height="22" role="img" aria-label={id} focusable="false">
+          <title>{id}</title>
+          <use href={`#sy-solid-${id}`} />
+        </svg>
       ))}
     </div>
   ) : (
@@ -38,6 +36,12 @@ const sprite = await iconSprite(ids.filter((id) => !SIDEBAR_ICON_IDS.includes(id
   }
   :root[data-theme='light'] .sy-iconset {
     --icon-accent: #0071a4;
+  }
+  .sy-iconset--plain {
+    grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+    gap: 0.7rem 0.35rem;
+    justify-items: center;
+    margin-block: 0;
   }
   .sy-iconset figure {
     display: grid;

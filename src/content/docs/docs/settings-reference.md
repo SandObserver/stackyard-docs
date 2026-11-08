@@ -1,11 +1,13 @@
 ---
 title: Stackyard settings reference
-description: Every setting in the admin, in the order you meet it, with a link to the page that explains it.
+description: Every setting in Stackyard, in the order you meet it, with a link to the page that explains it.
+prev: false
+next: false
 ---
 
-The admin has four sections down the left. This page follows them in order, using the same group headings you see on screen, so you can find a setting here by remembering where it sits in the app.
+Settings has four sections down the left. This page follows them in order, using the same group headings you see on screen, so you can find a setting here by remembering where it sits in the app.
 
-Open the admin from the Settings icon on the dashboard.
+Open Settings from the Settings icon on the dashboard.
 
 ## General
 
@@ -32,7 +34,7 @@ At the top, before any group:
 | Hide Healthy Badge | Shows the health dot only when something is wrong. |
 | Docker Socket URL | Where your Docker socket proxy is. Needed for Container checks only. Never the Docker socket itself. |
 | Proxmox Address, Token ID, Secret | The Proxmox VE server for Proxmox checks, for example `https://pve.local:8006`. The token needs the PVEAuditor role. The secret stays on the server. |
-| Allow self-signed certificate | Proxmox only. Turn on for the certificate Proxmox installs by default. |
+| Allow Self-Signed Certificate | Proxmox only. Turn on for the certificate Proxmox installs by default. |
 
 If every app suddenly shows as unhealthy, the socket proxy address is the usual cause. See [Troubleshooting](/docs/troubleshooting/#every-app-with-a-container-shows-as-unhealthy-at-once).
 
@@ -40,19 +42,19 @@ If every app suddenly shows as unhealthy, the socket proxy address is the usual 
 
 | Setting | What it does |
 | --- | --- |
-| Password Protection | Sets or changes the dashboard password. Between 8 and 1024 characters. Leave blank to keep the existing one. Changing the password, or turning protection off, asks for the current password. |
-| Sign out all devices | Ends every session everywhere, including the one you are using. Use it if you think a session may be compromised. |
+| Password Protection | Sets or changes the dashboard password. 15 to 1024 characters, entered twice. Common passwords are refused. A shorter password set in an earlier release keeps working. Leave blank to keep the existing one. Changing the password, or turning protection off, asks for the current password. |
+| Sign Out All Devices | Ends every session everywhere, including this browser. Use it if you think a session may be compromised. |
 | Allowed Addresses | Host names Stackyard answers on while no password is set, separated by commas. IP addresses and local names such as `nas` or `nas.local` always work and need no entry. While a password is set and the page is open on a name that is not listed, **+ Add** puts that name in the list. See [Security](/docs/security/#addresses-without-a-password). |
 
-Locked out? See [password recovery](/docs/troubleshooting/#i-forgot-the-password-and-i-am-locked-out).
+Locked out? See [password recovery](/docs/troubleshooting/#forgotten-password).
 
 ### Backup
 
 | Setting | What it does |
 | --- | --- |
 | Import / Export | Downloads your whole config as one file, or restores it. See [Backup and restore](/docs/import-export/backup-and-restore/). |
-| Import from another dashboard | Reads gethomepage and Dashy files. Apps and folders are added. See [Import](/docs/import-export/migrating/). |
-| Import from Docker labels | Reads gethomepage labels on your containers through the Docker Socket URL. Apps and folders are added. See [From Docker labels](/docs/import-export/migrating/#from-docker-labels). |
+| Import from Another Dashboard | Reads gethomepage and Dashy files. Apps and folders are added. See [Import](/docs/import-export/migrating/). |
+| Import from Docker Labels | Reads gethomepage labels on your containers through the **Docker Socket URL**. Apps and folders are added. See [From Docker labels](/docs/import-export/migrating/#from-docker-labels). |
 
 ## Appearance
 

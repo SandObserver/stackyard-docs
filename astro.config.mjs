@@ -75,12 +75,12 @@ export default defineConfig({
           label: 'Get started',
           items: [
             { label: 'Introduction', link: '/docs/' },
-            { label: 'Comparison', link: '/docs/is-stackyard-for-you/' },
             { label: 'Install with Docker', link: '/docs/installation/docker/' },
             { label: 'Install on Unraid', link: '/docs/installation/unraid/' },
             { label: 'Install on TrueNAS', link: '/docs/installation/truenas/' },
             { label: 'Build from source', link: '/docs/installation/build-from-source/' },
             { label: 'First setup', link: '/docs/first-setup/' },
+            { label: 'Compare dashboards', link: '/docs/is-stackyard-for-you/' },
           ],
         },
         {
@@ -115,14 +115,23 @@ export default defineConfig({
         {
           label: 'Run Stackyard',
           items: [
+            { label: 'Update Stackyard', link: '/docs/update/' },
             { label: 'Back up and restore', link: '/docs/import-export/backup-and-restore/' },
             { label: 'Import', link: '/docs/import-export/migrating/' },
             { label: 'Use a reverse proxy', link: '/docs/reverse-proxy/' },
+            { label: 'Verify a release image', link: '/docs/verify-image/' },
             { label: 'Security', link: '/docs/security/' },
           ],
         },
-        { label: 'Settings', link: '/docs/settings-reference/' },
-        { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
+        { label: 'Settings reference', link: '/docs/settings-reference/' },
+        {
+          label: 'Get help',
+          items: [
+            { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
+            { label: 'Error messages', link: '/docs/troubleshooting/messages/' },
+            { label: 'Support', link: '/docs/support/' },
+          ],
+        },
         {
           label: 'Create a widget',
           collapsed: true,
@@ -154,7 +163,6 @@ export default defineConfig({
             { label: 'Accessibility', link: '/docs/accessibility/' },
             { label: 'Security policy', link: '/docs/security-policy/' },
             { label: 'Governance', link: '/docs/governance/' },
-            { label: 'Support', link: '/docs/support/' },
             { label: 'Changelog', link: '/docs/changelog/' },
           ],
         },

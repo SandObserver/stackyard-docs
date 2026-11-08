@@ -3,28 +3,28 @@ title: Wallpaper, themes and language
 description: Wallpaper, themes, app titles, language, and running Stackyard from a phone home screen.
 ---
 
-**In the admin:** Appearance. See the [Settings reference](/docs/settings-reference/).
+**In Settings:** Appearance. See the [Settings reference](/docs/settings-reference/).
 
-Set in the admin UI under **Appearance**. Everything applies immediately.
+Everything under **Appearance** applies immediately.
 
 Turning titles off gives a denser grid of icons alone.
 
-Display Mode sets light or dark for the dashboard and the Settings pages. System follows the device and changes with it, so a device that switches at sunset switches Stackyard too. The choice is stored in the browser, so each device has its own.
+**Display Mode** sets light or dark for the dashboard and the Settings pages. System follows the device and changes with it, so a device that switches at sunset switches Stackyard too. The choice is stored in the browser, so each device has its own.
 
-Type to Search opens search when you type a letter anywhere on the dashboard. Turn it off if search opens by accident, for example with voice control. The search button still opens search.
+**Type to Search** opens search when you type a letter anywhere on the dashboard. Turn it off if search opens by accident, for example with voice control. The search button still opens search.
 
 Widget cards are white in light mode and near-black in dark mode. A few widgets are drawn only in dark and keep a dark card in both. The Weather widget follows its own day and night, never the display mode.
 
 Increased contrast and reduced motion are honoured. Reduced transparency drops the blur behind cards and keeps the motion.
 
 :::caution
-Browsers only allow Keep Screen Awake over HTTPS. On a plain HTTP address the toggle has no effect. See [Troubleshooting](/docs/troubleshooting/).
+Browsers only allow **Keep Screen Awake** over HTTPS. On a plain HTTP address the toggle has no effect. See [Troubleshooting](/docs/troubleshooting/).
 :::
 
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/appearance-0b9254e2.png" alt="The Appearance section of the admin UI" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-74cc87b6.png" alt="The Appearance section of the admin UI" loading="lazy">
-  <figcaption>Appearance, in the admin UI.</figcaption>
+  <img class="sy-shot__light" src="/img/admin/appearance-0b9254e2.png" alt="The Appearance section of Settings" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-74cc87b6.png" alt="The Appearance section of the admin UI" loading="lazy">
+  <figcaption>Appearance, in Settings.</figcaption>
 </figure>
 
 ## Wallpaper
@@ -66,7 +66,7 @@ Paste only the highlighted number, not the whole URL.
 
 ## Language
 
-Six languages ship: English, Persian, Simplified Chinese, Spanish, German, and French. Change it in General.
+Six languages ship: English, Persian, Simplified Chinese, Spanish, German, and French. Change it in **General**.
 
 Persian is right to left. The whole layout flips, not only the text.
 

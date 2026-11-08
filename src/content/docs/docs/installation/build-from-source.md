@@ -4,6 +4,7 @@ description: Clone the repository and build the Stackyard container image yourse
 next:
   link: /docs/first-setup/
   label: First setup
+prev: false
 ---
 
 ```sh

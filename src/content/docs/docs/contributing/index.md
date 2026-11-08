@@ -1,6 +1,7 @@
 ---
 title: Contribute to Stackyard
 description: The rules a Stackyard change must keep, how to run it locally, and the checks a pull request must pass.
+prev: false
 ---
 
 ## Rules

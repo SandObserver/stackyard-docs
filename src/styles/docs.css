@@ -1055,7 +1055,24 @@ starlight-menu-button svg {
     width: calc(var(--sl-sidebar-width) - 12px);
     border: 0;
     border-radius: var(--sy-radius-group);
-    scrollbar-width: thin;
+  }
+  .sidebar-pane::-webkit-scrollbar {
+    width: 10px;
+  }
+  .sidebar-pane::-webkit-scrollbar-track {
+    background: transparent;
+    margin-block: var(--sy-radius-group);
+  }
+  .sidebar-pane::-webkit-scrollbar-thumb {
+    background: var(--sy-fill);
+    background-clip: padding-box;
+    border: 2px solid transparent;
+    border-radius: 999px;
+  }
+  @supports not selector(::-webkit-scrollbar) {
+    .sidebar-pane {
+      scrollbar-width: thin;
+    }
   }
 }
 
@@ -1407,4 +1424,79 @@ mobile-starlight-toc .dropdown a {
 }
 :root[data-theme='light'] .starlight-aside--danger .starlight-aside__title {
   color: #b80011;
+}
+
+@media (prefers-contrast: more) {
+  :root,
+  :root[data-theme='dark'] {
+    --sl-color-text: #ffffff;
+    --sl-color-gray-2: #ebebf0;
+    --sl-color-gray-3: #d1d1d6;
+    --sl-color-hairline: var(--sy-a11y-border);
+    --sl-color-hairline-shade: var(--sy-a11y-border);
+    --sl-color-hairline-light: var(--sy-a11y-border);
+    --sy-dim: #d1d1d6;
+    --sy-sep: var(--sy-a11y-border);
+    --sy-row-sep: var(--sy-a11y-border);
+  }
+  :root[data-theme='light'] {
+    --sl-color-text: #000000;
+    --sl-color-gray-2: #1c1c1e;
+    --sl-color-gray-3: #3a3a3c;
+    --sl-color-hairline: #6c6c70;
+    --sl-color-hairline-shade: #6c6c70;
+    --sl-color-hairline-light: #6c6c70;
+    --sy-dim: #3a3a3c;
+    --sy-sep: #6c6c70;
+    --sy-row-sep: #6c6c70;
+  }
+  :focus-visible {
+    outline-width: 3px !important;
+  }
+}
+
+@media (pointer: coarse) {
+  .sy-nl,
+  mobile-starlight-toc .dropdown a,
+  .site-title {
+    min-height: 44px;
+  }
+  mobile-starlight-toc .dropdown a {
+    display: flex;
+    align-items: center;
+  }
+  .sl-anchor-link,
+  .social-icons a,
+  .meta a {
+    position: relative;
+  }
+  .sl-anchor-link::after,
+  .social-icons a::after,
+  .meta a::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: max(100%, 44px);
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.sl-markdown-content > :is(p, ul, ol) {
+  max-width: 37.5rem;
+}
+
+@media (min-width: 72rem) {
+  .right-sidebar-panel:not(:has(li li, li + li)) {
+    visibility: hidden;
+  }
+}
+
+@media (max-width: 71.99rem) {
+  html:has(mobile-starlight-toc:not(:has(li li, li + li))) {
+    --sl-mobile-toc-height: 0rem;
+  }
+  mobile-starlight-toc:not(:has(li li, li + li)) {
+    display: none;
+  }
 }

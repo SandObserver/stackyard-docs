@@ -1,6 +1,7 @@
 ---
 title: How Stackyard releases are made
 description: How a Stackyard version is cut, signed and published, and how the public demo runs.
+next: false
 ---
 
 ## Cut a release

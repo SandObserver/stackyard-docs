@@ -3,7 +3,7 @@ title: Import from Homepage or Dashy
 description: Import links and folders into Stackyard from a gethomepage (Homepage) or Dashy YAML config, or from gethomepage labels on your Docker containers.
 ---
 
-**In the admin:** General, then Backup.
+**In Settings:** General, then Backup.
 
 Stackyard reads Homepage and Dashy YAML files, and Homepage labels on Docker containers. It adds apps and folders and changes nothing already there. A preview lists what will be added, changed or left out. The import is one way.
 
@@ -12,7 +12,7 @@ Stackyard reads Homepage and Dashy YAML files, and Homepage labels on Docker con
 - Each link becomes an app. Each group or section becomes a folder. A nested group becomes a folder named `Group / Subgroup`.
 - A host and port, such as `plex.lan:32400`, gets `http://`.
 - An icon comes across as a [dashboard-icons](https://github.com/homarr-labs/dashboard-icons) name or a `cdn.jsdelivr.net` link.
-- A Homepage `siteMonitor` or a Dashy status check becomes the health check. Certificate checking stays on unless you tick **Allow self-signed certificate** in the preview.
+- A Homepage `siteMonitor` or a Dashy status check becomes the health check. Certificate checking stays on unless you tick **Allow Self-Signed Certificate** in the preview.
 
 ## What is dropped
 
@@ -34,7 +34,7 @@ A file with more than 5,000 entries, or with YAML merge keys (`<<`) that expand 
 
 ## From Docker labels
 
-**Import from Docker labels** reads every container, stopped ones included. It needs **Health Checks** on and a **Docker Socket URL** with read access to containers, such as `CONTAINERS=1` on docker-socket-proxy.
+**Import from Docker Labels** reads every container, stopped ones included. It needs **Health Checks** on and a **Docker Socket URL** with read access to containers, such as `CONTAINERS=1` on docker-socket-proxy.
 
 - A container needs `homepage.name` and `homepage.group`. The group becomes a folder.
 - Apps sort by `homepage.weight`, then name. Folders sort by name.

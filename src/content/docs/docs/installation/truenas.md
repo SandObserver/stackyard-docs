@@ -4,11 +4,17 @@ description: Install Stackyard on TrueNAS from the Apps catalog.
 next:
   link: /docs/first-setup/
   label: First setup
+prev: false
 ---
 
 Install Stackyard from the [TrueNAS Apps catalog](https://apps.truenas.com/catalog/stackyard_community/). It is in the community train.
 
-Open Apps, select Discover Apps, search for Stackyard, then select Install. The default WebUI port is 30245.
+1. Open **Apps**.
+2. Select **Discover Apps**.
+3. Search for Stackyard.
+4. Select **Install**.
+
+The default WebUI port is 30245.
 
 The form has two storage entries: Data Storage for the config and Icons Storage for uploaded icons. Each is an ixVolume by default. Set a host path to keep the files in a dataset of your own.
 

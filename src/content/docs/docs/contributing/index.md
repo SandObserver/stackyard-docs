@@ -1,6 +1,7 @@
 ---
 title: Contribute to Stackyard
 description: The rules a Stackyard change must keep, how to run it locally, and the checks a pull request must pass.
+prev: false
 ---
 
 ## Rules
@@ -25,7 +26,7 @@ Without Docker, start the API with `npm start` in `api/`, setting `CONFIG_PATH`,
 
 ## Tests
 
-A behaviour change ships with its tests. A bug fix ships with a test that fails without it.
+A behavior change ships with its tests. A bug fix ships with a test that fails without it.
 
 ```sh
 cd api && npm test

@@ -24,7 +24,7 @@ The widget reads one download client and shows up to 12 downloads, closest to do
     needs: 'URL, API key',
     fields: [
       ['Server URL', 'The web interface address, for example `http://qbittorrent:8080`.'],
-      ['API key', 'From Options, Web UI, API key. Needs qBittorrent 5.2 or newer. Stored as a secret.'],
+      ['API key', 'From **Options**, **Web UI**, **API key**. Needs qBittorrent 5.2 or newer. Stored as a secret.'],
     ],
     links: [{ label: 'qbittorrent/qBittorrent', href: 'https://github.com/qbittorrent/qBittorrent' }],
   },
@@ -55,7 +55,7 @@ The widget reads one download client and shows up to 12 downloads, closest to do
     needs: 'URL, API key',
     fields: [
       ['Server URL', 'The web interface address, for example `http://sabnzbd:8080`.'],
-      ['API key', 'From Config, General, API Key. The NZB key cannot read the queue. Stored as a secret.'],
+      ['API key', 'From **Config**, **General**, **API Key**. The NZB key cannot read the queue. Stored as a secret.'],
     ],
     links: [{ label: 'sabnzbd/sabnzbd', href: 'https://github.com/sabnzbd/sabnzbd' }],
   },
@@ -85,7 +85,7 @@ Tape over the lid is the progress. The heading shows when the last download fini
 
 - **Stalled:** a download with no peers. Its tape turns amber.
 - **Error:** a download the client reports as failed. Its tape turns red.
-- **Paused:** the whole client is paused. Listed downloads turn grey and show no time left. qBittorrent reports this from 5.3. Transmission has no such pause.
+- **Paused:** the whole client is paused. Listed downloads turn gray and show no time left. qBittorrent reports this from 5.3. Transmission has no such pause.
 - **Waiting:** downloads are moving, but the client has no estimate yet.
 - **All done:** nothing is downloading. The heading shows how many finished today.
 

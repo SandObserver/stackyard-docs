@@ -4,11 +4,11 @@ import {
   buildSettingsTileForm,
   captureActLabels,
   serializeKvRows,
-} from '/js/admin-app-form.js?v=d36035f8';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=130e4008';
-import { recoveryShown } from '/js/config-recovery.js?v=85138697';
-import { focusRow, initList, render, syncFilterUI } from '/js/admin-list.js?v=36ff2a26';
-import { resolveAdminSection, settleDock } from '/js/admin-logic.js?v=07377bf7';
+} from '/js/admin-app-form.js?v=726803c8';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=2ec4c4ce';
+import { recoveryShown } from '/js/config-recovery.js?v=c03e1465';
+import { focusRow, initList, isReordering, render, setReordering, syncFilterUI } from '/js/admin-list.js?v=10fb2d6c';
+import { resolveAdminSection, settleDock } from '/js/admin-logic.js?v=cf072e65';
 import {
   afterImport,
   buildAppItem,
@@ -21,7 +21,7 @@ import {
   serialWrites,
   snapshotItems,
   upsertItem,
-} from '/js/admin-save-logic.js?v=b83791fb';
+} from '/js/admin-save-logic.js?v=35fcc1c7';
 import {
   loadSettings,
   savedWallpaperUrl,
@@ -31,10 +31,11 @@ import {
   wireUnsplashKey,
   wireProxmox,
   applyHealthChecks,
-} from '/js/admin-settings.js?v=a9dcff65';
+} from '/js/admin-settings.js?v=d93c2bc1';
 import {
   apiGet,
   apiPost,
+  fadeIn,
   initInlineEdit,
   nameEditPen,
   paintIcon,
@@ -43,21 +44,27 @@ import {
   responseError,
   ShownError,
   setReauthHandler,
+  swapContent,
   showFieldError,
+  clearFieldError,
   clearFieldErrors,
+  confirmSaved,
+  errorAction,
   toast,
   withheldText,
-} from '/js/admin-shared.js?v=c0852eae';
+} from '/js/admin-shared.js?v=290ab8cb';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=064b9b85';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=5cd248ef';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=a4c22f2d';
 import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
 import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=75a71ab4';
-import { createListbox } from '/js/listbox.js?v=f671e6f1';
+import { createListbox } from '/js/listbox.js?v=db99acbe';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
 import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=ed7c5565';
 import { loadLocalIcons } from '/js/icons.js?v=5ac01d72';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=26655aca';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=b279fd98';
+import { passwordMismatch } from '/js/password-policy.js?v=0c0fd0af';
+import { fillUsernames, wireReveal } from '/js/password-reveal.js?v=37f218b4';
 import {
   clearSkipTls,
   convert,
@@ -68,10 +75,10 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=20baac2a';
+} from '/js/import-foreign.js?v=050f6de4';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
 import { clampName } from '/js/limits.js?v=ea61a441';
-import { confirmModal, confirmText, openModal as openDialog, promptModal } from '/js/modal.js?v=6df8b6c1';
+import { confirmModal, confirmText, openModal as openDialog } from '/js/modal.js?v=bd88cb9e';
 import {
   THEME_KEY,
   applyTheme,
@@ -94,8 +101,10 @@ import {
   storeGet,
   storeSet,
   tgt,
-} from '/js/utils.js?v=ab3cac1d';
-import { applyBackground, resolveBackground } from '/js/background.js?v=288bfc2a';
+  within,
+} from '/js/utils.js?v=14d4695d';
+import { applyBackground, firstViewWait, rememberBackground, resolveBackground } from '/js/background.js?v=96567a38';
+import { saveBootHint } from '/js/wallpaper-cache.js?v=cd968718';
 import { parseYamlTolerant, YamlLiteError, YamlTooLargeError } from '/js/yaml-lite.js?v=a42ef914';
 
 ensureSprite();
@@ -114,28 +123,26 @@ _syncMobile(_mobileAtLoad);
 onLayoutChange(_syncMobile, _mobileAtLoad);
 
 async function load() {
-  await loadLocalIcons();
+  const iconsReq = loadLocalIcons();
+  const widgetsReq = apiGet('/api/widgets').catch(() => null);
   const c = await apiGet('/api/config');
+  await iconsReq;
   _serverItems = JSON.stringify(c.items || []);
   state.items = c.items || [];
   state._settings = c.settings || {};
-  await initI18n(c.settings?.language || 'en');
+  saveBootHint({ lang: await initI18n(c.settings?.language || 'en') });
+  document.documentElement.classList.remove('lang-pending');
   qa('.ie-row').forEach(nameEditPen);
   document.title = t('nav.pageTitle');
   initVersion();
   initAboutLogo();
   syncPickerLabels();
-  try {
-    const wr = await apiGet('/api/widgets');
-    state._widgetReg = Object.create(null);
-    (wr.widgets || []).forEach(w => {
-      state._widgetReg[w.name] = w;
-    });
-    state._widgetRejected = wr.rejected || [];
-  } catch {
-    state._widgetReg = Object.create(null);
-    state._widgetRejected = [];
-  }
+  const wr = await widgetsReq;
+  state._widgetReg = Object.create(null);
+  (wr?.widgets || []).forEach(w => {
+    state._widgetReg[w.name] = w;
+  });
+  state._widgetRejected = wr?.rejected || [];
   state.items.filter(i => i.type === 'folder').forEach(f => collapsedFolders.add(f.id));
   document.body.classList.add('authed');
   render();
@@ -143,17 +150,30 @@ async function load() {
   syncDashSave();
   loadSettings(c);
   syncPickerLabels();
-  applyBg();
+  await within(applyBg(), firstViewWait());
 }
 
+let _bgCall = 0;
+let _bgShown = false;
+
 async function applyBg() {
+  const call = ++_bgCall;
+  const root = document.documentElement;
   const s = (state._settings && state._settings.background) || {};
   let bg = null;
   try {
     bg = await resolveBackground(s);
   } catch {}
-  if (bg) applyBackground(document.documentElement, bg);
-  else if (s.type === 'unsplash') toast(t('toast.wallpaperUnavailable'), 'err');
+  if (call !== _bgCall) return;
+  if (bg || !_bgShown) rememberBackground(s, bg);
+  if (bg) {
+    applyBackground(root, bg);
+    _bgShown = true;
+    if (document.body.classList.contains('loaded')) root.classList.add('wall-in');
+    return;
+  }
+  root.style.removeProperty('--boot-bg');
+  if (!_bgShown && s.type === 'unsplash') toast(t('toast.wallpaperUnavailable'), 'err');
 }
 /* The list as the server last returned it to this page. A save that finds a
    different list on the server would delete what another tab or device added. */
@@ -164,14 +184,16 @@ const saves = serialWrites();
    one: its change was made on the replaced list. */
 let _replaced = 0;
 
-/** Returns whether the write reached the server. */
-function save() {
+/** Returns whether the write reached the server.
+    @param {string|false} [done] the message for a change that is not a plain
+      save, or false for a save that announces nothing */
+function save(done) {
   const asked = _replaced;
-  return saves.run(() => writeItems(asked));
+  return saves.run(() => writeItems(asked, done));
 }
 
-/** @param {number} asked */
-async function writeItems(asked) {
+/** @param {number} asked @param {string|false} [done] */
+async function writeItems(asked, done) {
   let ok = false;
   try {
     const full = await apiGet('/api/config');
@@ -185,12 +207,14 @@ async function writeItems(asked) {
     _serverItems = JSON.stringify(r.items);
     _savedItems = sent;
     saveOrRestore.landed(JSON.parse(sent));
-    toast(t('toast.saved'));
+    if (typeof done === 'string') toast(done);
+    else confirmSaved(el('dash-save'), done === false);
     ok = true;
   } catch (e) {
     toast(
       e.status === 409 ? t('toast.dashboardChangedElsewhere') : t('toast.saveFailed', { err: errorText(e) }),
       'err',
+      errorAction(e),
     );
   }
   render();
@@ -277,6 +301,7 @@ async function writeBackup(file) {
     toast(
       e.status === 409 ? t('toast.dashboardChangedElsewhere') : t('toast.importFailed', { err: errorText(e) }),
       'err',
+      errorAction(e),
     );
     return false;
   } finally {
@@ -294,9 +319,10 @@ const saveOrRestore = revertingSaves({
 });
 
 /** Save, and put the list back if the write did not land. Never rejects. */
-async function saveOrRevert(before) {
+/** @param {any[]} before @param {string|false} [done] */
+async function saveOrRevert(before, done) {
   try {
-    return await saveOrRestore(before);
+    return await saveOrRestore(before, done);
   } catch {
     return false;
   }
@@ -306,6 +332,7 @@ async function saveOrRevert(before) {
 function showListView(focusId = null) {
   el('dash-list-view').classList.remove('d-none');
   el('dash-edit-view').classList.add('d-none');
+  fadeIn(el('dash-list-view'));
   if (!focusRow(focusId)) focusFirst(el('btn-add'));
 }
 function scrollSettingsTop() {
@@ -313,9 +340,11 @@ function scrollSettingsTop() {
 }
 
 function showEditView() {
+  setReordering(false);
   el('dash-list-view').classList.add('d-none');
   el('dash-edit-view').classList.remove('d-none');
   scrollSettingsTop();
+  fadeIn(el('dash-edit-view'));
 }
 
 /* Read at draw time. The catalog is not loaded when this module evaluates. */
@@ -341,7 +370,7 @@ function buildAddNewCard() {
     b.onclick = () => {
       if (state.ctype === kind) return;
       state.ctype = kind;
-      _renderEditBody(kind);
+      swapContent(el('ev-body'), () => _renderEditBody(kind));
     };
     grpTiles.appendChild(b);
   });
@@ -447,10 +476,8 @@ async function _evDelete(item, idx) {
   if (!item) return;
   const isFolder = item.type === 'folder';
   const ok = await confirmText({
-    title: t('common.delete'),
-    text: isFolder
-      ? t('confirm.deleteFolder', { name: isolate(item.label || item.id) })
-      : t('confirm.remove', { name: isolate(item.label || item.id) }),
+    title: t('confirm.deleteTitle', { name: isolate(item.label || item.id) }),
+    text: isFolder ? t('confirm.deleteFolder') : '',
     confirmLabel: t('common.delete'),
     cancelLabel: t('common.cancel'),
   });
@@ -460,7 +487,7 @@ async function _evDelete(item, idx) {
     if (f.type === 'folder') f.children = (f.children || []).filter(id => id !== item.id);
   });
   state.items.splice(idx, 1);
-  if (await saveOrRevert(before)) showListView();
+  if (await saveOrRevert(before, t('toast.deleted'))) showListView();
 }
 {
   const s = inp('al-search');
@@ -479,6 +506,7 @@ async function _evDelete(item, idx) {
 }
 
 el('btn-add').onclick = () => openModal(null);
+el('btn-reorder').onclick = () => setReordering(!isReordering());
 function closeModal(focusId = state.eid) {
   showListView(focusId);
   state.eid = null;
@@ -489,128 +517,52 @@ function closeModal(focusId = state.eid) {
   state._iframeOpts = {};
 }
 
-function openFolderPicker(appId, targetFolderId = null) {
+function openFolderPicker(folderId) {
   const folders = state.items.filter(i => i.type === 'folder');
-  const currentFolder = folders.find(f => (f.children || []).includes(appId));
-  const appItem = state.items.find(i => i.id === appId);
-  const appName = appItem?.label || appId;
 
-  const dlg = openDialog({
-    title: appId ? t('folder.moveTo', { name: isolate(appName) }) : t('folder.addApp'),
-  });
+  const dlg = openDialog({ title: t('folder.addApp') });
   const list = dlg.body;
   const close = dlg.close;
 
-  const rowBtn = (cls, onAct) => {
+  const rowBtn = onAct => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'fp-row' + (cls ? ' ' + cls : '');
+    b.className = 'fp-row';
     b.onclick = onAct;
     return b;
   };
 
-  if (targetFolderId) {
-    const tf = folders.find(f => f.id === targetFolderId);
-    const available = tf
-      ? state.items.filter(i => i.type === 'app' && !i.dock && !(tf.children || []).includes(i.id))
-      : [];
-    if (!available.length) {
-      const em = document.createElement('div');
-      em.className = 'dlg-empty';
-      em.textContent = t('folder.allInFolder');
-      list.appendChild(em);
-    }
-    available.forEach(app => {
-      const b = rowBtn('', () => {
-        const before = snapshotItems(state.items);
-        state.items.forEach(f => {
-          if (f.type === 'folder') f.children = (f.children || []).filter(id => id !== app.id);
-        });
-        if (!tf.children) tf.children = [];
-        tf.children.push(app.id);
-        saveOrRevert(before);
-        close();
-      });
-      const ri = document.createElement('span');
-      ri.className = 'fp-ic';
-      ri.style.background = clr(app.color);
-      paintIcon(ri, app.iconUrl, initial(app.label));
-      const nm = document.createElement('span');
-      nm.className = 'fp-nm';
-      setUserText(nm, app.label || app.id);
-      b.append(ri, nm);
-      list.appendChild(b);
-    });
-  } else {
-    const none = rowBtn(currentFolder ? 'muted' : 'cur', () => {
-      const before = snapshotItems(state.items);
-      state.items.forEach(f => {
-        if (f.type === 'folder') f.children = (f.children || []).filter(id => id !== appId);
-      });
-      saveOrRevert(before);
-      close();
-    });
-    const ns = document.createElement('span');
-    ns.textContent = t('folder.none');
-    none.append(ns);
-    list.appendChild(none);
-
-    folders.forEach(f => {
-      const cur = currentFolder?.id === f.id;
-      const b = rowBtn(cur ? 'cur' : '', () => {
-        const before = snapshotItems(state.items);
-        state.items.forEach(ff => {
-          if (ff.type === 'folder') ff.children = (ff.children || []).filter(id => id !== appId);
-        });
-        if (!f.children) f.children = [];
-        if (!f.children.includes(appId)) f.children.push(appId);
-        saveOrRevert(before);
-        close();
-      });
-      const nm = document.createElement('span');
-      setUserText(nm, f.label);
-      const chk = document.createElement('span');
-      chk.className = 'fp-chk';
-      if (cur) chk.textContent = '✓';
-      b.append(nm, chk);
-      list.appendChild(b);
-    });
-
-    const divider = document.createElement('div');
-    divider.className = 'div';
-    divider.style.margin = '4px 8px';
-    list.appendChild(divider);
-
-    const nr = rowBtn('accent', async () => {
-      /* Closed first. Two overlays fighting over the focus trap leave focus in
-         the one underneath. */
-      close();
-      const name = await promptModal({
-        title: t('folder.createNew'),
-        label: t('folder.name'),
-        placeholder: t('folder.namePh'),
-        confirmLabel: t('common.create'),
-        cancelLabel: t('common.cancel'),
-      });
-      if (!name) return;
-      const label = clampName(name);
-      const fid = newItemId(
-        label,
-        'folder',
-        state.items.map(i => i.id),
-      );
-      const before = snapshotItems(state.items);
-      state.items.push({ id: fid, type: 'folder', label, children: [appId] });
-      state.items.forEach(f => {
-        if (f.type === 'folder' && f.id !== fid) f.children = (f.children || []).filter(id => id !== appId);
-      });
-      saveOrRevert(before);
-    });
-    const nrs = document.createElement('span');
-    nrs.textContent = '+ ' + t('folder.createNew');
-    nr.append(nrs);
-    list.appendChild(nr);
+  const tf = folders.find(f => f.id === folderId);
+  const available = tf
+    ? state.items.filter(i => i.type === 'app' && !i.dock && !(tf.children || []).includes(i.id))
+    : [];
+  if (!available.length) {
+    const em = document.createElement('div');
+    em.className = 'dlg-empty';
+    em.textContent = t('folder.allInFolder');
+    list.appendChild(em);
   }
+  available.forEach(app => {
+    const b = rowBtn(() => {
+      const before = snapshotItems(state.items);
+      state.items.forEach(f => {
+        if (f.type === 'folder') f.children = (f.children || []).filter(id => id !== app.id);
+      });
+      if (!tf.children) tf.children = [];
+      tf.children.push(app.id);
+      saveOrRevert(before);
+      close();
+    });
+    const ri = document.createElement('span');
+    ri.className = 'fp-ic';
+    ri.style.background = clr(app.color);
+    paintIcon(ri, app.iconUrl, initial(app.label));
+    const nm = document.createElement('span');
+    nm.className = 'fp-nm';
+    setUserText(nm, app.label || app.id);
+    b.append(ri, nm);
+    list.appendChild(b);
+  });
 
   dlg.addAction(t('common.cancel'), 'bg sm', close);
   dlg.focus(q('button', list));
@@ -748,7 +700,7 @@ async function doSave(orig) {
     closeModal(item.id);
     toast(t(replaced ? 'toast.updated' : 'toast.added'));
   } catch (e) {
-    toast(t('toast.error', { err: errorText(e) }), 'err');
+    toast(t('toast.saveFailed', { err: errorText(e) }), 'err', errorAction(e));
   } finally {
     _editorSaving = false;
   }
@@ -759,14 +711,18 @@ function initNav() {
   const STORE = 'admin_sec';
   const sections = qa('.sec', document).map(s => s.id.replace(/^sec-/, ''));
 
+  let shown = '';
   /* Do not scroll on the restoring first call. Only a picked section. */
   function show(requested, picked) {
     const id = resolveAdminSection(requested, sections);
     if (id === null) return;
     if (requested && id !== requested) console.warn('admin: unknown section', requested, '- showing', id);
+    const changed = id !== shown;
+    shown = id;
     qa('.sec', document).forEach(s => {
       s.hidden = s.id !== 'sec-' + id;
     });
+    if (picked && changed) fadeIn(el('sec-' + id));
     links.forEach(l => {
       const on = l.dataset.sec === id;
       l.classList.toggle('active', on);
@@ -783,23 +739,58 @@ function initNav() {
   initGlideSelect();
 }
 
+/* A typed password never shows in the row.
+   @param {Element} valEl @param {string} value */
+function renderSecret(valEl, value) {
+  const saved = /** @type {HTMLElement} */ (valEl).dataset.saved;
+  valEl.textContent = value ? t('widgetCfg.newValueSet') : saved || t('common.notSet');
+  valEl.classList.toggle('is-ph', !value && !saved);
+}
+
+function initPasswordRows() {
+  const pw = inp('sec-pw');
+  const pw2 = inp('sec-pw2');
+  if (!pw || !pw2) return;
+  const checkMatch = () => {
+    clearFieldError(el('ie-pw2'));
+    if (pw.value && pw2.value && passwordMismatch(pw.value, pw2.value))
+      showFieldError(el('ie-pw2'), t('setup.mismatch'), { focus: false });
+  };
+  initInlineEdit('ie-pw', 'sec-pw', {
+    type: 'password',
+    placeholder: () => t('general.passwordPh'),
+    fill: false,
+    render: renderSecret,
+    onCommit() {
+      el('sec-pw-bars')?.classList.add('d-none');
+      el('sec-pw-hint')?.classList.add('d-none');
+      checkMatch();
+    },
+  });
+  initInlineEdit('ie-pw2', 'sec-pw2', {
+    type: 'password',
+    placeholder: () => t('setup.confirmPassword'),
+    fill: false,
+    render: renderSecret,
+    onCommit: checkMatch,
+  });
+  pw.addEventListener('input', () => reveal(el('ie-pw2-wrap'), pw.value !== ''));
+  wireReveal(/** @type {HTMLButtonElement[]} */ (qa('#ie-pw .pw-reveal, #ie-pw2 .pw-reveal')), [pw, pw2]);
+  fillUsernames();
+}
+
 function initAllInlineEdits() {
   initInlineEdit('ie-ip', 'srv-ip', { placeholder: '192.168.1.100', plain: true });
   initInlineEdit('ie-socket', 'srv-socket', { placeholder: 'http://socket-proxy:2375', plain: true });
   initInlineEdit('ie-pve-url', 'srv-pve-url', { type: 'url', placeholder: 'https://192.168.1.10:8006', plain: true });
   initInlineEdit('ie-pve-token', 'srv-pve-token', { placeholder: 'stackyard@pve!dashboard', plain: true });
-  initInlineEdit('ie-hosts', 'srv-hosts', { placeholder: () => t('general.allowedHostsNone'), plain: true });
-
-  initInlineEdit('ie-pw', 'sec-pw', {
-    type: 'password',
-    placeholder: () => t('general.passwordPh'),
-    onCommit() {
-      const bars = el('sec-pw-bars');
-      const hint = el('sec-pw-hint');
-      if (bars) bars.classList.add('d-none');
-      if (hint) hint.classList.add('d-none');
-    },
+  initInlineEdit('ie-hosts', 'srv-hosts', {
+    placeholder: () => t('general.allowedHostsNone'),
+    empty: () => t('general.allowedHostsNone'),
+    plain: true,
   });
+
+  initPasswordRows();
   const pwInp = el('sec-pw');
   if (pwInp) {
     pwInp.addEventListener(
@@ -896,6 +887,7 @@ function initSecToggle() {
   if (!en) return;
   function apply(on, now = false) {
     reveal(el('ie-pw-wrap'), on, now);
+    reveal(el('ie-pw2-wrap'), on && inp('sec-pw')?.value !== '', now);
     reveal(el('pw-hint-wrap'), on, now);
   }
   apply(en.checked, true);
@@ -1449,21 +1441,32 @@ initTheme();
 
 setReauthHandler(requireLogin);
 
-const loadOrShowFailure = () =>
-  load().catch(e => {
-    toast(t('toast.configLoadFailed', { err: errorText(e) }), 'err');
-    const al = el('al');
-    if (al) {
-      /* An inline onclick is blocked by the CSP. */
-      setHtml(
-        al,
-        html`<div class="dash-load-fail">${t('home.loadFailed')}<br><br><button class="retry-btn" type="button">${t('home.retry')}</button></div>`,
-      );
-      q('.retry-btn', al)?.addEventListener('click', () => location.reload());
-      el('al-grp')?.classList.remove('d-none');
-    }
-  });
+const loadOrShowFailure = () => {
+  document.body.classList.remove('load-stopped');
+  return load()
+    .catch(e => {
+      toast(t('toast.configLoadFailed', { err: errorText(e) }), 'err');
+      const al = el('al');
+      if (al) {
+        /* An inline onclick is blocked by the CSP. */
+        setHtml(
+          al,
+          html`<div class="dash-load-fail">${t('home.loadFailed')}<br><br><button class="retry-btn" type="button">${t('home.retry')}</button></div>`,
+        );
+        q('.retry-btn', al)?.addEventListener('click', () => location.reload());
+        el('al-grp')?.classList.remove('d-none');
+      }
+    })
+    .finally(() => {
+      document.documentElement.classList.remove('lang-pending');
+      document.body.classList.add('loaded');
+    });
+};
+
+screen.orientation?.addEventListener('change', applyBg);
 
 checkAuth(loadOrShowFailure).then(ok => {
-  if (ok) loadOrShowFailure();
+  if (ok) return loadOrShowFailure();
+  document.documentElement.classList.remove('lang-pending');
+  document.body.classList.add('load-stopped');
 });

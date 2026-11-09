@@ -1,6 +1,7 @@
 ---
 title: Widget checklist
 description: What to check before opening a pull request for a new Stackyard widget.
+next: false
 ---
 
 CI validates every manifest. Run the same check locally with `cd api && node --test`.
@@ -15,7 +16,7 @@ CI validates every manifest. Run the same check locally with `cd api && node --t
 - `i18n/en.json`, plus one catalog per shipped language.
 - `demo.js`, optional.
 
-## Behaviour
+## Behavior
 
 - Upstream calls go through `ctx.fetchJSON`.
 - Failures use `ctx.fail`, never a returned error.
@@ -25,7 +26,7 @@ CI validates every manifest. Run the same check locally with `cd api && node --t
 
 ## Look
 
-- Transparent background, system font, palette colours.
+- Transparent background, system font, palette colors.
 - Readable at every size it offers.
 
 A refused manifest is logged at startup and nowhere else. Check `docker logs <container>`.

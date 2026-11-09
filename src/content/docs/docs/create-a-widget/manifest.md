@@ -84,7 +84,7 @@ The card behind a widget follows the display mode: white in light, `#1c1c1e` in 
 | `card` | What it looks like |
 | --- | --- |
 | `dark` | Solid `#1c1c1e` in both themes. |
-| `graphite` | Solid `#2c2c2e` in both themes, for a widget drawn on that grey. |
+| `graphite` | Solid `#2c2c2e` in both themes, for a widget drawn on that gray. |
 | `light` | Solid white in both themes. |
 | `translucent` | The default card, kept for a widget that named it. |
 
@@ -110,7 +110,7 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | `number` | An inline-edit row that stores a number. |
 | `secret` | An inline-edit row for a masked value. Shows `Configured` once set. The value stays on the server. Leaving it blank keeps the stored value, unless a field that is not `cosmetic` changed. |
 | `toggle` | An on and off switch, stored as a boolean. |
-| `color` | The swatch and colour control used elsewhere in the admin. Saves `#rrggbb`. |
+| `color` | The swatch and color control used elsewhere in the admin. Saves `#rrggbb`. |
 | `select` | A dropdown. `"variant": "pills"` renders a radio group. With `optionsFrom` it adds a Fetch button. |
 | `multiselect` | A checklist dropdown. The value is an array. |
 | `group` | A repeatable set of sub-fields in a nested `fields` array, each entry its own card with Add and Remove. Groups cannot nest. |
@@ -126,7 +126,7 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | `default` | The value used when none is saved. |
 | `hint` | Short help under the field. On a `group`, it shows at the bottom of the section. |
 | `optional` | When `true`, the field is not required to save. A required `secret` counts as missing only when nothing is stored. |
-| `cosmetic` | When `true`, changing the field keeps a stored `secret`. Use it only on a field that cannot change the server a secret is sent to, the user name sent with it, or a path on a user-entered server. Links, labels, colours and units qualify, and so does a value sent to a fixed vendor host, such as a profile ID or a user to look up. A repeated key needs it on every declaration. The keys a cosmetic picker `carries` count as cosmetic too. |
+| `cosmetic` | When `true`, changing the field keeps a stored `secret`. Use it only on a field that cannot change the server a secret is sent to, the user name sent with it, or a path on a user-entered server. Links, labels, colors and units qualify, and so does a value sent to a fixed vendor host, such as a profile ID or a user to look up. A repeated key needs it on every declaration. The keys a cosmetic picker `carries` count as cosmetic too. |
 | `plain` | When `true`, a `text` row turns off capitalisation, autocorrect and spell check. Use it for names that must match exactly, such as a pool or share. A key ending in `url`, `href`, `user`, `username`, `id` or `profile` gets this without it. |
 | `transient` | When `true`, the field is sent to an `optionsFrom` fetch but not saved. Use it for a search box. Top-level fields only. |
 | `carries` | For a `select` with `optionsFrom`: extra config keys this picker writes, from the chosen option's `set` block. |

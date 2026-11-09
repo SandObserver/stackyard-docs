@@ -19,7 +19,7 @@ A session ends after 12 hours unused, or 30 days after sign-in. `SESSION_MAX_AGE
 
 Every `POST`, sign-in included, needs an `Origin` header with the same host as the `Host` header. Without it, the request gets a `403`.
 
-```
+```text
 Origin: http://stackyard.lan:8700
 ```
 
@@ -36,7 +36,7 @@ Origin: http://stackyard.lan:8700
 
 Show a widget by loading its page in a web view:
 
-```
+```text
 /widgets/<widgetType>/<page>?id=<item id>&size=<widgetSize>
 ```
 

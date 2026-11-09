@@ -1,0 +1,29 @@
+---
+const ROLES = [
+  ['Accent', '#00D2E0', '#0071A4'],
+  ['Success', '#30D158', '#238539'],
+  ['Warning', '#FF9230', '#C93400'],
+  ['Danger', '#FF4245', '#D70015'],
+  ['Info', '#0091FF', '#0040DD'],
+];
+const THEMES = [
+  { name: 'Dark theme', className: 'sy-panel--dark', column: 1, ink: '#000' },
+  { name: 'Light theme', className: 'sy-panel--light', column: 2, ink: '#fff' },
+];
+---
+
+<div class="sy-panels not-content">
+  {
+    THEMES.map((theme) => (
+      <div class:list={['sy-panel', theme.className]}>
+        <b>{theme.name}</b>
+        {ROLES.map((role) => (
+          <div class="sy-panel__row" style={`--c:${role[theme.column]};--i:${theme.ink}`}>
+            <span class="sy-panel__role">{role[0]}</span>
+            <span class="sy-panel__hex">{role[theme.column]}</span>
+          </div>
+        ))}
+      </div>
+    ))
+  }
+</div>

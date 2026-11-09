@@ -23,7 +23,7 @@ function heading(node, level) {
 }
 
 const filterControl = placeholder =>
-  el('div', { className: ['sy-filter'], dataSyFilter: '', hidden: true }, [
+  el('div', { className: ['sy-filter'], dataSyFilter: '' }, [
     el('input', { type: 'search', placeholder, ariaLabel: placeholder, autoComplete: 'off' }),
     el('p', { className: ['sr-only'], role: 'status', dataSyFilterStatus: '' }),
   ]);

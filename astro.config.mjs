@@ -44,7 +44,8 @@ export default defineConfig({
       head: [
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
-        { tag: 'meta', attrs: { name: 'theme-color', content: '#0d1117' } },
+        { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#000000' } },
+        { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f2f2f7' } },
         { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-2f94d569.jpg` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },

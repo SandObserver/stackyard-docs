@@ -290,9 +290,6 @@ starlight-toc nav {
 starlight-toc nav a {
   position: relative;
 }
-#starlight__sidebar summary {
-  border-radius: 0.25rem;
-}
 /* pointer-events: none, or the pill swallows every hover and click in the list. */
 .sy-mp {
   position: absolute;
@@ -569,7 +566,15 @@ starlight-toc nav a {
 .sl-markdown-content .cl-item[open] > summary::before {
   transform: rotate(45deg);
 }
-.sl-markdown-content .cl-item > summary:hover {
+.sl-markdown-content .cl-item[data-sy-closing='true'] > summary::before {
+  transform: rotate(-45deg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .sl-markdown-content .cl-item > summary:hover {
+    background: var(--sl-color-gray-6);
+  }
+}
+.sl-markdown-content .cl-item > summary:active {
   background: var(--sl-color-gray-6);
 }
 .sl-markdown-content .cl-item > summary:focus-visible {
@@ -712,8 +717,14 @@ starlight-toc nav a {
   content: none;
   display: none;
 }
-.sy-disc__row:hover,
-.sy-link__row:hover {
+@media (hover: hover) and (pointer: fine) {
+  .sy-disc__row:hover,
+  .sy-link__row:hover {
+    background: var(--sy-overlay);
+  }
+}
+.sy-disc__row:active,
+.sy-link__row:active {
   background: var(--sy-overlay);
 }
 .sy-disc__row:focus-visible,
@@ -779,11 +790,13 @@ starlight-toc nav a {
   transition: transform 0.15s ease;
 }
 .sy-link__chev,
-.sy-disc:not([open]) .sy-disc__chev {
+.sy-disc:not([open]) .sy-disc__chev,
+.sy-disc[data-sy-closing='true'] .sy-disc__chev {
   transform: rotate(-45deg);
 }
 [dir='rtl'] .sy-link__chev,
-[dir='rtl'] .sy-disc:not([open]) .sy-disc__chev {
+[dir='rtl'] .sy-disc:not([open]) .sy-disc__chev,
+[dir='rtl'] .sy-disc[data-sy-closing='true'] .sy-disc__chev {
   transform: rotate(45deg) scaleX(-1);
 }
 .sy-disc__row code,
@@ -943,6 +956,18 @@ starlight-toc nav a {
 .sy-i3s { stroke: currentColor; stroke-opacity: 0.4; }
 .sy-as { stroke: var(--icon-accent, currentColor); }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+.sy-nl,
+.sy-disc__row,
+.sy-link__row {
+  touch-action: manipulation;
+}
+a:not(.sy-nl, .sy-link__row):active {
+  opacity: 0.7;
+}
+
 body {
   background: var(--sl-color-bg);
   -webkit-font-smoothing: antialiased;
@@ -1077,17 +1102,16 @@ summary.sy-nl .sy-icon,
 .sy-nl.large .sy-icon {
   margin-inline-end: 7px;
 }
-.sy-nl:hover {
-  color: var(--sy-tx);
+@media (hover: hover) and (pointer: fine) {
+  .sy-nl:hover {
+    color: var(--sy-tx);
+  }
+  .sy-nl:hover .sy-icon {
+    --icon-accent: var(--sy-accent);
+  }
 }
-.sy-nl:hover .sy-icon,
 .sy-nl[aria-current='page'] .sy-icon {
   --icon-accent: var(--sy-accent);
-}
-@media not ((hover: hover) and (pointer: fine)) {
-  .sy-nl:hover {
-    background: var(--sy-hover);
-  }
 }
 .sy-nl:active {
   background: var(--sy-hover);
@@ -1125,6 +1149,12 @@ summary.sy-nl .caret {
 [open] > summary.sy-nl .caret {
   transform: rotateZ(90deg);
 }
+details[data-sy-closing='true'] > summary.sy-nl .caret {
+  transform: none;
+}
+[dir='rtl'] details[data-sy-closing='true'] > summary.sy-nl .caret {
+  transform: rotateZ(180deg);
+}
 .sy-nav .sy-nav {
   padding-block: 2px 6px;
 }
@@ -1151,7 +1181,7 @@ summary.sy-nl .caret {
 h1#_top {
   font-size: var(--sl-text-h1);
   line-height: 1.2059;
-  letter-spacing: 0.0118em;
+  letter-spacing: -0.02em;
   font-weight: 700;
   color: var(--sl-color-white);
 }
@@ -1224,7 +1254,12 @@ h1#_top {
   box-shadow: none;
   color: var(--sy-tx);
 }
-.pagination-links a:hover {
+@media (hover: hover) and (pointer: fine) {
+  .pagination-links a:hover {
+    background: color-mix(in srgb, var(--sy-card) 88%, var(--sy-tx));
+  }
+}
+.pagination-links a:active {
   background: color-mix(in srgb, var(--sy-card) 88%, var(--sy-tx));
 }
 .pagination-links .link-title {
@@ -1251,7 +1286,6 @@ h1#_top {
 }
 .right-sidebar-panel starlight-toc a[aria-current='true'] {
   color: var(--sy-tx);
-  font-weight: 600;
 }
 .sy-mp--toc {
   background: var(--sy-sel);
@@ -1831,7 +1865,6 @@ main {
 }
 .sl-markdown-content [data-sy-filter-group][hidden],
 .sl-markdown-content [data-sy-filter-item][hidden],
-.sl-markdown-content .sy-filter[hidden],
 .sl-markdown-content .sy-filter__none[hidden] {
   display: none;
 }

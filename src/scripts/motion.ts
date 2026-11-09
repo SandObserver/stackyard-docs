@@ -131,6 +131,7 @@ const animateDisclosure = (details: HTMLDetailsElement, open: boolean) => {
   size.onfinish = () => {
     cancelAnimationFrame(frame);
     if (!open) details.open = false;
+    delete details.dataset.syClosing;
     for (const f of fades) f.cancel();
     details.style.overflow = '';
     running.delete(details);

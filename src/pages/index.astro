@@ -150,7 +150,7 @@ const schema = {
   </header>
 </div>
 
-<div class="device-band">
+<div class="device-band" role="img" aria-label="The Stackyard dashboard with widgets, app tiles and folders">
   <div class="device">
     <div class="bezel">
       <div class="screen">
@@ -386,11 +386,11 @@ const schema = {
       <div class="fvis">
         <div class="langs">
           <span class="lang">English</span>
-          <span class="lang">فارسی <b>RTL</b></span>
-          <span class="lang">简体中文</span>
-          <span class="lang">Español</span>
-          <span class="lang">Deutsch</span>
-          <span class="lang">Français</span>
+          <span class="lang"><span lang="fa" dir="rtl">فارسی</span> <b>RTL</b></span>
+          <span class="lang" lang="zh-Hans">简体中文</span>
+          <span class="lang" lang="es">Español</span>
+          <span class="lang" lang="de">Deutsch</span>
+          <span class="lang" lang="fr">Français</span>
         </div>
       </div>
     </div>
@@ -496,6 +496,7 @@ const schema = {
     if (openMenu?.btn === btn) { closeMenu(true); return; }
     closeMenu();
     const root = btn.closest('.pop-root');
+    $$('.menu', root).forEach((m) => m.remove());
     const list = document.createElement('div');
     list.className = 'menu';
     list.id = 'gs-menu';
@@ -543,7 +544,7 @@ const schema = {
     requestAnimationFrame(() => setActive(active));
   }
   document.addEventListener('pointerdown', (e) => { if (openMenu && !openMenu.list.contains(e.target) && !openMenu.btn.contains(e.target)) closeMenu(); });
-  addEventListener('resize', () => closeMenu());
+  addEventListener('resize', () => closeMenu(openMenu?.list.contains(document.activeElement)));
 
   const saved = store.get('stackyard-install');
   let method = methods[saved?.method] ? saved.method : 'compose';
@@ -586,16 +587,25 @@ const schema = {
       if (!copied) throw new Error('copy refused');
     }
   }
+  function flash(button, text, announcement) {
+    const label = button.children[1];
+    label.textContent = text;
+    live.textContent = announcement;
+    button.classList.add('done');
+    clearTimeout(button.doneTimer);
+    button.doneTimer = setTimeout(() => { button.classList.remove('done'); label.textContent = 'Copied'; live.textContent = ''; }, 1500);
+  }
   for (const button of $$('#gs .copy')) {
     button.addEventListener('click', async () => {
       const code = button.closest('.code').querySelector('code');
       try {
         await copyText(code);
-        button.classList.add('done');
-        live.textContent = `Copied ${button.getAttribute('aria-label').replace(/^Copy /, '')}`;
-        clearTimeout(button.doneTimer);
-        button.doneTimer = setTimeout(() => { button.classList.remove('done'); live.textContent = ''; }, 1500);
-      } catch { getSelection().selectAllChildren(code); }
+        flash(button, 'Copied', `Copied ${button.getAttribute('aria-label').replace(/^Copy /, '')}`);
+      } catch {
+        getSelection().selectAllChildren(code);
+        const message = 'Copy failed. The text is selected.';
+        flash(button, message, message);
+      }
     });
   }
 }
@@ -695,7 +705,6 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
       run.onfinish = run.oncancel = () => (run = null);
     };
     link.addEventListener('pointerenter', (e) => { if (e.pointerType !== 'touch') spin(); });
-    link.addEventListener('focus', () => { try { if (link.matches(':focus-visible')) spin(); } catch {} });
   }
 }
     </script>
@@ -705,6 +714,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
 <style is:global>
 
     :root{
+      color-scheme:dark;
       --bg-primary:#000000;
       --bg-secondary:#1C1C1E;
       --bg-elevated-secondary:#2C2C2E;
@@ -755,10 +765,10 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     .hero{padding:44px 0 40px}
     .hero h1{margin:0;font-family:var(--font-display);font-size:74px;line-height:1.04;letter-spacing:-0.025em;
       font-weight:700;color:var(--label-primary);max-width:15ch;text-wrap:balance}
-    .hero p{margin:26px 0 0;font-size:19px;line-height:1.5;color:var(--a11y-dim);max-width:54ch;text-wrap:pretty}
-    .cta-row{display:flex;align-items:center;gap:12px;margin-top:34px}
+    .hero p{margin:26px 0 0;font-size:1.1875rem;line-height:1.5;color:var(--a11y-dim);max-width:54ch;text-wrap:pretty}
+    .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:34px}
     .btn{height:50px;padding:0 26px;border-radius:25px;display:inline-flex;align-items:center;justify-content:center;
-      font-size:16px;font-weight:600;letter-spacing:-0.01em}
+      font-size:16px;font-weight:600;letter-spacing:-0.01em;white-space:nowrap}
     .btn-accent{background:var(--accent);color:var(--on-accent-ink)}
     @media (hover:hover) and (pointer:fine){.btn-accent:hover{background:var(--accent-strong);color:var(--on-accent-ink)}}
     .btn-quiet{background:var(--fill);color:var(--label-primary)}
@@ -839,7 +849,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     .ftext{width:440px;flex-shrink:0}
     .ftext h2{margin:0 0 10px;font-family:var(--font-display);font-size:28px;font-weight:700;
       letter-spacing:-0.022em;color:var(--label-primary);text-wrap:balance}
-    .ftext p{margin:0;max-width:42ch;font-size:16.5px;line-height:1.55;color:var(--a11y-dim);text-wrap:pretty}
+    .ftext p{margin:0;max-width:42ch;font-size:1.03125rem;line-height:1.55;color:var(--a11y-dim);text-wrap:pretty}
     .fvis{flex:0 0 440px;display:flex;align-items:center;min-width:0}
 
     .bdemo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%}
@@ -885,7 +895,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     .wpage .wglass{border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.32);
       -webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
     .wpage .wglass .wframe{transform:scale(calc(0.8863 * var(--gs)))}
-    .ftext .flink{margin-top:12px;font-size:15px}
+    .ftext .flink{margin-top:12px;font-size:.9375rem}
     .flink a{font-weight:600}
     .langs{display:flex;gap:10px;flex-wrap:wrap;width:100%}
     .lang{height:36px;padding:0 16px;border-radius:999px;background:var(--fill);
@@ -904,13 +914,13 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     .pop-root{position:relative}
     .setup-side{align-self:start;position:sticky;top:24px}
     .setup-side h2{margin:0 0 14px;font-family:var(--font-display);font-size:36px;font-weight:700;letter-spacing:-0.025em;color:var(--label-primary)}
-    .setup-side .lede{margin:0;font-size:17px;line-height:1.55;color:var(--a11y-dim);max-width:60ch}
+    .setup-side .lede{margin:0;font-size:1.0625rem;line-height:1.55;color:var(--a11y-dim);max-width:60ch}
     .gs{display:grid;gap:16px;align-content:start;min-width:0;max-width:860px}
     .gs.morphing{overflow:hidden}
-    .sentence{margin:0 0 4px;font-size:22px;line-height:2.1;font-weight:600;letter-spacing:-0.02em;color:var(--label-primary);text-wrap:balance}
+    .sentence{margin:0 0 4px;font-size:1.375rem;line-height:2.1;font-weight:600;letter-spacing:-0.02em;color:var(--label-primary);text-wrap:balance}
     .pop{position:relative;display:inline-flex;align-items:center;gap:4px;vertical-align:baseline;min-height:40px;border:0;margin:0 1px;
       padding:0 10px 0 16px;border-radius:20px;background:rgba(118,118,128,.24);color:var(--accent);font:inherit;letter-spacing:inherit;
-      cursor:pointer;transition:background .15s ease}
+      cursor:pointer;-webkit-user-select:none;user-select:none;transition:background .15s ease}
     .pop::after{content:'';position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
     .pop[aria-expanded="true"]{background:rgba(120,120,128,.36)}
     @media (hover:hover) and (pointer:fine){.pop:hover{background:rgba(120,120,128,.36)}}
@@ -921,7 +931,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
       font-family:var(--font-mono);font-size:12.5px;color:var(--a11y-dim)}
     .gs .copy{position:relative;height:30px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--label-primary);
       font:600 13px var(--font-ui);cursor:pointer;transition:background-color .2s ease,transform .15s ease}
-    .gs .copy{display:inline-grid;place-items:center}
+    .gs .copy{display:inline-grid;place-items:center;-webkit-user-select:none;user-select:none}
     .gs .copy>span{grid-area:1/1;transition:opacity .1s ease}
     .gs .copy>span+span,.gs .copy.done>span:first-child{opacity:0}
     .gs .copy.done>span+span{opacity:1;transition-delay:.1s}
@@ -942,7 +952,8 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
       transition:opacity 120ms ease-out,transform 120ms ease-out}
     .gs-band .menu.open{opacity:1;transform:none;pointer-events:auto;transition:opacity 160ms ease-out,transform 240ms var(--ease)}
     .gs-band .menu [role="option"]{position:relative;margin-inline:8px;border-radius:20px;padding-block:10px;padding-inline:6px 16px;min-height:44px;
-      display:flex;align-items:center;gap:8px;font-size:17px;line-height:1.29;letter-spacing:-0.025em;color:#f5f5f5;cursor:pointer;outline:none}
+      display:flex;align-items:center;gap:8px;font-size:17px;line-height:1.29;letter-spacing:-0.025em;color:#f5f5f5;cursor:pointer;-webkit-user-select:none;user-select:none}
+    .gs-band .menu [role="option"]:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
     .gs-band .menu [role="option"]::before{content:'';width:24px;flex-shrink:0;text-align:center;font-weight:600}
     .gs-band .menu [role="option"][aria-selected="true"]::before{content:'\2713'}
     .gs-band .menu .mp{position:absolute;top:0;left:0;border-radius:20px;background:rgba(255,255,255,.1);pointer-events:none;opacity:0;transition:opacity .12s ease}
@@ -952,17 +963,16 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     .gs .ilist>li+li::before{content:'';position:absolute;top:0;inset-inline:52px 0;height:1px;background:var(--separator);z-index:1}
     .gs .irow{display:flex;align-items:flex-start;gap:12px;min-height:52px;padding:10px 16px}
     .gs .imain{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-    .gs .iname{font-size:15px;line-height:1.33;font-weight:500;color:var(--label-primary)}
-    .gs .itext{font-size:13.5px;line-height:1.45;color:var(--a11y-dim)}
+    .gs .iname{font-size:.9375rem;line-height:1.33;font-weight:500;color:var(--label-primary)}
+    .gs .itext{font-size:.84375rem;line-height:1.45;color:var(--a11y-dim)}
     .gs .iname code{font-family:var(--font-mono);font-size:.88em;background:var(--bg-elevated-secondary);padding:.12em .4em;border-radius:6px;color:var(--label-primary)}
     .gs .si{flex-shrink:0;width:24px;height:24px;margin-top:1px;color:var(--a11y-dim)}
-    .gs .list-foot{margin:-8px 0 0;padding-inline:16px;font-size:13px;line-height:1.38;color:var(--a11y-dim)}
+    .gs .list-foot{margin:-8px 0 0;padding-inline:16px;font-size:.8125rem;line-height:1.38;color:var(--a11y-dim)}
     .gs .list-foot a{font-weight:600}
     .sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
     @media (prefers-reduced-transparency: reduce){.gs-band .menu{background:var(--bg-elevated-secondary);-webkit-backdrop-filter:none;backdrop-filter:none}}
     @media (prefers-reduced-motion: reduce){
       .gs-band .menu,.gs-band .menu.open{transform:none !important}
-      .gs .code .chg{animation:none;background:rgba(0,210,224,.16)}
     }
     @media (max-width:900px){
       .gs-band{padding:52px 0}
@@ -972,7 +982,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     }
     @media (max-width:600px){
       .setup-side h2{font-size:26px}
-      .sentence{font-size:20px}
+      .sentence{font-size:1.25rem}
       .gs pre code{font-size:12px}
     }
 
@@ -985,20 +995,20 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     .foot-brand svg{width:24px;height:26px;flex:none;overflow:visible}
     .foot-brand .orbit{transform-box:view-box;transform-origin:512px 512px}
     .foot-links{display:flex;flex-wrap:wrap;gap:0 18px}
-    .foot-links a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;color:var(--a11y-dim)}
+    .foot-links a{display:inline-flex;align-items:center;min-height:44px;font-size:.875rem;color:var(--a11y-dim)}
     @media (hover:hover) and (pointer:fine){.foot-links a:hover{color:var(--label-primary)}}
-    .foot-legal{margin:0;font-size:13px;line-height:1.5;color:rgba(255,255,255,.5)}
+    .foot-legal{margin:0;font-size:.8125rem;line-height:1.5;color:rgba(255,255,255,.5)}
     .foot-legal a,.credits dt a{color:inherit;text-decoration:underline;text-underline-offset:3px}
     @media (hover:hover) and (pointer:fine){.foot-legal a:hover,.credits dt a:hover{color:var(--label-primary)}}
     .credits{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,220px);gap:0 32px;margin:0;align-content:start}
     .credits>div{display:grid;grid-template-rows:auto 44px auto;align-content:start;gap:2px;min-width:0}
-    .credits dt{padding-top:6px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+    .credits dt{padding-top:6px;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.5)}
     .credits dd{margin:0}
     .credit-row{display:flex;align-items:center}
-    .sibling{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:15px;font-weight:600;color:var(--label-primary)}
+    .sibling{display:inline-flex;align-items:center;gap:8px;min-height:44px;font-size:.9375rem;font-weight:600;color:var(--label-primary)}
     @media (hover:hover) and (pointer:fine){.sibling:hover{color:var(--accent)}}
     .sibling svg{width:15px;height:18px;flex:none;overflow:visible}
-    .credit-note{margin:0;font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.5)}
+    .credit-note{margin:0;font-size:.78125rem;line-height:1.5;color:rgba(255,255,255,.5)}
 
 
     @media (max-width:1180px){
@@ -1012,14 +1022,14 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
     @media (max-width:900px){
       .hero{padding:36px 0 32px}
       .hero h1{font-size:46px;letter-spacing:-0.03em;max-width:100%}
-      .hero p{font-size:17px;margin-top:20px}
+      .hero p{font-size:1.0625rem;margin-top:20px}
       .btn{height:46px;padding:0 22px;font-size:15px}
       .device{padding:0 14px}
       .screen-inner{--gs:.80;height:294px}
       .feature{flex-direction:column;align-items:flex-start;gap:20px;padding:28px 0}
       .ftext{width:100%;max-width:560px}
       .ftext h2{font-size:25px}
-      .ftext p{font-size:16px}
+      .ftext p{font-size:1rem}
       .fvis{flex:none;width:100%;max-width:460px}
       .bsrc{display:block}
     }
@@ -1083,7 +1093,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
       .nav .brand .mark{width:22.7px;height:24px}
       .hero{padding:26px 0 26px}
       .hero h1{font-size:34px;line-height:1.06}
-      .hero p{font-size:15.5px;margin-top:16px}
+      .hero p{font-size:.96875rem;margin-top:16px}
       .cta-row{margin-top:24px;gap:9px}
       .btn{height:44px;padding:0 18px;font-size:14.5px;border-radius:22px}
       .device{padding:0 10px}
@@ -1092,7 +1102,7 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
       .features{padding:0}
       .feature{padding:22px 0;gap:16px}
       .ftext h2{font-size:21px}
-      .ftext p{font-size:15.5px}
+      .ftext p{font-size:.96875rem}
       .fvis{max-width:100%}
       .bdemo{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 10px}
       .bdemo-item{gap:8px}
@@ -1110,11 +1120,23 @@ phoneDemo.addEventListener('change', fitDemoWidgets);
       .foot-legal{order:3;margin-top:10px}
     }
 
-    @media (max-width:374px){.wall{--gs:.74}}
+    @media (max-width:374px){
+      .wall{--gs:.74}
+      .achip:nth-child(4){display:none}
+      .apills .apill:nth-child(n+2){display:none}
+    }
     @media (prefers-reduced-motion: reduce){
       .pill,.btn,.gs .copy{transition-property:background-color,color}
       .pill:active,.btn:active,.gs .copy:active{transform:none}
       .gs-band .menu .mp.on{transition:opacity .12s ease}
+    }
+    @media (prefers-contrast:more){
+      :root{--a11y-dim:#d1d1d6;--separator:#838387;--separator-opaque:#838387}
+      .foot-legal,.credit-note,.credits dt{color:#d1d1d6}
+      .pill-ghost,.btn-quiet,.pop{box-shadow:inset 0 0 0 1px #838387}
+    }
+    @media (forced-colors:active){
+      .pill,.btn,.pop{border:1px solid ButtonText}
     }
   
     .skip{position:absolute;left:-9999px;top:0;z-index:50;padding:10px 16px;border-radius:0 0 10px 0;

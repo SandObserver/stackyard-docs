@@ -151,6 +151,7 @@ document.addEventListener('click', (e) => {
   const details = summary.parentElement;
   if (!(details instanceof HTMLDetailsElement) || !details.matches(DISCLOSURES)) return;
   if (details.querySelector(':scope > summary') !== summary) return;
+  if (e.detail === 0 && !running.has(details)) return;
   e.preventDefault();
   const opening = running.has(details) ? details.dataset.syClosing === 'true' : !details.open;
   details.dataset.syClosing = String(!opening);

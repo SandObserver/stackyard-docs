@@ -81,6 +81,16 @@ const breadcrumb = {
     attributeFilter: ['data-theme'],
   });
   applyThemeColor();
+
+  window.addEventListener(
+    'keydown',
+    (e) => {
+      const isSearchKey = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k';
+      if (isSearchKey || e.key === 'Escape') document.documentElement.setAttribute('data-sy-key', '');
+    },
+    true,
+  );
+  window.addEventListener('pointerdown', () => document.documentElement.removeAttribute('data-sy-key'), true);
 </script>
 <script src="../scripts/motion.ts"></script>
 <script src="../scripts/page-filter.ts"></script>

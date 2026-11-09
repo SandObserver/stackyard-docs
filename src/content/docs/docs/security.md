@@ -99,7 +99,7 @@ Icons load through the server, which caches each one for 24 hours, so the CDN do
 
 ## The container
 
-The image runs as the unprivileged `node` account, UID 1000, with no capability. The provided Compose file drops all capabilities, sets `no-new-privileges`, and bounds memory, process count and log size. Any other account works the same way; see [Running as another account](/docs/installation/docker/#running-as-another-account).
+The image runs as the unprivileged `node` account, UID 1000, with no capability. The provided Compose file drops all capabilities, sets `no-new-privileges`, makes the root filesystem read-only, and bounds memory, process count and log size. Any other account works the same way; see [Running as another account](/docs/installation/docker/#running-as-another-account).
 
 Started as root, which the Unraid template does so the container can take ownership of the folders Unraid creates, supervisord drops the API to `node` and nginx drops its workers to `nginx`. The API, which parses untrusted input, never runs as root.
 

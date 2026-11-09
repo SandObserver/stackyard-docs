@@ -302,8 +302,10 @@ const names = ['Stackyard', ...rivals];
     padding-inline-start: 2px;
   }
 
-  .sy-cmp__mark:hover sup {
-    text-decoration: underline;
+  @media (hover: hover) and (pointer: fine) {
+    .sy-cmp__mark:hover sup {
+      text-decoration: underline;
+    }
   }
 
   .sy-cmp__notes {

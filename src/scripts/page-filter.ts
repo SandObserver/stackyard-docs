@@ -39,7 +39,6 @@ if (control) {
     target.scrollIntoView();
   };
 
-  control.hidden = false;
   input.addEventListener('input', apply);
   addEventListener('hashchange', openTarget);
   apply();

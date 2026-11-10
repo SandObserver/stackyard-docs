@@ -934,6 +934,7 @@ starlight-toc nav a {
   mask: var(--sy-mask-page) center / 1.5rem no-repeat;
 }
 mobile-starlight-toc .isMobile a[aria-current='true']::after {
+  height: 1rem;
   -webkit-mask: var(--sy-mask-check) center / contain no-repeat;
   mask: var(--sy-mask-check) center / contain no-repeat;
 }

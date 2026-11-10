@@ -120,7 +120,7 @@ Each icon is a short list of shapes on a 24-unit grid. The file turns the list i
    ```js
    system: {
      shapes: [
-       line('M3 16 7 12 11 15 16 8'),  // the graph
+       line('M3 16l5-5 4 4 5-5'),      // the graph
        dot(19, 6, 3, 'accent'),         // the latest reading
      ],
    },
@@ -129,7 +129,7 @@ Each icon is a short list of shapes on a 24-unit grid. The file turns the list i
 2. Map a glyph name to it in `ui/js/widget-glyphs.js`, and add the same name to `VALID_GLYPHS` in `api/src/widgets.js`.
 3. Set `"glyph"` in the widget's `widget.json`. See [List icon](/docs/create-a-widget/manifest/#list-icon).
 
-`rect`, `circle` and `shape` draw bodies. `detail`, `dot` and `bar` draw small parts. `line` and `ring` draw lines. A test rejects a glyph that points at no icon.
+`rect`, `circle` and `shape` draw bodies. `frame` draws a hollow container. `detail`, `dot` and `bar` draw small parts. `line` and `ring` draw lines. A part that holds something is a frame with solid contents. An action or state is a line. The one accent part sits on open background. A test rejects a glyph that points at no icon.
 
 </div>
 </section>

@@ -155,29 +155,34 @@ const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[i
     });
   }
 
-  const ease = 'cubic-bezier(.33,0,.2,1)';
-  const MARK_MOTION: Record<string, (svg: SVGSVGElement) => void> = {
+  const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
+  const EASE_IN_OUT = 'cubic-bezier(0.77, 0, 0.175, 1)';
+  const parts = (svg: SVGSVGElement, name: string) => [...svg.querySelectorAll(`[data-mark-part="${name}"]`)];
+  const MARK_MOTION: Record<string, (svg: SVGSVGElement) => Animation[]> = {
     SandObserver: (svg) =>
-      svg.querySelector('[data-mark-part="top"]')?.animate(
-        [{ transform: 'translateY(0)' }, { transform: 'translateY(-2.5px)', offset: 0.35 }, { transform: 'translateY(0.8px)', offset: 0.7 }, { transform: 'translateY(0)' }],
-        { duration: 700, easing: ease },
+      parts(svg, 'top').map((el) =>
+        el.animate(
+          [{ transform: 'translateY(0)' }, { transform: 'translateY(-2.5px)', offset: 0.35 }, { transform: 'translateY(0.8px)', offset: 0.7 }, { transform: 'translateY(0)' }],
+          { duration: 450, easing: EASE_OUT },
+        ),
       ),
     Stackyard: (svg) =>
-      svg.querySelector('[data-mark-part="orbit"]')?.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], {
-        duration: 1000,
-        easing: 'cubic-bezier(.65,0,.35,1)',
-      }),
+      parts(svg, 'orbit').map((el) =>
+        el.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], { duration: 1000, easing: 'cubic-bezier(.65,0,.35,1)' }),
+      ),
     Posteryard: (svg) =>
-      svg.querySelector('[data-mark-part="play"]')?.animate(
-        [{ transform: 'translateX(0)' }, { transform: 'translateX(70px)', offset: 0.4 }, { transform: 'translateX(-12px)', offset: 0.72 }, { transform: 'translateX(0)' }],
-        { duration: 700, easing: ease },
+      parts(svg, 'play').map((el) =>
+        el.animate(
+          [{ transform: 'translateX(0)' }, { transform: 'translateX(70px)', offset: 0.4 }, { transform: 'translateX(-12px)', offset: 0.72 }, { transform: 'translateX(0)' }],
+          { duration: 450, easing: EASE_OUT },
+        ),
       ),
     Tellyard: (svg) =>
-      svg.querySelectorAll('[data-mark-part="bar"]').forEach((bar, i) =>
-        bar.animate((i === 1 ? [1, 0.6, 1.1, 1] : [1, 1.6, 0.8, 1]).map((s) => ({ transform: `scaleY(${s})` })), {
-          duration: 800,
-          delay: i * 60,
-          easing: 'ease-in-out',
+      parts(svg, 'bar').map((el, i) =>
+        el.animate((i === 1 ? [1, 0.6, 1.1, 1] : [1, 1.6, 0.8, 1]).map((s) => ({ transform: `scaleY(${s})` })), {
+          duration: 500,
+          delay: i * 40,
+          easing: EASE_IN_OUT,
         }),
       ),
   };
@@ -264,8 +269,7 @@ const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[i
           dwell(btn, () => {
             if (busy || !canPlay()) return;
             busy = true;
-            MARK_MOTION[mark](svg);
-            setTimeout(() => (busy = false), 1000);
+            Promise.allSettled(MARK_MOTION[mark](svg).map((a) => a.finished)).then(() => (busy = false));
           });
         }
       }
@@ -350,9 +354,6 @@ const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[i
       opacity: 0.4;
     }
   }
-  .sy-icons__set:has(button:focus-visible) button:not(:focus-visible) {
-    opacity: 0.4;
-  }
   [data-mark-part='orbit'] {
     transform-box: view-box;
     transform-origin: 12px 12px;
@@ -369,9 +370,4 @@ const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[i
   .sy-i2s { stroke: currentColor; stroke-opacity: 0.18; }
   .sy-i3s { stroke: currentColor; stroke-opacity: 0.4; }
   .sy-as { stroke: var(--icon-accent, currentColor); }
-  @media (prefers-reduced-motion: reduce) {
-    .sy-icons__row button {
-      transition: none;
-    }
-  }
 </style>

@@ -61,7 +61,7 @@ A system that reserves ports below 1024 for root refuses port 80 for other accou
 
 Earlier versions started as root. An install on host networking or an older kernel needs one of these two changes after the upgrade.
 
-For a read-only root filesystem, set `read_only: true` and mount a tmpfs on `/run/stackyard`.
+The provided Compose file has a read-only root filesystem and a tmpfs on `/run/stackyard`. With `docker run`, add `--read-only --tmpfs /run/stackyard`.
 
 To run as root, set `user: "0:0"` and add `NET_BIND_SERVICE`, `CHOWN`, `SETUID`, `SETGID`, `DAC_OVERRIDE` and `KILL` under `cap_add`. The container then takes ownership of the two volumes at start, and runs the API as `node` and the nginx workers as `nginx`.
 

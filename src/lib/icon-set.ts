@@ -38,6 +38,33 @@ function docIcons(m: IconModule): Record<string, Icon> {
   };
 }
 
+let inlineSeq = 0;
+
+/* Mask and clip ids are renamed per call. A repeated id paints every copy with the first one's mask. */
+export async function inlineIcon(id: string, transform = ''): Promise<string | null> {
+  const m = await loadIconSet();
+  if (!m?.ICONS[id]) return null;
+  const { defs, sym } = m.symbol(id, m.ICONS[id]);
+  const body = sym.replace(/^<symbol[^>]*>|<\/symbol>$/g, '');
+  const markup = `${defs ? `<defs>${defs}</defs>` : ''}${transform ? `<g transform="${transform}">${body}</g>` : body}`;
+  return markup.split(`sy-solid-${id}`).join(`sy-il${inlineSeq++}-${id}`);
+}
+
+export async function iconMaskUri(id: string): Promise<string | null> {
+  const m = await loadIconSet();
+  if (!m?.ICONS[id]) return null;
+  const { defs, sym } = m.symbol(id, m.ICONS[id]);
+  const body = sym
+    .replace(/^<symbol[^>]*>|<\/symbol>$/g, '')
+    .replace(/ class="([^"]+)"/g, (_, cls: string) => {
+      const stroke = cls.split(' ').some((c) => c.endsWith('s'));
+      const fill = cls.split(' ').some((c) => !c.endsWith('s'));
+      return `${fill ? ' fill="#000"' : ''}${stroke ? ' stroke="#000"' : ''}`;
+    });
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${defs ? `<defs>${defs}</defs>` : ''}${body}</svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 export async function iconSprite(ids: string[]): Promise<string> {
   const m = await loadIconSet();
   if (!m) return '';

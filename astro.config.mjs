@@ -6,6 +6,7 @@ import rehypeExternalLinks from 'rehype-external-links';
 import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
 import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
+import { iconModules } from './src/lib/vite-icon-modules.mjs';
 
 const SITE = 'https://stackyard.sandobserver.com';
 
@@ -16,6 +17,9 @@ export default defineConfig({
     '/docs/adding-services': '/docs/apps-and-folders/',
     '/docs/advanced-configuration': '/docs/installation/docker/',
     '/docs/widgets/github': '/docs/widgets/git/',
+  },
+  vite: {
+    plugins: [iconModules()],
   },
   markdown: {
     rehypePlugins: [

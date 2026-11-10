@@ -1,23 +1,130 @@
 ---
 import { iconSprite, loadIconSet } from '../lib/icon-set';
+import { readRepoFile } from '../lib/repo';
 import { SIDEBAR_ICON_IDS } from '../lib/sidebar-icons';
 
+type Cluster = { note: string; ids: string[] };
+type Group = { name: string; clusters: Cluster[] };
+
+const GROUPS: Group[] = [
+  {
+    name: 'Widgets',
+    clusters: [
+      { note: '', ids: ['clock', 'weather', 'system', 'disk', 'dns', 'backup', 'books', 'nowplaying', 'upnext', 'connections', 'github', 'downloads', 'switcher'] },
+      { note: 'Inside Weather', ids: ['uv', 'air'] },
+    ],
+  },
+  {
+    name: 'Navigation',
+    clusters: [
+      { note: 'Settings section', ids: ['general', 'appearance', 'dashboard', 'app', 'folder', 'widget'] },
+      { note: 'Widget size', ids: ['small', 'medium', 'large', 'xlarge'] },
+      { note: 'Docs sidebar', ids: ['start', 'run', 'create'] },
+    ],
+  },
+  {
+    name: 'Controls',
+    clusters: [
+      { note: '', ids: ['search', 'edit', 'plus', 'check', 'grip', 'chevrons', 'back', 'up', 'arrow-up', 'arrow-down', 'eye', 'eye-slash', 'external'] },
+      { note: 'Colour picker', ids: ['hue-lo', 'hue-hi', 'sat-lo', 'sat-hi', 'bright-lo', 'bright-hi'] },
+      { note: 'About page link', ids: ['docs', 'bug', 'heart'] },
+    ],
+  },
+  {
+    name: 'Status',
+    clusters: [
+      { note: '', ids: ['info', 'success', 'warning', 'failure'] },
+      { note: 'Widget error', ids: ['err-offline', 'err-slow', 'err-key', 'err-blocked', 'err-unset', 'err-odd'] },
+    ],
+  },
+];
+const LOGO_PARTS = ['logo', 'logo-ink', 'logo-arc'];
+
+const MARKS = [
+  {
+    name: 'SandObserver',
+    viewBox: '2 4 20 16',
+    body: '<rect data-mark-part="top" x="2" y="4" width="20" height="4" rx="2" fill="#B78A66"/><rect class="sy-i" x="5" y="10" width="4" height="10" rx="2"/><rect class="sy-i" x="15" y="10" width="4" height="10" rx="2"/>',
+  },
+  {
+    name: 'Stackyard',
+    viewBox: '0 0 24 24',
+    body: '<defs><clipPath id="sy-mark-orbit-clip"><polygon points="12,12 -70.31,-35.52 -70.31,-70.31 93.75,-70.31 93.75,93.75 12,93.75"/></clipPath></defs><g clip-path="url(#sy-mark-orbit-clip)"><use data-mark-part="orbit" href="#sy-solid-logo-arc"/></g><use href="#sy-solid-logo-ink"/>',
+  },
+  {
+    name: 'Posteryard',
+    viewBox: '282 232 478 580',
+    body: '<line class="sy-is" x1="352" y1="302" x2="352" y2="742" stroke-width="140" stroke-linecap="round"/><path data-mark-part="play" d="M500 292V532L712 412Z" fill="#FFD60A" stroke="#FFD60A" stroke-width="96" stroke-linejoin="round"/>',
+  },
+  {
+    name: 'Tellyard',
+    viewBox: '232 152 560 720',
+    body: '<rect class="sy-i" data-mark-part="bar" x="242" y="362" width="140" height="300" rx="70"/><rect data-mark-part="bar" x="442" y="222" width="140" height="580" rx="70" fill="#FF4245"/><rect class="sy-i" data-mark-part="bar" x="642" y="362" width="140" height="300" rx="70"/>',
+  },
+];
+
+function glyphNames(): Record<string, string> {
+  const source = readRepoFile('ui/js/widget-glyphs.js') ?? '';
+  const block = source.match(/GLYPH_ICON\s*=\s*\{([^}]*)\}/)?.[1] ?? '';
+  return Object.fromEntries([...block.matchAll(/([\w-]+):\s*'([\w-]+)'/g)].map(([, glyph, id]) => [id, glyph]));
+}
+
 const mod = await loadIconSet();
-const ids = mod ? Object.keys(mod.ICONS).sort() : [];
+const known = new Set(mod ? Object.keys(mod.ICONS) : []);
+const groups = GROUPS.map((g) => ({ ...g, clusters: g.clusters.map((c) => ({ ...c, ids: c.ids.filter((id) => known.has(id)) })) }));
+const placed = new Set([...groups.flatMap((g) => g.clusters.flatMap((c) => c.ids)), ...LOGO_PARTS]);
+const unplaced = [...known].filter((id) => !placed.has(id)).sort();
+if (unplaced.length) groups[2].clusters.push({ note: '', ids: unplaced });
+
+const glyphs = glyphNames();
 /* The sidebar sprite defines these ids on every docs page. Repeating them duplicates ids. */
-const sprite = await iconSprite(ids.filter((id) => !SIDEBAR_ICON_IDS.includes(id)));
+const spriteIds = [...known].filter((id) => !SIDEBAR_ICON_IDS.includes(id));
+const sprite = mod ? await iconSprite(spriteIds) : '';
+const info = (id: string, note: string) => (glyphs[id] ? `Glyph "${glyphs[id]}"` : note);
+const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[id]}`, note].filter(Boolean).join(', ');
 ---
 
 {
   mod ? (
-    <div class="sy-iconset sy-iconset--plain not-content">
+    <div class="sy-icons not-content" data-sy-icons>
       <Fragment set:html={sprite} />
-      {ids.map(id => (
-        <svg class="sy-icon" width="22" height="22" role="img" aria-label={id} focusable="false">
-          <title>{id}</title>
-          <use href={`#sy-solid-${id}`} />
-        </svg>
-      ))}
+      <p class="sr-only" id="sy-icons-hint">Select to copy as SVG.</p>
+      <p class="sr-only" role="status" data-sy-icons-status></p>
+      <div class="sy-icons__set" role="group" aria-labelledby="sy-icons-family">
+        <p class="sy-icons__label">
+          <span class="sy-icons__name" id="sy-icons-family">Family</span>
+          <span class="sy-icons__count">{MARKS.length}</span>
+          <span class="sy-icons__hover" aria-hidden="true"></span>
+        </p>
+        <div class="sy-icons__row">
+          {MARKS.map((m) => (
+            <button type="button" data-mark={m.name} aria-label={`${m.name} logo`} aria-describedby="sy-icons-hint">
+              <svg class="sy-icon" viewBox={m.viewBox} width="24" height="24" aria-hidden="true" focusable="false" set:html={m.body} />
+            </button>
+          ))}
+        </div>
+      </div>
+      {groups.map((g) => {
+        const labelId = `sy-icons-${g.name.toLowerCase()}`;
+        return (
+          <div class="sy-icons__set" role="group" aria-labelledby={labelId}>
+            <p class="sy-icons__label">
+              <span class="sy-icons__name" id={labelId}>{g.name}</span>
+              <span class="sy-icons__count">{g.clusters.reduce((n, c) => n + c.ids.length, 0)}</span>
+              <span class="sy-icons__hover" aria-hidden="true"></span>
+            </p>
+            <div class="sy-icons__row">
+              {g.clusters.flatMap((c) =>
+                c.ids.map((id) => (
+                  <button type="button" data-icon={id} data-info={info(id, c.note)} aria-label={label(id, c.note)} aria-describedby="sy-icons-hint">
+                    <svg class="sy-icon" width="24" height="24" aria-hidden="true" focusable="false"><use href={`#sy-solid-${id}`} /></svg>
+                  </button>
+                )),
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   ) : (
     <p>
@@ -26,43 +133,245 @@ const sprite = await iconSprite(ids.filter((id) => !SIDEBAR_ICON_IDS.includes(id
   )
 }
 
+<script>
+  import { ICONS, symbol } from 'virtual:sy-icon-set';
+  import { MOTION, animateIcon } from 'virtual:sy-icon-motion';
+
+  const DWELL = 180;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const hover = matchMedia('(hover: hover) and (pointer: fine)');
+  const canPlay = () => hover.matches && !reduce.matches;
+
+  function dwell(target: Element, start: () => void, stop?: () => void) {
+    let timer = 0;
+    target.addEventListener('pointerenter', (e) => {
+      if ((e as PointerEvent).pointerType === 'touch') return;
+      clearTimeout(timer);
+      timer = window.setTimeout(start, DWELL);
+    });
+    target.addEventListener('pointerleave', () => {
+      clearTimeout(timer);
+      stop?.();
+    });
+  }
+
+  const ease = 'cubic-bezier(.33,0,.2,1)';
+  const MARK_MOTION: Record<string, (svg: SVGSVGElement) => void> = {
+    SandObserver: (svg) =>
+      svg.querySelector('[data-mark-part="top"]')?.animate(
+        [{ transform: 'translateY(0)' }, { transform: 'translateY(-2.5px)', offset: 0.35 }, { transform: 'translateY(0.8px)', offset: 0.7 }, { transform: 'translateY(0)' }],
+        { duration: 700, easing: ease },
+      ),
+    Stackyard: (svg) =>
+      svg.querySelector('[data-mark-part="orbit"]')?.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], {
+        duration: 1000,
+        easing: 'cubic-bezier(.65,0,.35,1)',
+      }),
+    Posteryard: (svg) =>
+      svg.querySelector('[data-mark-part="play"]')?.animate(
+        [{ transform: 'translateX(0)' }, { transform: 'translateX(70px)', offset: 0.4 }, { transform: 'translateX(-12px)', offset: 0.72 }, { transform: 'translateX(0)' }],
+        { duration: 700, easing: ease },
+      ),
+    Tellyard: (svg) =>
+      svg.querySelectorAll('[data-mark-part="bar"]').forEach((bar, i) =>
+        bar.animate((i === 1 ? [1, 0.6, 1.1, 1] : [1, 1.6, 0.8, 1]).map((s) => ({ transform: `scaleY(${s})` })), {
+          duration: 800,
+          delay: i * 60,
+          easing: 'ease-in-out',
+        }),
+      ),
+  };
+
+  const PAINT: Record<string, [string, string, string?]> = {
+    'sy-i': ['fill', 'currentColor'],
+    'sy-i2': ['fill', 'currentColor', '.18'],
+    'sy-i3': ['fill', 'currentColor', '.4'],
+    'sy-a': ['fill', 'accent'],
+    'sy-is': ['stroke', 'currentColor'],
+    'sy-i2s': ['stroke', 'currentColor', '.18'],
+    'sy-i3s': ['stroke', 'currentColor', '.4'],
+    'sy-as': ['stroke', 'accent'],
+  };
+
+  /* A copied SVG has no stylesheet. Paint classes become attributes, or the copy renders black. */
+  function standalone(defs: string, body: string, viewBox: string, accent: string) {
+    const painted = body
+      .replace(/ class="([^"]+)"/g, (_, cls: string) =>
+        cls
+          .split(' ')
+          .map((c) => {
+            const p = PAINT[c];
+            if (!p) return '';
+            return ` ${p[0]}="${p[1] === 'accent' ? accent : p[1]}"${p[2] ? ` ${p[0]}-opacity="${p[2]}"` : ''}`;
+          })
+          .join(''),
+      )
+      .replace(/ data-[\w-]+="[^"]*"/g, '');
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="${viewBox}">${defs ? `<defs>${defs}</defs>` : ''}${painted}</svg>`;
+  }
+  function iconSvg(id: string, accent: string) {
+    const { defs, sym } = symbol(id, ICONS[id], 'solid');
+    return standalone(defs, sym.replace(/^<symbol[^>]*>|<\/symbol>$/g, ''), '0 0 24 24', accent);
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-sy-icons]')) {
+    const status = root.querySelector('[data-sy-icons-status]');
+    for (const set of root.querySelectorAll<HTMLElement>('.sy-icons__set')) {
+      const caption = set.querySelector('.sy-icons__hover');
+      if (!caption) continue;
+      const show = (name: string, detail = '') => {
+        const b = document.createElement('b');
+        b.textContent = name;
+        const extra = document.createElement('span');
+        extra.textContent = detail;
+        caption.replaceChildren(b, extra);
+      };
+      const clear = () => caption.replaceChildren();
+      set.addEventListener('pointerleave', clear);
+      set.addEventListener('focusout', (e) => {
+        if (!set.contains(e.relatedTarget as Node | null)) clear();
+      });
+
+      for (const btn of set.querySelectorAll<HTMLButtonElement>('button')) {
+        const svg = btn.querySelector('svg');
+        if (!svg) continue;
+        const { icon, mark, info = '' } = btn.dataset;
+        const name = icon ?? mark ?? '';
+        btn.addEventListener('pointerenter', () => show(name, info));
+        btn.addEventListener('focus', () => show(name, info));
+        btn.addEventListener('click', () => {
+          const accent = getComputedStyle(root).getPropertyValue('--icon-accent').trim();
+          const text = mark
+            ? mark === 'Stackyard'
+              ? iconSvg('logo', accent)
+              : standalone('', svg.innerHTML, svg.getAttribute('viewBox') ?? '0 0 24 24', accent)
+            : iconSvg(name, accent);
+          const done = (ok: boolean) => {
+            show(name, ok ? 'SVG copied' : 'Copy blocked');
+            if (status) status.textContent = ok ? `${name} copied as SVG.` : 'The browser blocked the copy.';
+          };
+          navigator.clipboard?.writeText(text).then(() => done(true), () => done(false)) ?? done(false);
+        });
+
+        if (icon && MOTION[icon]) {
+          const proxy = document.createElement('span');
+          animateIcon(svg, icon, proxy);
+          const send = (type: string) => proxy.dispatchEvent(new PointerEvent(type, { pointerType: 'mouse' }));
+          dwell(btn, () => send('pointerenter'), () => send('pointerleave'));
+        }
+        if (mark && MARK_MOTION[mark]) {
+          let busy = false;
+          dwell(btn, () => {
+            if (busy || !canPlay()) return;
+            busy = true;
+            MARK_MOTION[mark](svg);
+            setTimeout(() => (busy = false), 1000);
+          });
+        }
+      }
+    }
+  }
+</script>
+
 <style is:global>
-  .sy-iconset {
+  .sy-icons {
     --icon-accent: #00d2e0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-    gap: 1rem 0.5rem;
-    margin-block: 1.5rem;
+    gap: 14px;
+    margin-block: 1.25rem;
   }
-  :root[data-theme='light'] .sy-iconset {
-    --icon-accent: #0071a4;
-  }
-  .sy-iconset--plain {
-    grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-    gap: 0.7rem 0.35rem;
-    justify-items: center;
-    margin-block: 0;
-  }
-  .sy-iconset figure {
-    display: grid;
-    justify-items: center;
-    gap: 0.4rem;
+  .sl-markdown-content .sy-gut > .sy-icons {
+    grid-column: 1 / -1;
     margin: 0;
   }
-  .sy-iconset figcaption {
-    font-size: var(--sl-text-xs);
-    color: var(--sl-color-gray-3);
+  :root[data-theme='light'] .sy-icons {
+    --icon-accent: #0071a4;
   }
-  .sy-iconset .sy-sprite {
+  .sy-icons .sy-sprite {
     position: absolute;
     width: 0;
     height: 0;
     overflow: hidden;
   }
+  .sy-icons .sy-icons__label {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 0;
+    font-size: 13px;
+    line-height: 20px;
+  }
+  .sy-icons__name {
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+  .sy-icons__count,
+  .sy-icons__hover {
+    font: 12px var(--__sl-font-mono, ui-monospace, Menlo, monospace);
+    color: var(--sy-dim);
+    font-variant-numeric: tabular-nums;
+  }
+  .sy-icons__hover {
+    display: flex;
+    gap: 1ch;
+    min-width: 0;
+    margin-inline-start: auto;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .sy-icons__hover b {
+    font-weight: 500;
+    color: var(--sl-color-white);
+  }
+  .sy-icons__row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-inline-start: -8px;
+  }
+  .sy-icons__row button {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 9px;
+    background: none;
+    color: var(--sl-color-white);
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .sy-icons__row button:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .sy-icons__set:hover button:not(:hover) {
+      opacity: 0.4;
+    }
+  }
+  .sy-icons__set:has(button:focus-visible) button:not(:focus-visible) {
+    opacity: 0.4;
+  }
+  [data-mark-part='orbit'] {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+  }
+  [data-mark-part='bar'] {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
   .sy-i { fill: currentColor; }
+  .sy-i2 { fill: currentColor; fill-opacity: 0.18; }
   .sy-i3 { fill: currentColor; fill-opacity: 0.4; }
   .sy-a { fill: var(--icon-accent, currentColor); }
   .sy-is { stroke: currentColor; }
+  .sy-i2s { stroke: currentColor; stroke-opacity: 0.18; }
   .sy-i3s { stroke: currentColor; stroke-opacity: 0.4; }
   .sy-as { stroke: var(--icon-accent, currentColor); }
+  @media (prefers-reduced-motion: reduce) {
+    .sy-icons__row button {
+      transition: none;
+    }
+  }
 </style>

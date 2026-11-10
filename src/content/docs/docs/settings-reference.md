@@ -17,7 +17,7 @@ At the top, before any group:
 
 | Setting | What it does |
 | --- | --- |
-| Host IP | Your server's own address. Setting it lets badges and widgets reach services on that IP, which the SSRF guard would otherwise block. See [Security](/docs/security/). |
+| Host IP | Your server's own IP address. Setting it lets badges and widgets reach services on that IP, which the SSRF guard would otherwise block. See [Security](/docs/security/). |
 
 ### Language
 

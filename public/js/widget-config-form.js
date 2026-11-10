@@ -1,11 +1,11 @@
 /* Renders a widget's declared `fields` into a config form and reads the values
    back. Each builder returns { el, get, control, liveValue }. */
 
-import { t } from '/js/i18n.js?v=ed7c5565';
+import { t } from '/js/i18n.js?v=ec60b9bd';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { reveal, wireInlineEdit } from '/js/admin-shared.js?v=290ab8cb';
-import { createListbox } from '/js/listbox.js?v=db99acbe';
-import { renderColorControl } from '/js/admin-color-control.js?v=433d3f3b';
+import { fadeIn, reveal, wireInlineEdit } from '/js/admin-shared.js?v=bb375b32';
+import { createListbox } from '/js/listbox.js?v=5cf876f8';
+import { renderColorControl } from '/js/admin-color-control.js?v=29a2c296';
 import {
   seedCarried,
   applyOptionSet,
@@ -14,11 +14,12 @@ import {
   groupBounds,
   visibleFieldFlags,
   isPlainField,
-} from '/js/admin-logic.js?v=cf072e65';
-import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=0882cee9';
-import { qi } from '/js/utils.js?v=14d4695d';
-import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
+} from '/js/admin-logic.js?v=c1ed16c7';
+import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=d1f8f6f4';
+import { qi } from '/js/utils.js?v=ff7e1e5f';
+import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
 import { SAVED_ROW } from '/js/saved-row.js?v=44039df6';
+import { slideBlock } from '/js/modal.js?v=c4c1c4c4';
 
 const PE =
   '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M18.4 2.6a1.85 1.85 0 0 1 2.6 2.6l-9.1 9.1-3.4 1 1-3.4z"/></svg>';
@@ -624,6 +625,7 @@ function _group(field, rows, size, ctx) {
   }
 
   let rowBuilt = [];
+  let removing = false;
 
   function render() {
     rowsHost.replaceChildren();
@@ -639,9 +641,21 @@ function _group(field, rows, size, ctx) {
       rm.disabled = data.length <= min;
       if (fixed) rm.style.display = 'none';
       rm.onclick = () => {
+        if (removing) return;
+        removing = true;
         captureCurrent();
+        /* Keep both in step. get() pairs them by index during the slide. */
         data.splice(idx, 1);
-        render();
+        rowBuilt.splice(idx, 1);
+        let left = 2;
+        const done = () => {
+          if (--left) return;
+          removing = false;
+          captureCurrent();
+          render();
+        };
+        slideBlock(hdr, false, done);
+        slideBlock(card, false, done);
       };
       hdr.appendChild(rm);
       rowsHost.appendChild(hdr);
@@ -687,6 +701,8 @@ function _group(field, rows, size, ctx) {
     captureCurrent();
     data.push(newRow());
     render();
+    fadeIn(rowsHost.lastElementChild);
+    fadeIn(rowsHost.lastElementChild?.previousElementSibling ?? null);
   };
   render();
 

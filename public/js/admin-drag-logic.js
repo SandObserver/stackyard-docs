@@ -1,3 +1,5 @@
+import { folderChildren } from '/js/admin-logic.js?v=c1ed16c7';
+
 /* Only apps may live inside a folder. Widgets and folders stay at the top
    level. */
 
@@ -27,6 +29,24 @@ export function pastLiftSlop(dx, dy) {
   return Math.hypot(dx, dy) >= LIFT_SLOP;
 }
 
+const EDGE_ZONE = 72;
+const EDGE_MIN_PX_PER_MS = 0.15;
+const EDGE_MAX_PX_PER_MS = 1.2;
+
+/** The scroll speed for a drag held near an edge. Negative scrolls up. Deeper
+    into the zone is faster.
+    @param {number} y pointer position @param {number} top @param {number} bottom
+    @returns {number} px per ms, 0 outside the zones */
+export function edgeScrollSpeed(y, top, bottom) {
+  const above = top + EDGE_ZONE - y;
+  const below = y - (bottom - EDGE_ZONE);
+  if (above <= 0 && below <= 0) return 0;
+  const up = above >= below;
+  const depth = Math.min(1, (up ? above : below) / EDGE_ZONE);
+  const speed = EDGE_MIN_PX_PER_MS + (EDGE_MAX_PX_PER_MS - EDGE_MIN_PX_PER_MS) * depth;
+  return up ? -speed : speed;
+}
+
 /** The list group a top-level row is drawn in.
     @param {any} item @returns {'dock' | 'home'} */
 export function listGroup(item) {
@@ -51,7 +71,7 @@ export function dropTargetKind({ srcType, targetIsFolder = false, indent = false
 
 /* An app belongs to one folder, or the dashboard draws it twice. */
 function leaveFolders(items, id) {
-  for (const f of items) if (f.type === 'folder') f.children = (f.children || []).filter(c => c !== id);
+  for (const f of items) if (f.type === 'folder') f.children = folderChildren(f).filter(c => c !== id);
 }
 
 /* Applies a drag move in place. `d` describes the dragged row and the target:
@@ -71,7 +91,7 @@ export function applyDrop(items, d) {
 
   if (d.srcFolderId) {
     const sf = items.find(i => i.id === d.srcFolderId);
-    if (sf) sf.children = (sf.children || []).filter(id => id !== src.id);
+    if (sf) sf.children = folderChildren(sf).filter(id => id !== src.id);
   } else {
     const si = items.indexOf(src);
     if (si >= 0) items.splice(si, 1);

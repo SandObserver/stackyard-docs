@@ -1,76 +1,4 @@
-import { loadLocalIcons, iconChain } from '/js/icons.js?v=5ac01d72';
-import {
-  WIDGET_HEIGHTS,
-  WIDGET_DESIGN,
-  WIDGET_COLS,
-  WIDGET_ROWS,
-  widgetSrc,
-  cardPreset,
-  fixedAppearance,
-  uniqueTitle,
-} from '/js/widget-types.js?v=b0e8f76d';
-import {
-  el,
-  ICON_R,
-  inertAllBut,
-  isDashboardEmpty,
-  loadImagesNow,
-  mk,
-  mkWrap as _mkWrap,
-  mountScaledWidget,
-  pageDir,
-  renderEmptyState,
-  q,
-  qa,
-  qi,
-  scrollsSideways,
-  setCentredText,
-  storeGet,
-  storeSet,
-  teardownWidgets,
-  rethemeTiles,
-  titleWhenTruncated,
-  within,
-} from '/js/utils.js?v=14d4695d';
-import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
-import { initSpotlight } from '/js/spotlight.js?v=e50cb331';
-import { html, setHtml, raw } from '/js/html.js?v=c71f8903';
-import { initI18n, isSupported, t, currentLang } from '/js/i18n.js?v=ed7c5565';
-import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=c03e1465';
-import { passwordMeter, passwordMismatch, contextWords, meterColor } from '/js/password-policy.js?v=0c0fd0af';
-import { fillUsernames, wireReveal } from '/js/password-reveal.js?v=37f218b4';
-import { setupErrorKey } from '/js/admin-error.js?v=0882cee9';
-import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
-import { DOCK_MAX } from '/js/limits.js?v=ea61a441';
-import {
-  initUI,
-  mkFolder,
-  openFolderDesktop,
-  openFolderMobile,
-  buildMobile,
-  resetMobileChrome,
-  mkFolderGlyph,
-  swipePager,
-} from '/js/ui.js?v=9d71ca16';
-import {
-  badgeMinimum,
-  badgeSignature,
-  computeBadgeVisual,
-  folderLabelName,
-  readBadgeUpdate,
-} from '/js/badge-logic.js?v=6d99179d';
-import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
-import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=652dd5df';
-import { observeGlass } from '/js/glass-rim.js?v=3faec233';
-import {
-  configChanged,
-  desktopCols,
-  desktopPages,
-  landingAfterSetup,
-  restoreAction,
-  restorePage,
-  wheelPager,
-} from '/js/dashboard-logic.js?v=3098e6b2';
+import { setupErrorKey } from '/js/admin-error.js?v=d1f8f6f4';
 import {
   applyBackground,
   BACKDROP,
@@ -78,22 +6,97 @@ import {
   firstViewWait,
   rememberBackground,
   resolveBackground,
-} from '/js/background.js?v=96567a38';
-import { saveBootHint } from '/js/wallpaper-cache.js?v=cd968718';
-import { creditPlacement, showPhotoCredit } from '/js/photo-credit.js?v=1801451c';
-import { repeatJittered } from '/js/jitter.js?v=087a1fcf';
-import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
-import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
+} from '/js/background.js?v=e9980cbc';
 import {
-  averageColor,
+  badgeMinimum,
+  badgeSignature,
+  computeBadgeVisual,
+  folderLabelName,
+  readBadgeUpdate,
+} from '/js/badge-logic.js?v=04a4ece8';
+import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=2352c034';
+import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=9b0a0ed6';
+import {
+  configChanged,
+  desktopCols,
+  desktopPages,
+  landingAfterSetup,
+  PAGE_TURN_MS,
+  restoreAction,
+  restorePage,
+  wheelPager,
+  withKnownSizes,
+} from '/js/dashboard-logic.js?v=8b2dad40';
+import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
+import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { observeGlass } from '/js/glass-rim.js?v=3faec233';
+import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
+import { currentLang, initI18n, isSupported, t } from '/js/i18n.js?v=ec60b9bd';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { iconChain, loadLocalIcons } from '/js/icons.js?v=76c29d43';
+import { repeatJittered } from '/js/jitter.js?v=087a1fcf';
+import {
   applyLabelTones,
+  averageColor,
   loadSamplingImage,
   sampleImage,
   toneForColor,
-} from '/js/label-contrast.js?v=7172d36f';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=b279fd98';
+} from '/js/label-contrast.js?v=e046296b';
+import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
+import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
+import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
 import { pageTheme, paletteColor } from '/js/palette.js?v=3fb8ae43';
-import { THEME_KEY, applyTheme, prefersDark, readMode, resolveTheme } from '/js/theme.js?v=eeafa4b5';
+import { contextWords, meterColor, passwordMeter, passwordMismatch } from '/js/password-policy.js?v=0c0fd0af';
+import { fillUsernames, wireReveal } from '/js/password-reveal.js?v=37f218b4';
+import { creditPlacement, showPhotoCredit } from '/js/photo-credit.js?v=1801451c';
+import { initSpotlight } from '/js/spotlight.js?v=8f5b3158';
+import { applyTheme, prefersDark, readMode, resolveTheme, THEME_KEY } from '/js/theme.js?v=eeafa4b5';
+import {
+  buildMobile,
+  closeFolders,
+  initUI,
+  mkFolder,
+  mkFolderGlyph,
+  openFolderDesktop,
+  openFolderMobile,
+  resetMobileChrome,
+  swipePager,
+} from '/js/ui.js?v=3a8b6601';
+import {
+  mkWrap as _mkWrap,
+  el,
+  ICON_R,
+  inertAllBut,
+  isDashboardEmpty,
+  loadImagesNow,
+  mk,
+  mountScaledWidget,
+  pageDir,
+  q,
+  qa,
+  qi,
+  renderEmptyState,
+  rethemeTiles,
+  scrollsSideways,
+  setCentredText,
+  storeGet,
+  storeSet,
+  teardownWidgets,
+  titleWhenTruncated,
+  within,
+} from '/js/utils.js?v=ff7e1e5f';
+import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
+import { saveBootHint } from '/js/wallpaper-cache.js?v=cd968718';
+import {
+  cardPreset,
+  fixedAppearance,
+  uniqueTitle,
+  WIDGET_COLS,
+  WIDGET_DESIGN,
+  WIDGET_HEIGHTS,
+  WIDGET_ROWS,
+  widgetSrc,
+} from '/js/widget-types.js?v=b0e8f76d';
 
 ensureSprite();
 
@@ -153,7 +156,7 @@ function desktopRows(hasDock) {
   return Math.max(1, Math.min(4, Math.floor((ih - top - bottom + gm.rowGap) / (gm.tile + gm.rowGap))));
 }
 
-const CB = { spotOpen: null, spotClose: null, mobPillBump: null, homeSwipe: null };
+const CB = { spotOpen: null, spotClose: null, mobPillBump: null, mobPillSync: null, homeSwipe: null };
 
 /* A touch produces a compatibility mouse event after it. */
 const COMPAT_POINTER_MS = 500;
@@ -238,6 +241,7 @@ function bupd(id) {
     const tileName = tile?.dataset.tileName;
     if (tile && tileName) tile.setAttribute('aria-label', aria ? `${tileName}, ${aria}` : tileName);
     if (BSIG.get(badge) === sig) return;
+    const painted = BSIG.has(badge);
     BSIG.set(badge, sig);
     BEXIT.get(badge)?.cancel();
     BEXIT.delete(badge);
@@ -251,7 +255,7 @@ function bupd(id) {
               { opacity: 1, transform: 'translateZ(0)' },
               { opacity: 0, transform: 'translateZ(0) scale(.6)' },
             ],
-        { duration: 150, easing: 'ease-in', fill: 'forwards' },
+        { duration: 150, easing: 'cubic-bezier(.23,1,.32,1)', fill: 'forwards' },
       );
       BEXIT.set(badge, exit);
       exit.onfinish = () => {
@@ -261,8 +265,23 @@ function bupd(id) {
       };
       return;
     }
+    const entering = !_firstPolls && painted && !badge.classList.contains('on') && cls.split(' ').includes('on');
     paintBadge(badge, { cls, num, unit, bg, color, nextColor, popover, rows });
+    if (entering) badgeEnter(badge);
   });
+}
+
+function badgeEnter(badge) {
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  badge.animate(
+    still
+      ? [{ opacity: 0 }, { opacity: 1 }]
+      : [
+          { opacity: 0, transform: 'translateZ(0) scale(.8)' },
+          { opacity: 1, transform: 'translateZ(0)' },
+        ],
+    { duration: still ? 150 : 300, easing: 'cubic-bezier(.33,1,.68,1)' },
+  );
 }
 
 const BEXIT = new WeakMap();
@@ -451,6 +470,7 @@ function mkDot(i, total, current, go) {
 function buildDesktop() {
   /* Removing the DOM does not stop the observers and timers the previous
      widgets started. */
+  closeFolders();
   teardownWidgets();
   closeBadgePopover();
   BEL.clear();
@@ -532,31 +552,30 @@ function syncPageInert(current) {
   if (strip) inertAllBut(strip, current);
 }
 
-function goTo(n, dotEls, announce = true) {
+let _willChangeTimer = 0;
+function goTo(n, dotEls, announce = true, bump = true) {
   const total = dotEls ? dotEls.length : totalPages;
   const was = pg;
   pg = Math.max(0, Math.min(total - 1, n));
+  if (pg !== was) closeBadgePopover();
   if (pg !== was && announce) announcePage(pg, total);
   if (_stateRef) _stateRef.pg = pg;
   storeSet(PAGE_STORE, String(pg));
   const strip = el('pages');
   syncPageInert(pg);
-  const shift = `translateX(${-pageDir() * pg * 100}vw)`;
+  const shift = `translateX(${-pageDir() * pg * 100}%)`;
   strip.style.transform = strip.style.webkitTransform = shift;
   strip.style.willChange = 'transform';
-  strip.addEventListener(
-    'transitionend',
-    () => {
-      strip.style.willChange = 'auto';
-    },
-    { once: true },
-  );
+  clearTimeout(_willChangeTimer);
+  _willChangeTimer = window.setTimeout(() => {
+    if (!strip.classList.contains('dragging')) strip.style.willChange = 'auto';
+  }, PAGE_TURN_MS + 50);
   (dotEls ?? document.querySelectorAll('.dot')).forEach((d, i) => {
     d.classList.toggle('on', i === pg);
     if (i === pg) d.setAttribute('aria-current', 'true');
     else d.removeAttribute('aria-current');
   });
-  if (MOB && CB.mobPillBump) CB.mobPillBump(pg);
+  if (MOB && bump && CB.mobPillBump) CB.mobPillBump(pg);
   syncPager(total);
   applyPollRates();
 }
@@ -694,6 +713,20 @@ function showApiDown() {
   document.body.appendChild(msg);
 }
 
+function showBuildFailed() {
+  document.documentElement.style.removeProperty('--boot-bg');
+  const msg = document.createElement('div');
+  msg.className = 'api-error-screen';
+  msg.setAttribute('role', 'alert');
+  setHtml(
+    msg,
+    html`<h2 class="api-error-title">${t('home.loadFailed')}</h2><a class="api-error-btn" href="/admin/">${t('home.emptyAction')}</a>`,
+  );
+  for (const child of document.body.children) /** @type {HTMLElement} */ (child).inert = true;
+  document.body.classList.add('api-down');
+  document.body.appendChild(msg);
+}
+
 /** @param {HTMLElement} root @param {any} bg @param {number} call */
 async function showWallpaper(root, bg, call) {
   const prev = _shownWallpaper;
@@ -747,6 +780,8 @@ async function applyBg() {
 function refreshBadges() {
   for (const id of BEL.keys()) bupd(id);
 }
+/* Badges the first polls turn on are existing state, not a change. */
+let _firstPolls = 2;
 async function pollBadges() {
   try {
     const res = await fetch('/api/badges', { cache: 'no-store' });
@@ -772,6 +807,8 @@ async function pollBadges() {
       badgesStale = true;
       refreshBadges();
     }
+  } finally {
+    if (_firstPolls) _firstPolls--;
   }
 }
 async function pollHealth() {
@@ -793,6 +830,8 @@ async function pollHealth() {
       healthStale = true;
       refreshBadges();
     }
+  } finally {
+    if (_firstPolls) _firstPolls--;
   }
 }
 
@@ -805,10 +844,11 @@ function showSetupPrompt() {
     ov.setAttribute('aria-labelledby', 'setup-title');
     setHtml(
       ov,
-      html`<form class="setup-card" method="post" novalidate><input type="text" name="username" autocomplete="username" hidden><p id="setup-title" class="setup-title">${t('setup.title')}</p><p class="setup-sub">${t('setup.sub')}</p><div class="setup-field"><input id="setup-pw" type="password" placeholder="${t('setup.newPassword')}" aria-label="${t('setup.newPassword')}" aria-describedby="setup-hint" autocomplete="new-password" class="setup-pw"><button id="setup-reveal" type="button" class="setup-reveal" aria-pressed="false" aria-label="${t('common.showPassword')}" title="${t('common.showPassword')}">${raw(EYE)}</button></div><input id="setup-pw2" type="password" placeholder="${t('setup.confirmPassword')}" aria-label="${t('setup.confirmPassword')}" autocomplete="new-password" class="setup-pw"><div id="setup-bars" class="setup-bars" aria-hidden="true"><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span></div><div id="setup-hint" class="setup-hint" role="status"></div><div id="setup-err" class="setup-err" role="alert"></div><div class="setup-btns"><button id="setup-skip" type="button" class="setup-btn setup-btn-skip">${t('setup.skip')}</button><button id="setup-set" type="submit" class="setup-btn setup-btn-set" disabled>${t('setup.set')}</button></div></form>`,
+      html`<form class="setup-card" method="post" novalidate><input type="text" name="username" autocomplete="username" hidden><p id="setup-title" class="setup-title">${t('setup.title')}</p><p class="setup-sub">${t('setup.sub')}</p><div class="setup-field"><input id="setup-pw" type="password" placeholder="${t('setup.newPassword')}" aria-label="${t('setup.newPassword')}" aria-describedby="setup-hint" autocomplete="new-password" class="setup-pw"><button id="setup-reveal" type="button" class="setup-reveal" aria-pressed="false" aria-label="${t('common.showPassword')}" title="${t('common.showPassword')}">${raw(EYE)}</button></div><input id="setup-pw2" type="password" placeholder="${t('setup.confirmPassword')}" aria-label="${t('setup.confirmPassword')}" autocomplete="new-password" class="setup-pw"><input id="setup-code" type="text" placeholder="${t('hostBlock.code')}" aria-label="${t('hostBlock.code')}" aria-describedby="setup-code-help" autocomplete="one-time-code" autocapitalize="characters" spellcheck="false" class="setup-pw"><p id="setup-code-help" class="setup-hint">${t('hostBlock.setupHelp')}</p><div id="setup-bars" class="setup-bars" aria-hidden="true"><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span><span class="pwbar"></span></div><div id="setup-hint" class="setup-hint" role="status"></div><div id="setup-err" class="setup-err" role="alert"></div><div class="setup-btns"><button id="setup-skip" type="button" class="setup-btn setup-btn-skip">${t('setup.skip')}</button><button id="setup-set" type="submit" class="setup-btn setup-btn-set" disabled>${t('setup.set')}</button></div></form>`,
     );
     const pw = qi('#setup-pw', ov);
     const pw2 = qi('#setup-pw2', ov);
+    const code = qi('#setup-code', ov);
     const rev = /** @type {HTMLButtonElement} */ (q('#setup-reveal', ov));
     const bars = qa('.pwbar', ov);
     const hint = q('#setup-hint', ov);
@@ -828,10 +868,11 @@ function showSetupPrompt() {
       const mismatch = pw2.value !== '' && passwordMismatch(pw.value, pw2.value);
       err.textContent = mismatch ? t('setup.mismatch') : '';
       err.style.display = mismatch ? 'block' : 'none';
-      setB.disabled = !ok || !matches();
+      setB.disabled = !ok || !matches() || !code.value.trim();
     };
     pw.addEventListener('input', sync);
     pw2.addEventListener('input', sync);
+    code.addEventListener('input', sync);
 
     wireReveal(rev, [pw, pw2]);
     fillUsernames(ov);
@@ -863,7 +904,7 @@ function showSetupPrompt() {
     };
 
     async function doSet() {
-      if (!passwordMeter(pw.value, words).ok || !matches()) return;
+      if (!passwordMeter(pw.value, words).ok || !matches() || !code.value.trim()) return;
       setB.disabled = true;
       skip.disabled = true;
       err.style.display = 'none';
@@ -871,7 +912,7 @@ function showSetupPrompt() {
         const r = await fetch('/api/auth/set-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pw.value }),
+          body: JSON.stringify({ password: pw.value, code: code.value }),
         });
         if (!r.ok) {
           const body = await r.json().catch(() => null);
@@ -881,10 +922,12 @@ function showSetupPrompt() {
         if (to) location.href = to;
         else location.reload();
       } catch (e) {
-        err.textContent = t(setupErrorKey(e));
+        const key = setupErrorKey(e);
+        err.textContent = t(key);
         err.style.display = 'block';
         setB.disabled = false;
         skip.disabled = false;
+        if (key === 'hostBlock.codeWrong') code.focus();
       }
     }
     q('form', ov).addEventListener('submit', e => {
@@ -945,7 +988,7 @@ async function boot() {
     const c = await res.json();
     /* Saving rejects these, but a config written earlier still reaches here.
        See ui/js/link-url.js. */
-    items = sanitizeItemLinks(c.items || []);
+    items = withKnownSizes(sanitizeItemLinks(c.items || []), WIDGET_COLS.desktop);
     S = c.settings || {};
     _rev = c._rev ?? null;
     storeSet(LANG_STORE, await initI18n(S.language || 'en'));
@@ -1045,11 +1088,17 @@ async function boot() {
       document.body.classList.add('is-mob');
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          buildMobile();
-          syncMobPages();
-          goTo(restorePage(storeGet(PAGE_STORE), totalPages), null, false);
-          loadVisibleIcons();
-          retone();
+          try {
+            buildMobile();
+            syncMobPages();
+            goTo(restorePage(storeGet(PAGE_STORE), totalPages), null, false, false);
+            CB.mobPillSync?.(pg);
+            loadVisibleIcons();
+            retone();
+          } catch (e) {
+            console.error('dashboard build failed', e);
+            showBuildFailed();
+          }
           firstBuilt();
         }),
       );
@@ -1077,7 +1126,7 @@ async function boot() {
     if (e.target === pager) return;
     if (el('spot').hasAttribute('open')) return;
     /* The overlay covers the page it would scroll behind. */
-    if (document.querySelector('.folder-overlay[open]')) return;
+    if (document.querySelector('.folder-overlay[open], .folder-overlay-mobile[open]')) return;
     if (e.key === 'ArrowRight') goTo(pg + pageDir());
     if (e.key === 'ArrowLeft') goTo(pg - pageDir());
   });
@@ -1101,6 +1150,8 @@ async function boot() {
     },
     { passive: false },
   );
+  const overlayOpen = () =>
+    el('spot').hasAttribute('open') || !!document.querySelector('.folder-overlay[open], .folder-overlay-mobile[open]');
   let _dMx = 0,
     _dDragging = false;
   document.addEventListener('mousedown', e => {
@@ -1111,6 +1162,10 @@ async function boot() {
     if (Math.abs(e.clientX - _dMx) > 8) _dDragging = true;
   });
   document.addEventListener('mouseup', e => {
+    if (overlayOpen()) {
+      _dDragging = false;
+      return;
+    }
     if (!_dDragging) return;
     _dDragging = false;
     /* A swipe is followed by a compatibility mouse event. Acting on both pages
@@ -1176,8 +1231,7 @@ async function boot() {
       return;
     }
     const doc = /** @type {any} */ (document);
-    if (typeof doc.startViewTransition === 'function' && !matchMedia('(prefers-reduced-motion: reduce)').matches)
-      doc.startViewTransition(retheme);
+    if (typeof doc.startViewTransition === 'function') doc.startViewTransition(retheme);
     else retheme();
   };
   try {
@@ -1284,7 +1338,7 @@ async function boot() {
     try {
       const res = await fetch('/api/config', { cache: 'no-store' });
       if (!res.ok) return;
-      if (differs(await res.json())) location.reload();
+      if (differs(await res.json()) && !overlayOpen() && !strip.classList.contains('dragging')) location.reload();
     } catch {}
   };
 
@@ -1318,6 +1372,7 @@ async function boot() {
     } else {
       pollBadges();
       pollHealth();
+      pollConfig();
       startPolling();
     }
   });
@@ -1330,7 +1385,7 @@ async function boot() {
   window.addEventListener('pageshow', async e => {
     if (!e.persisted) return;
     const signal = AbortSignal.timeout(BOOT_TIMEOUT_MS);
-    /** @param {string} url @returns {Promise<import('/js/dashboard-logic.js?v=3098e6b2').RestoreCheck>} */
+    /** @param {string} url @returns {Promise<import('/js/dashboard-logic.js?v=8b2dad40').RestoreCheck>} */
     const check = async url => {
       try {
         const r = await fetch(url, { cache: 'no-store', redirect: 'manual', signal });
@@ -1369,4 +1424,10 @@ async function boot() {
   liftVeil();
 }
 
-boot();
+boot().catch(async e => {
+  console.error('[boot]', e);
+  const lastLang = storeGet(LANG_STORE);
+  await initI18n(isSupported(lastLang) ? lastLang : 'en').catch(() => {});
+  showBuildFailed();
+  liftVeil();
+});

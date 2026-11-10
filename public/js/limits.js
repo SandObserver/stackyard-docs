@@ -5,6 +5,8 @@ export const DOCK_MAX = 4;
 
 export const NAME_MAX = 64;
 
+export const ITEMS_MAX = 5000;
+
 /** @param {string} name @returns {string} */
 export function clampName(name) {
   const s = String(name);
@@ -17,3 +19,5 @@ export function clampName(name) {
         .map(p => p.segment)
         .join('');
 }
+
+export const CONFIG_MAX_BYTES = 2 * 1024 * 1024;

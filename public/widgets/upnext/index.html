@@ -75,7 +75,7 @@
   <div class="wt-cap note" id="note" hidden></div>
 </div>
 <script type="module">
-  import { poll, linkTo, loadStrings, wt, errorState, errorLine, placeholder, localiseDigits, cssZoom } from '/js/widget-toolbox.js?v=373740c4';
+  import { poll, linkTo, loadStrings, wt, errorState, errorLine, placeholder, localiseDigits, cssZoom } from '/js/widget-toolbox.js?v=1aeedc33';
   import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
   import { visibleItems, dayOffset, kindClass } from './upnext-logic.js';
 
@@ -139,7 +139,8 @@
   function gutter(i, now) {
     const d = dateOf(i);
     const off = dayOffset(d, now);
-    const top = off === 0 ? wt('ui.today', 'Today') : WEEKDAY.format(d);
+    const today = size === 'small' ? wt('ui.todayShort', 'Today') : wt('ui.today', 'Today');
+    const top = off === 0 ? today : WEEKDAY.format(d);
     const bottom = i.at && off < 7 ? timeOf(d) : off < 7 ? DAY_NO.format(d) : SHORT_DATE.format(d);
     return { top, bottom, today: off === 0 };
   }
@@ -194,7 +195,7 @@
   function fitGutter() {
     rowsEl.style.setProperty('--gt', 'max-content');
     const widest = Math.max(44, ...[...rowsEl.querySelectorAll('.gt')].map((g) => Math.ceil(g.getBoundingClientRect().width / cssZoom())));
-    rowsEl.style.setProperty('--gt', Math.min(widest, 76) + 'px');
+    rowsEl.style.setProperty('--gt', Math.min(widest, size === 'small' ? 56 : 76) + 'px');
   }
 
   const state = errorState({ root: card, content: rowsEl, place: 'auto' });
@@ -262,6 +263,7 @@
     interval: 900000,
   });
   setInterval(() => {
+    if (document.hidden) return;
     if (last && !failing) render(last);
   }, 60000);
 </script>

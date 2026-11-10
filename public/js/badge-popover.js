@@ -2,7 +2,8 @@
 /* One element for the whole dashboard. A per-tile popover outlives the tiles
    the grid rebuilds on every resize. */
 
-import { formatNumber } from '/js/format-number.js?v=abcd4ae4';
+import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
 
 const HOVER_IN_MS = 320;
 const COMPAT_CLICK_MS = 500;
@@ -81,7 +82,7 @@ function grow(p, badge, opening) {
   const full = still ? { opacity: 1 } : { opacity: 1, transform: 'none' };
   return p.animate(opening ? [shut, full] : [full, shut], {
     duration: opening ? 200 : 120,
-    easing: opening ? 'cubic-bezier(.32,.72,0,1)' : 'ease-in',
+    easing: opening ? EASE_IOS : 'ease-out',
     fill: opening ? 'none' : 'forwards',
   });
 }
@@ -115,7 +116,7 @@ function open(badge) {
   openFor = badge;
   openedAt = Date.now();
   place(badge);
-  if (was !== badge) grow(p, badge, true);
+  if (!was) grow(p, badge, true);
   const tile = tileOf(badge);
   if (tile) {
     tile.setAttribute('aria-describedby', 'badge-pop');
@@ -150,7 +151,7 @@ function schedule(badge, delay) {
   clearTimeout(closeTimer);
   closeTimer = 0;
   clearTimeout(openTimer);
-  openTimer = window.setTimeout(() => open(badge), delay);
+  openTimer = window.setTimeout(() => open(badge), openFor ? 0 : delay);
 }
 
 /* Cancelled when the pointer arrives on the popover. */
@@ -180,6 +181,24 @@ function wireGlobals() {
   ensurePop().addEventListener('toggle', e => {
     if (/** @type {any} */ (e).newState === 'closed' && openFor) closeBadgePopover();
   });
+  /* Resolve the tile at focus time. A badge is wired before it joins its tile. */
+  document.addEventListener('focusin', e => {
+    const badge = badgeIn(e.target);
+    if (badge && /** @type {HTMLElement} */ (e.target).matches(':focus-visible')) open(badge);
+  });
+  document.addEventListener('focusout', e => {
+    if (badgeIn(e.target)) closeBadgePopover();
+  });
+}
+
+/** The wired badge of a focused tile, or null. @param {EventTarget|null} target */
+function badgeIn(target) {
+  if (!(target instanceof HTMLElement)) return null;
+  for (const badge of target.querySelectorAll('.badge')) {
+    if (ROWS.get(/** @type {HTMLElement} */ (badge)) && tileOf(/** @type {HTMLElement} */ (badge)) === target)
+      return /** @type {HTMLElement} */ (badge);
+  }
+  return null;
 }
 
 /** Attach or remove the popover on one badge. Null rows remove it.
@@ -218,10 +237,4 @@ export function wireBadgePopover(badge, rows) {
     if (openFor === badge) closeBadgePopover();
     else open(badge);
   });
-
-  const tile = tileOf(badge);
-  if (tile) {
-    tile.addEventListener('focus', () => open(badge));
-    tile.addEventListener('blur', () => closeBadgePopover());
-  }
 }

@@ -1,12 +1,12 @@
+import { carriesTypedValues, rejectionLines, sizesForView, widgetConfigMode } from '/js/admin-logic.js?v=c1ed16c7';
+import { initInlineEdit, PE_SVG, swapContent } from '/js/admin-shared.js?v=bb375b32';
 import { state } from '/js/admin-state.js?v=064b9b85';
-import { PE_SVG, initInlineEdit, swapContent } from '/js/admin-shared.js?v=290ab8cb';
-import { createListbox } from '/js/listbox.js?v=db99acbe';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=b581340d';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { sizesForView, widgetConfigMode, rejectionLines, carriesTypedValues } from '/js/admin-logic.js?v=cf072e65';
-import { t } from '/js/i18n.js?v=ed7c5565';
-import { focusFirst, q, qi, qa } from '/js/utils.js?v=14d4695d';
-import { iconSvg } from '/js/icon-set.js?v=b279fd98';
+import { t } from '/js/i18n.js?v=ec60b9bd';
+import { iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { createListbox } from '/js/listbox.js?v=5cf876f8';
+import { focusFirst, q, qa, qi } from '/js/utils.js?v=ff7e1e5f';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=8e21cc05';
 
 const SIZES_WITH_ICONS = new Set(['small', 'medium', 'large', 'xlarge']);
 
@@ -30,7 +30,7 @@ export function buildWidgetForm(body, item) {
   const wc = item?.widgetConfig || {};
   state._wtype = wt;
   state._wsize = ws;
-  state._wlabel = item?.label || '';
+  state._wlabel = typeof item?.label === 'string' ? item.label : '';
   state._wAutoCfg = Object.assign({}, wc);
   _renderWidgetForm(body);
 }
@@ -232,7 +232,7 @@ function _renderCustomConfig(body) {
     <div class="row" id="if-referrer-row"><span class="rl">${t('widgetCfg.referrerPolicy')}</span></div>
     <div class="row ie-row" id="if-allow-row"><span class="rl">${t('widgetCfg.allowFeaturePolicy')}</span><span class="rv${o.allow ? '' : ' is-ph'}">${o.allow ? o.allow : 'autoplay; fullscreen'}</span><input id="if-allow" type="text" value="${o.allow || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>
     <div class="row"><span class="rl">${t('widgetCfg.allowFullscreen')}</span><label class="tog"><input type="checkbox" id="if-fs" aria-label="${t('widgetCfg.allowFullscreen')}" ${o.allowFullscreen !== false ? 'checked' : ''}><div class="tr"></div></label></div>
-    <div class="row ie-row" id="if-refresh-row"><span class="rl">${t('widgetCfg.refreshInterval')} <span class="opt-span">(ms)</span></span><span class="rv${o.refreshInterval ? '' : ' is-ph'}">${o.refreshInterval ? o.refreshInterval : t('widgetCfg.refreshPh')}</span><input id="if-refresh" type="number" min="250" step="250" value="${o.refreshInterval || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
+    <div class="row ie-row" id="if-refresh-row"><span class="rl">${t('widgetCfg.refreshInterval')} <span class="opt-span">(ms)</span></span><span class="rv${o.refreshInterval ? '' : ' is-ph'}">${o.refreshInterval ? o.refreshInterval : t('widgetCfg.refreshPh')}</span><input id="if-refresh" type="number" inputmode="numeric" min="250" step="250" value="${o.refreshInterval || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
   );
   const refBox = createListbox({
     label: t('widgetCfg.referrerPolicy'),

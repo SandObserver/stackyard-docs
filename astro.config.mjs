@@ -46,12 +46,12 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
         { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#000000' } },
         { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f2f2f7' } },
-        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-2f94d569.jpg` } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-9e25fe53.jpg` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
         { tag: 'meta', attrs: { property: 'og:site_name', content: 'Stackyard' } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og-2f94d569.jpg` } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}/img/og-9e25fe53.jpg` } },
       ],
 
       expressiveCode: {

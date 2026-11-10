@@ -5,6 +5,19 @@
    form, and nothing else. Opening the editor again is a new session, so the
    saved config wins, or one widget's form would fill in from the last widget of
    the same type that was open. */
+/** @param {{ q: string, type: string }} filter @returns {boolean} */
+export function filterActive(filter) {
+  return !!(filter.q || filter.type !== 'all');
+}
+
+/** @param {any} item @param {{ q: string, type: string }} filter @returns {boolean} */
+export function itemMatchesFilter(item, filter) {
+  if (filter.type !== 'all' && item.type !== filter.type) return false;
+  if (!filter.q) return true;
+  const hay = ((item.label || '') + ' ' + (item.href || '') + ' ' + (item.widgetType || '')).toLowerCase();
+  return hay.includes(filter.q.toLowerCase());
+}
+
 export function carriesTypedValues(cached, wtype, session) {
   if (!cached || !cached.form) return false;
   return cached.type === wtype && cached.session === session;
@@ -198,6 +211,10 @@ export function needsCurrentPassword({ enabled, wasEnabled, passwordSet, newPass
   return !!wasEnabled && !!passwordSet && (!enabled || !!(newPassword || '').length);
 }
 
+export function needsSetupCode({ enabled, passwordSet, newPassword }) {
+  return !!enabled && !passwordSet && !!(newPassword || '').length;
+}
+
 /* 'unavailable' must not fall through to the custom editor. The server
    withholds that widget's config, so empty fields read as lost settings. */
 export function widgetConfigMode(type, reg) {
@@ -241,11 +258,16 @@ export function groupBounds(field, size) {
   return { min, max };
 }
 
+/** @param {any} folder @returns {string[]} */
+export function folderChildren(folder) {
+  return Array.isArray(folder?.children) ? folder.children : [];
+}
+
 /** The top-level rows of one list group, in order. A docked app is drawn in
     the dock group even when a folder lists it.
     @param {any[]} items @param {boolean} docked @returns {any[]} */
 export function topLevelRows(items, docked) {
-  const inF = new Set(items.filter(i => i.type === 'folder').flatMap(ff => ff.children || []));
+  const inF = new Set(items.filter(i => i.type === 'folder').flatMap(ff => folderChildren(ff)));
   return items.filter(it => {
     const isDocked = it.type === 'app' && !!it.dock;
     if (isDocked !== docked) return false;
@@ -264,7 +286,9 @@ export function isShownChild(items, id) {
 /** The folder's children drawn under it, in order.
     @param {any[]} items @param {any} folder @returns {any[]} */
 export function shownChildren(items, folder) {
-  return (folder?.children || []).filter(id => isShownChild(items, id)).map(id => items.find(i => i.id === id));
+  return folderChildren(folder)
+    .filter(id => isShownChild(items, id))
+    .map(id => items.find(i => i.id === id));
 }
 
 /** Mutates `items` in place. A hidden app leaves the dock, and a docked app
@@ -278,8 +302,8 @@ export function settleDock(items) {
     else docked.add(it.id);
   }
   for (const f of items) {
-    if (f.type === 'folder' && (f.children || []).some(id => docked.has(id))) {
-      f.children = f.children.filter(id => !docked.has(id));
+    if (f.type === 'folder' && folderChildren(f).some(id => docked.has(id))) {
+      f.children = folderChildren(f).filter(id => !docked.has(id));
     }
   }
 }
@@ -289,7 +313,7 @@ export function reorderItems(items, item, dir, { folderId = null, childIdx = nul
   if (folderId != null) {
     const f = items.find(i => i.id === folderId);
     if (!f) return false;
-    const ch = f.children || [];
+    const ch = folderChildren(f);
     let j = childIdx + dir;
     while (j >= 0 && j < ch.length && !isShownChild(items, ch[j])) j += dir;
     if (j < 0 || j >= ch.length) return false;
@@ -416,4 +440,14 @@ export function singleChoice(value, options) {
   if (value == null) return [];
   const v = String(value);
   return v !== '' || options.some(o => o.group == null && String(o.value) === '') ? [v] : [];
+}
+
+/** @param {unknown} url @returns {string} the last path segment, decoded when it can be */
+export function wallpaperFileName(url) {
+  const last = String(url).split('/').pop() || '';
+  try {
+    return decodeURIComponent(last);
+  } catch {
+    return last;
+  }
 }

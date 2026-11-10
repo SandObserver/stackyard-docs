@@ -67,8 +67,7 @@
     -webkit-box-orient: vertical; overflow: hidden;
   }
   .card-back-name.cut, .card-front-name.cut { display: block; white-space: nowrap; text-overflow: ellipsis; }
-  .card-back.running { animation: pulse-bg 2s ease-in-out infinite; }
-  @keyframes pulse-bg { 0%,100%{filter:brightness(1)} 50%{filter:brightness(1.15)} }
+  .off .sync-icon { animation-play-state: paused; }
 
   /* Front card */
   .card-front {
@@ -95,9 +94,11 @@
     width: 100%; height: 100%;
     display: block;
   }
-  .card-wrap:hover .card-front,
   .card-wrap:focus-visible .card-front,
   .card-wrap:active .card-front { opacity: 0; }
+  @media (hover: hover) and (pointer: fine) {
+    .card-wrap:hover .card-front { opacity: 0; }
+  }
 
   .card-front-name-zone {
     position: absolute; bottom: 0; left: 0; right: 0;
@@ -126,7 +127,7 @@
 <body>
 <div class="widget" id="widget" role="group" aria-label="Backup status"></div>
 <script type="module">
-import { poll, fetchData, openUrl, linkTo, html, setHtml, loadStrings, wt, errorState, errorLine, formatList, relativeTime, cssZoom } from '/js/widget-toolbox.js?v=373740c4';
+import { poll, fetchData, openUrl, linkTo, html, setHtml, loadStrings, wt, errorState, errorLine, formatList, relativeTime, cssZoom, whileOnScreen } from '/js/widget-toolbox.js?v=1aeedc33';
 await loadStrings();
 document.getElementById('widget').setAttribute('aria-label', wt('ui.backupStatus', 'Backup status'));
 const id   = new URLSearchParams(location.search).get('id')   || '';
@@ -406,6 +407,7 @@ async function boot() {
   buildShell();
   /* The gap shrinks to 5s while any slot reports running. */
   const w = document.getElementById('widget');
+  whileOnScreen(w, v => w.classList.toggle('off', !v));
   const state = errorState({
     root: w,
     content: () => Array.from(w.querySelectorAll('.card-wrap')),
@@ -417,6 +419,7 @@ async function boot() {
     onError: ({ error, everOk, stale, since }) => {
       if (!everOk || stale) applyError(state.fail(error, { since, inert: everOk }));
     } });
+  setInterval(refreshTimes, 60000);
 }
 
 function buildShell() {
@@ -503,7 +506,6 @@ function buildShell() {
         let _revealTimer = null;
         wrap.addEventListener('touchend', (e) => {
           const href = cardLink(idx);
-          if (!href) return;
           e.preventDefault();
           const isRevealed = wrap.classList.contains('touch-revealed');
           /* Reset all cards and clear any pending timers */
@@ -514,7 +516,7 @@ function buildShell() {
             if (f) f.style.opacity = '';
           });
           if (isRevealed) {
-            openUrl(href);
+            if (href) openUrl(href);
           } else {
             wrap.classList.add('touch-revealed');
             const front = wrap.querySelector('.card-front');
@@ -591,7 +593,18 @@ async function fetchJobs() {
   return fetchData('slots');
 }
 
+let _shownJobs=null;
+
+function refreshTimes() {
+  if(!_shownJobs||document.hidden) return;
+  slotList().forEach((jobId,idx)=>{
+    const job=jobId?_shownJobs[idx]:null;
+    if(job&&!job.error&&job.status!=='running') paintTimes(idx,job);
+  });
+}
+
 function apply(jobs) {
+  _shownJobs=jobs;
   /* jobs is indexed by slot. Map by index, never by id, or slots sharing a
      container lose their own name and status. */
   slotList().forEach((jobId,idx)=>{
@@ -629,7 +642,6 @@ function applyCard(idx, job) {
   if (wrapEl && !wrapEl.classList.contains('inactive')) linkTo(wrapEl, cardLink(idx));
   if(!job) {
     back.style.background='rgba(255,255,255,0.06)'; back.style.color='';
-    back.classList.remove('running');
     return;
   }
 
@@ -639,7 +651,6 @@ function applyCard(idx, job) {
 
   back.style.background = color||'rgba(255,255,255,0.08)';
   back.style.color = fg;
-  back.classList.toggle('running', job.status==='running');
   front.style.setProperty('--status-color', color||'rgba(100,100,110,0.28)');
 
   /* Redraw back canvas with updated text color when status changes */
@@ -651,16 +662,25 @@ function applyCard(idx, job) {
   if(bname) fitName(bname, job.name||'—');
   if(fname) fitName(fname, job.name||'—');
 
+  paintTimes(idx, job);
+  back.setAttribute('aria-hidden','true');
+}
+
+function paintTimes(idx, job) {
+  const front = document.getElementById(`front-${idx}`);
+  const bmeta = document.getElementById(`back-meta-${idx}`);
   const running = job.status==='running';
   const last = running ? '' : relTime(job.lastFinished);
   const next = (!running && job.nextRun) ? relTime(job.nextRun) : '';
   if(bmeta) {
     if(running){
-      bmeta.innerHTML=`<span class="sync-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 4 1.73"/><path d="M13.5 2.5v2.5H11"/></svg></span>${wt('ui.runningNow','Running…')}<br>&nbsp;`;
+      if(!bmeta.querySelector('.sync-icon')) bmeta.innerHTML=`<span class="sync-icon" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 8A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 4 1.73"/><path d="M13.5 2.5v2.5H11"/></svg></span>${wt('ui.runningNow','Running…')}<br>&nbsp;`;
     } else {
+      const failed = job.status==='error' || job.status==='missed';
+      const first = failed ? wt(STATUS_KEY[job.status],STATUS_EN[job.status]) : wt('ui.lastAt','Last {when}',{when:last});
       setHtml(bmeta, next
-        ? html`${wt('ui.lastAt','Last {when}',{when:last})}<br>${wt('ui.nextAt','Next {when}',{when:next})}`
-        : html`${wt('ui.lastAt','Last {when}',{when:last})}`);
+        ? html`${first}<br>${wt('ui.nextAt','Next {when}',{when:next})}`
+        : html`${first}`);
     }
   }
   /* Screen-reader summary on the visible face — status is otherwise colour-only */
@@ -670,10 +690,10 @@ function applyCard(idx, job) {
   if(last) parts.push(wt('ui.lastAria','last run {when}',{when:last}));
   if(next) parts.push(wt('ui.nextAria','next run {when}',{when:next}));
   front.setAttribute('aria-label', formatList(parts,'plain'));
-  back.setAttribute('aria-hidden','true');
 }
 
 function applyError(line) {
+  _shownJobs=null;
   slotList().forEach((_,idx)=>applyCardError(idx, line));
 }
 
@@ -684,7 +704,7 @@ function applyCardError(idx, line) {
   const bmeta = document.getElementById(`back-meta-${idx}`);
   const fname = document.getElementById(`front-name-${idx}`);
   /* Set both. An unset colour inherits black onto a dark card. */
-  if(back){ back.style.background='rgba(255,255,255,0.06)'; back.style.color='#fff'; back.classList.remove('running'); }
+  if(back){ back.style.background='rgba(255,255,255,0.06)'; back.style.color='#fff'; }
   if(front){ front.setAttribute('role','img'); front.setAttribute('aria-label', line); front.style.removeProperty('--status-color'); }
   if(bname) fitName(bname, line);
   if(bmeta) setHtml(bmeta, html`&nbsp;<br>&nbsp;`);

@@ -1,8 +1,9 @@
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=eb6cc81c';
-import { mk, clr, el, initial, inp as inpById, q, qa, setUserText } from '/js/utils.js?v=14d4695d';
-import { t } from '/js/i18n.js?v=ed7c5565';
+import { SWIPE_LOCK_PX } from '/js/dashboard-logic.js?v=8b2dad40';
+import { t } from '/js/i18n.js?v=ec60b9bd';
 import { pageTheme } from '/js/palette.js?v=3fb8ae43';
 import { SETTINGS_ICON, SETTINGS_ICON_LIGHT } from '/js/settings-icon.js?v=4079b66a';
+import { clr, el, initial, inp as inpById, mk, q, qa, setUserText } from '/js/utils.js?v=ff7e1e5f';
 
 /* Attached to the window so a re-open can undo the previous one. */
 const _w = /** @type {any} */ (window);
@@ -44,11 +45,17 @@ export function initSpotlight({
     res.replaceChildren();
     const apps = getItems().filter(i => i.type === 'app' || i.type === 'folder');
     const qq = query.toLowerCase().trim();
-    cur = qq ? apps.filter(a => (a.label || a.id).toLowerCase().includes(qq)) : apps;
+    cur = qq
+      ? apps.filter(a =>
+          String(a.label || a.id)
+            .toLowerCase()
+            .includes(qq),
+        )
+      : apps;
     si = 0;
     if (!cur.length) {
       const e = mk('div');
-      e.style.cssText = 'padding:24px;text-align:center;color:rgba(255,255,255,.35);font-size:14px';
+      e.className = 'sr-empty';
       e.textContent = t('home.noResults');
       res.appendChild(e);
       if (live) live.textContent = t('home.noResults');
@@ -76,7 +83,7 @@ export function initSpotlight({
       a.setAttribute('aria-label', app.label || app.id);
       a.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
       a.style.cssText =
-        'display:flex;align-items:center;gap:18px;padding:14px 20px;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+        'display:flex;align-items:center;text-decoration:none;cursor:pointer;-webkit-tap-highlight-color:transparent;';
       /* A click also follows the link. Opening here as well opens two tabs. */
       const doOpen = viaTouch => {
         close();
@@ -91,7 +98,32 @@ export function initSpotlight({
           window.open(app.href, '_blank', 'noreferrer,noopener');
         }
       };
+      let sx = 0,
+        sy = 0,
+        top = 0,
+        moved = false;
+      a.addEventListener(
+        'touchstart',
+        e => {
+          const touch = e.changedTouches[0];
+          sx = touch.clientX;
+          sy = touch.clientY;
+          top = res.scrollTop;
+          moved = e.touches.length > 1;
+        },
+        { passive: true },
+      );
+      a.addEventListener(
+        'touchmove',
+        e => {
+          const touch = e.changedTouches[0];
+          if (touch && Math.hypot(touch.clientX - sx, touch.clientY - sy) >= SWIPE_LOCK_PX) moved = true;
+        },
+        { passive: true },
+      );
       a.addEventListener('touchend', e => {
+        /* A scroll that lifts on a row must not open it. */
+        if (moved || res.scrollTop !== top) return;
         e.preventDefault();
         doOpen(true);
       });
@@ -139,7 +171,7 @@ export function initSpotlight({
       setUserText(nm, app.label || app.id);
       const ht = mk('div');
       ht.className = 'srh';
-      ht.textContent = (app.href || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+      setUserText(ht, (app.href || '').replace(/^https?:\/\//, '').replace(/\/$/, ''));
       tx.append(nm, ht);
       a.append(ic, tx);
       if (!isInternal) {
@@ -326,7 +358,8 @@ export function initSpotlight({
   document.addEventListener(
     'keydown',
     e => {
-      if (ov.open || !typeToOpen()) return;
+      if (document.querySelector('dialog[open]:not(#spot)')) return;
+      if (ov.open || ov.inert || !typeToOpen()) return;
       if (e.key === 'Escape' || e.key.length !== 1 || e.metaKey || e.ctrlKey || e.altKey) return;
       if (e.key === ' ' && e.target instanceof Element && e.target.closest(ACTIVATES_ON_SPACE)) return;
       e.stopImmediatePropagation();

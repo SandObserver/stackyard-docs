@@ -1,14 +1,16 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
-import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=cf072e65';
-import { el, isolate, q, qa } from '/js/utils.js?v=14d4695d';
-import { t } from '/js/i18n.js?v=ed7c5565';
-import { errorAdvice } from '/js/admin-error.js?v=0882cee9';
-import { formatList, formatNumber } from '/js/format-number.js?v=abcd4ae4';
-import { iconChain } from '/js/icons.js?v=5ac01d72';
-import { iconSvg } from '/js/icon-set.js?v=b279fd98';
+
+import { errorAdvice } from '/js/admin-error.js?v=d1f8f6f4';
+import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=c1ed16c7';
+import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=9b0a0ed6';
+import { formatList, formatNumber } from '/js/format-number.js?v=9dcba1ce';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { slideBlock } from '/js/modal.js?v=bd88cb9e';
-import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=c03e1465';
+import { t } from '/js/i18n.js?v=ec60b9bd';
+import { iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { iconChain } from '/js/icons.js?v=76c29d43';
+import { slideBlock } from '/js/modal.js?v=c4c1c4c4';
+import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
+import { el, isolate, q, qa } from '/js/utils.js?v=ff7e1e5f';
 
 export const API = '';
 
@@ -28,12 +30,14 @@ function hideToast() {
     else active.blur();
   }
   _toastReturn = null;
-  e.className = '';
+  e.classList.remove('show');
   const act = /** @type {HTMLButtonElement|null} */ (q('.toast-act', e));
-  if (act) {
-    act.hidden = true;
-    act.onclick = null;
-  }
+  if (act) act.onclick = null;
+  setTimeout(() => {
+    if (e.classList.contains('show')) return;
+    e.className = '';
+    if (act) act.hidden = true;
+  }, 200);
 }
 
 const TOAST_ICON = Object.freeze({ ok: 'success', warn: 'warning', err: 'failure' });
@@ -101,10 +105,90 @@ export const toast = (m, tone = 'ok', action = null) => {
     };
     document.addEventListener('pointerdown', acted, true);
     document.addEventListener('keydown', acted, true);
+    document.addEventListener('visibilitychange', () => {
+      clearTimeout(tt);
+      if (document.hidden || !e.classList.contains('show')) return;
+      if (act && !act.hidden) return;
+      if (e.matches(':hover') || e.contains(document.activeElement)) return;
+      release();
+    });
   }
   const ms = action ? null : toastHoldMs(tone, m, 'show');
-  if (ms != null) tt = setTimeout(hideToast, ms);
+  if (ms != null && !document.hidden) tt = setTimeout(hideToast, ms);
 };
+
+/** Runs `fn` 300 ms from now, or once no dialog is open, whichever is later.
+    @param {() => void} fn @returns {() => void} cancels the call */
+function afterDialogs(fn) {
+  let timer = setTimeout(function tick() {
+    if (document.querySelector('dialog.dlg-box[open]')) timer = setTimeout(tick, 150);
+    else fn();
+  }, 300);
+  return () => clearTimeout(timer);
+}
+
+/** Disabling a control drops its focus, so it is given back once the control works again.
+    @param {HTMLElement} node @param {boolean} had */
+function refocus(node, had) {
+  if (had && (!document.activeElement || document.activeElement === document.body)) node.focus();
+}
+
+/** A Save press that ignores a second press and shows the saving label on a slow write.
+    @param {HTMLButtonElement} btn @param {(...args: any[]) => Promise<any>} run
+    @param {() => void} [after] @returns {(...args: any[]) => Promise<void>} */
+export function busyPress(btn, run, after) {
+  return async (...args) => {
+    if (btn.getAttribute('aria-busy') === 'true') return;
+    const had = document.activeElement === btn;
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    const cancel = afterDialogs(() => btn.classList.add('busy'));
+    try {
+      await run(...args);
+    } finally {
+      cancel();
+      btn.classList.remove('busy');
+      btn.removeAttribute('aria-busy');
+      btn.disabled = false;
+      after?.();
+      refocus(btn, had);
+    }
+  };
+}
+
+/** A row action that ignores a second press and shows a status line on a slow run.
+    @param {HTMLButtonElement|HTMLInputElement} node
+    @param {(...args: any[]) => Promise<any>} run @returns {(...args: any[]) => Promise<void>} */
+export function rowBusy(node, run) {
+  return async (...args) => {
+    if (node.getAttribute('aria-busy') === 'true') return;
+    const had = document.activeElement === node;
+    node.disabled = true;
+    node.setAttribute('aria-busy', 'true');
+    /** @type {HTMLElement|null} */
+    let status = null;
+    const cancel = afterDialogs(() => {
+      status = document.createElement('span');
+      status.className = 'row-status end';
+      status.setAttribute('role', 'status');
+      status.textContent = t('common.working');
+      node.closest('.row')?.querySelector('.row-btns')?.before(status);
+    });
+    try {
+      await run(...args);
+    } finally {
+      cancel();
+      status?.remove();
+      node.removeAttribute('aria-busy');
+      node.disabled = false;
+      refocus(node, had);
+    }
+  };
+}
+
+function scrollBehavior() {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
 
 /** @param {string} rowId */
 function openGeneralAt(rowId) {
@@ -113,7 +197,7 @@ function openGeneralAt(rowId) {
   setTimeout(() => {
     const row = el(rowId);
     const target = /** @type {HTMLElement|null} */ (row?.querySelector('.pe, input, button') ?? row);
-    row?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    row?.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
     target?.focus();
   }, 250);
 }
@@ -251,7 +335,7 @@ export function showFieldError(row, message, { focus = true } = {}) {
     );
     target?.focus();
   }
-  box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  box.scrollIntoView({ block: 'center', behavior: scrollBehavior() });
 }
 
 /** @param {Element} row */
@@ -287,8 +371,14 @@ export function announce(text) {
 }
 
 /** @param {Element|null} node */
+export function fadeOpacity(node) {
+  if (!node || typeof node.animate !== 'function') return;
+  node.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150, easing: EASE_IOS });
+}
+
+/** @param {Element|null} node */
 export function fadeIn(node) {
-  if (!node) return;
+  if (!node || typeof node.animate !== 'function' || typeof matchMedia !== 'function') return;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   node.animate(
     still
@@ -297,7 +387,7 @@ export function fadeIn(node) {
           { opacity: 0, transform: 'translateY(8px)' },
           { opacity: 1, transform: 'none' },
         ],
-    { duration: 200, easing: 'cubic-bezier(.32,.72,0,1)' },
+    { duration: 200, easing: EASE_IOS },
   );
 }
 
@@ -526,18 +616,19 @@ export function plainInput(inp) {
     before the catalog is fetched, so a translated one has to be read later.
     @param {string} rowId @param {string} inputId
     @param {{ type?: string, placeholder?: string | (() => string),
-              onCommit?: (value: string) => void, root?: ParentNode, plain?: boolean, fill?: boolean,
-              render?: (valEl: Element, value: string) => void, empty?: () => string }} [opts] */
+              onCommit?: (value: string) => void, onCancel?: (value: string) => void, root?: ParentNode,
+              plain?: boolean, fill?: boolean, render?: (valEl: Element, value: string) => void,
+              empty?: () => string }} [opts] */
 export function initInlineEdit(
   rowId,
   inputId,
-  { type = 'text', placeholder = '', onCommit, root = document, plain = false, fill, render, empty } = {},
+  { type = 'text', placeholder = '', onCommit, onCancel, root = document, plain = false, fill, render, empty } = {},
 ) {
   const byId = id => (root === document ? el(id) : root.querySelector('#' + CSS.escape(id)));
   const row = /** @type {HTMLElement} */ (byId(rowId));
   const inp = /** @type {HTMLInputElement} */ (byId(inputId));
   if (!row || !inp) return;
-  wireInlineEdit(row, inp, { type, placeholder, onCommit, plain, fill, render, empty });
+  wireInlineEdit(row, inp, { type, placeholder, onCommit, onCancel, plain, fill, render, empty });
 }
 
 /** Name a row's pencil after its label. Call again once the catalog loads.
@@ -553,10 +644,11 @@ export function nameEditPen(row) {
     committed value is shown. `plain` is for an address, host, username or key:
     no capitals, correction or spelling marks. `placeholder` shows only in the
     open field. `empty` is what an empty row shows, common.notSet by default.
+    Escape restores the value from before the edit and runs `onCancel` with it.
     @param {HTMLElement} row @param {HTMLInputElement} inp
     @param {{ type?: string, placeholder?: string | (() => string), onCommit?: (value: string) => void,
-              fill?: boolean, render?: (valEl: Element, value: string) => void, plain?: boolean,
-              empty?: () => string }} [opts] */
+              onCancel?: (value: string) => void, fill?: boolean,
+              render?: (valEl: Element, value: string) => void, plain?: boolean, empty?: () => string }} [opts] */
 export function wireInlineEdit(
   row,
   inp,
@@ -564,6 +656,7 @@ export function wireInlineEdit(
     type = 'text',
     placeholder = '',
     onCommit,
+    onCancel,
     fill = true,
     render,
     plain = false,
@@ -617,21 +710,36 @@ export function wireInlineEdit(
     onCommit?.(v);
   }
 
+  function cancel() {
+    if (!row.classList.contains('editing')) return;
+    row.classList.remove('editing');
+    if (inp.value !== before) {
+      inp.value = before;
+      inp.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    onCancel?.(before);
+  }
+
   pen.addEventListener('click', open);
   valEl.addEventListener('click', open);
-  inp.addEventListener('blur', commit);
-  inp.addEventListener(
+  row.addEventListener(
+    'focusout',
+    /** @param {FocusEvent} e */ e => {
+      const to = /** @type {Node|null} */ (e.relatedTarget);
+      if (!to || !row.contains(to)) commit();
+    },
+  );
+  row.addEventListener(
     'keydown',
     /** @param {KeyboardEvent} e */ e => {
-      if (e.key === 'Enter') {
+      if (!row.classList.contains('editing')) return;
+      if (e.key === 'Enter' && e.target === inp) {
         e.preventDefault();
         commit();
         pen.focus();
-      }
-      if (e.key === 'Escape') {
+      } else if (e.key === 'Escape') {
         e.preventDefault();
-        inp.value = before;
-        row.classList.remove('editing');
+        cancel();
         pen.focus();
       }
     },

@@ -1,6 +1,17 @@
 // @ts-check
 /* Keep this module free of the DOM, of fetch and of module state. */
 
+/** A widget size no layout table holds becomes medium. Layout sums the table's
+    values, and an undefined one never fits.
+    @param {any[]} items @param {Record<string, number>} sizes @returns {any[]} */
+export function withKnownSizes(items, sizes) {
+  for (const it of items) {
+    if (it?.type === 'widget' && it.widgetSize != null && !Object.hasOwn(sizes, it.widgetSize))
+      it.widgetSize = 'medium';
+  }
+  return items;
+}
+
 /** Whether the open dashboard should reload to pick up a config change. The
     field fingerprint is only a fallback for a page whose loaded copy predates
     `_rev`. It misses any field nobody listed.
@@ -78,8 +89,8 @@ export function desktopPages(tiles, span, cols, rows) {
   };
   for (const tile of tiles) {
     const [sw, sh] = span(tile);
-    const w = Math.min(Math.max(1, sw), cols);
-    const h = Math.max(1, sh);
+    const w = Math.min(Math.max(1, sw || 1), cols);
+    const h = Math.max(1, sh || 1);
     const place = () => {
       for (;;) {
         for (; c + w <= cols; c++) if (free(r, c, w, h)) return r;
@@ -148,7 +159,7 @@ export function wheelPager({ threshold = 40, quietMs = 220 } = {}) {
 
 export const FLICK_SPEED = 0.11;
 export const SWIPE_LOCK_PX = 10;
-const PAGE_EASE_SLOPE = 0.72 / 0.32;
+export const PAGE_EASE_SLOPE = 0.72 / 0.32;
 export const PAGE_TURN_MS = 280;
 
 /** @returns {{ add: (x: number, t: number) => void, speed: (now: number) => number }} */

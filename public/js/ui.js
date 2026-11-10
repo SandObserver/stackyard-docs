@@ -1,4 +1,4 @@
-import { iconChain } from '/js/icons.js?v=5ac01d72';
+import { iconChain } from '/js/icons.js?v=76c29d43';
 import { widgetSrc, cardPreset, fixedAppearance, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=b0e8f76d';
 import {
   mk,
@@ -17,13 +17,15 @@ import {
   qa,
   setCentredText,
   setUserText,
-} from '/js/utils.js?v=14d4695d';
-import { t, currentLang } from '/js/i18n.js?v=ed7c5565';
-import { toneForColor } from '/js/label-contrast.js?v=7172d36f';
+} from '/js/utils.js?v=ff7e1e5f';
+import { t, currentLang } from '/js/i18n.js?v=ec60b9bd';
+import { toneForColor } from '/js/label-contrast.js?v=e046296b';
 import { mobileMetrics, gridColumnWidth, gridCellCount, dockFit } from '/js/mobile-metrics.js?v=3b0d6715';
 import { smoothRectPath } from '/js/smooth-corner.js?v=b7dda7e1';
 import { mkGlassRim, observeGlass } from '/js/glass-rim.js?v=3faec233';
-import { fingerSpeed, rubberBand, settleMs, swipeSettle, SWIPE_LOCK_PX } from '/js/dashboard-logic.js?v=3098e6b2';
+import { fingerSpeed, rubberBand, settleMs, swipeSettle, SWIPE_LOCK_PX } from '/js/dashboard-logic.js?v=8b2dad40';
+import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
 
 const PHONE_W = 393;
 
@@ -170,13 +172,16 @@ export function mkFolder(item) {
   return a;
 }
 
+const SWIPE_CLICK_MS = 600;
+
 /** Runs `fn` on a tap or a click. A touch that moved the pager's lock
     distance is a swipe and runs nothing.
     @param {HTMLElement} node @param {() => void} fn */
 export function onTap(node, fn) {
   let x0 = 0,
     y0 = 0,
-    moved = false;
+    moved = false,
+    swipedAt = Number.NEGATIVE_INFINITY;
   node.addEventListener(
     'touchstart',
     /** @param {TouchEvent} e */ e => {
@@ -199,17 +204,25 @@ export function onTap(node, fn) {
     'touchend',
     /** @param {TouchEvent} e */ e => {
       /* Do not stop a swipe. The home pager never sees the lift and the strip stays between pages. */
-      if (moved) return;
+      if (moved) {
+        swipedAt = performance.now();
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
       fn();
     },
     { passive: false },
   );
-  node.addEventListener('click', () => {
-    if (moved) moved = false;
-    else fn();
-  });
+  node.addEventListener(
+    'click',
+    /** @param {MouseEvent} e */ e => {
+      const fromSwipe = e.detail !== 0 && performance.now() - swipedAt < SWIPE_CLICK_MS;
+      moved = false;
+      swipedAt = Number.NEGATIVE_INFINITY;
+      if (!fromSwipe) fn();
+    },
+  );
 }
 
 /** @typedef {{ down: (id: number|string, x: number, y: number, t: number) => void,
@@ -262,6 +275,7 @@ export function swipePager(target, strip, o) {
         strip.style.transition = 'none';
         strip.style.willChange = 'transform';
         strip.classList.add('dragging');
+        x0 = px;
       }
       speed.add(px, ts);
       const ends = [rest(0), rest(Math.max(0, o.total() - 1))];
@@ -341,7 +355,6 @@ export function swipePager(target, strip, o) {
     @param {Element} [tile] @returns {() => void} */
 function folderMotion(ov, parts, tile) {
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ease = 'cubic-bezier(.32,.72,0,1)';
   /** @param {HTMLElement} p */
   const intoTile = p => {
     const from = !still && tile?.isConnected ? tile.getBoundingClientRect() : null;
@@ -362,10 +375,13 @@ function folderMotion(ov, parts, tile) {
     still
       ? { duration: 150, easing: 'ease-out' }
       : prop === 'opacity'
-        ? { duration: opening ? 120 : 250, easing: opening ? 'ease-out' : 'cubic-bezier(.6,0,1,1)' }
-        : { duration: opening ? 300 : 250, easing: ease };
+        ? opening
+          ? { duration: 120, easing: 'ease-out' }
+          : { duration: 160, delay: 90, easing: 'ease-out' }
+        : { duration: opening ? 300 : 250, easing: EASE_IOS };
   let running = steps.map(s => s.el.animate({ [s.prop]: [s.shut, s.open] }, timing(s.prop, true)));
   return () => {
+    if (!ov.isConnected) return;
     if (ov.contains(document.activeElement)) /** @type {HTMLElement} */ (document.activeElement).blur();
     const now = steps.map(s => getComputedStyle(s.el)[s.prop]);
     steps.forEach((s, i) => s.el.style.setProperty(s.prop, now[i]));
@@ -375,7 +391,7 @@ function folderMotion(ov, parts, tile) {
       .slice(1)
       .flatMap((s, i) => [
         s.el.animate({ transform: [now[i + 1], s.shut] }, { ...timing('transform', false), fill: 'forwards' }),
-        s.el.animate({ opacity: [now[0], 0] }, { ...timing('opacity', false), fill: 'forwards' }),
+        s.el.animate({ opacity: [now[0], 0] }, { ...timing('opacity', false), fill: 'both' }),
       ]);
     running[0].finished.then(
       () => ov.remove(),
@@ -385,6 +401,17 @@ function folderMotion(ov, parts, tile) {
 }
 
 let folderOverlay = null;
+
+export function closeFolders() {
+  for (const ov of [folderOverlay, folderOverlayMob]) {
+    if (!ov) continue;
+    ov.close();
+    ov.remove();
+  }
+  folderOverlay = null;
+  folderOverlayMob = null;
+}
+
 /** @param {any} folder @param {Element} [tile] */
 export function openFolderDesktop(folder, tile) {
   if (folderOverlay) {
@@ -445,7 +472,7 @@ export function openFolderDesktop(folder, tile) {
     stopGlass();
     registeredBadges.forEach(badge => BEL().forEach((_, id) => bunreg(id, badge)));
     shrink();
-    folderOverlay = null;
+    if (folderOverlay === ov) folderOverlay = null;
   });
   /* The overlay is the scrim, so a click reported against it is a click
      outside the folder. */
@@ -482,45 +509,7 @@ function mFolder(item, cw, rh, isz, ir, im, sc) {
     }, 500);
     openFolderMobile(item, isz, ir, im, sc, a);
   }
-  let _tStarted = false,
-    _tMoved = false,
-    _tSX = 0,
-    _tSY = 0;
-  a.addEventListener(
-    'touchstart',
-    e => {
-      e.preventDefault();
-      _tStarted = true;
-      _tMoved = false;
-      _tSX = e.touches[0].clientX;
-      _tSY = e.touches[0].clientY;
-    },
-    { passive: false },
-  );
-  a.addEventListener(
-    'touchmove',
-    e => {
-      if (!_tStarted) return;
-      if (Math.abs(e.touches[0].clientX - _tSX) > 10 || Math.abs(e.touches[0].clientY - _tSY) > 10) _tMoved = true;
-    },
-    { passive: true },
-  );
-  a.addEventListener(
-    'touchend',
-    e => {
-      e.preventDefault();
-      if (!_tStarted || _tMoved) {
-        _tStarted = false;
-        _tMoved = false;
-        return;
-      }
-      _tStarted = false;
-      _tMoved = false;
-      _openFolder();
-    },
-    { passive: false },
-  );
-  a.onclick = () => _openFolder();
+  onTap(a, _openFolder);
   const box = mk('div');
   box.className = 'dyn-sz dyn-box';
   css(box, { '--sz': eff + 'px' });
@@ -574,7 +563,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc, tile) {
   ov.addEventListener('close', () => {
     qa('.badge', ov).forEach(badge => BEL().forEach((_, id) => bunreg(id, badge)));
     shrink();
-    folderOverlayMob = null;
+    if (folderOverlayMob === ov) folderOverlayMob = null;
   });
 
   /* Phone size on every window. A wider window centres the folder instead of
@@ -617,7 +606,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc, tile) {
     '--tfs': titleFs + 'px',
     'inset-inline-start': titleLeft + 'px',
     width: boxW - padH + 'px',
-    top: boxTop - titleRendH - titleGap + Math.round(8 * ptScale) + 'px',
+    top: 'max(var(--sa-top), ' + (boxTop - titleRendH - titleGap + Math.round(8 * ptScale)) + 'px)',
   });
   setUserText(titleEl, folder.label || t('type.folder'));
 
@@ -648,7 +637,11 @@ export function openFolderMobile(folder, isz, _ir, _im, sc, tile) {
   function gotoPage(n) {
     curPage = Math.max(0, Math.min(pages.length - 1, n));
     strip.style.transform = strip.style.webkitTransform = `translateX(${-pageDir() * curPage * pageW}px)`;
-    dotEls.forEach((d, j) => d.classList.toggle('on', j === curPage));
+    dotEls.forEach((d, j) => {
+      d.classList.toggle('on', j === curPage);
+      if (j === curPage) d.setAttribute('aria-current', 'true');
+      else d.removeAttribute('aria-current');
+    });
     inertAllBut(strip, curPage);
   }
 
@@ -698,14 +691,18 @@ export function openFolderMobile(folder, isz, _ir, _im, sc, tile) {
       gap: Math.max(dotSz + 2, Math.min(24, Math.floor(pageW / pages.length))) - dotSz + 'px',
     });
     dotEls = pages.map((_, i) => {
-      const d = mk('div');
+      const d = mk('button');
+      d.type = 'button';
       d.className = 'folder-dot dyn-dot';
+      d.setAttribute(
+        'aria-label',
+        t('home.goToPage', { page: formatNumber(i + 1), total: formatNumber(pages.length) }),
+      );
       css(d, { '--dsz': dotSz + 'px' });
       d.onclick = () => gotoPage(i);
       return d;
     });
     dotEls.forEach(d => dotsEl.appendChild(d));
-    gotoPage(0);
   }
 
   pages.forEach(pg => strip.appendChild(buildPage(pg)));
@@ -714,8 +711,17 @@ export function openFolderMobile(folder, isz, _ir, _im, sc, tile) {
   if (dotsEl) box.appendChild(dotsEl);
   children.forEach(c => bupd(c.id));
 
-  if (pages.length > 1)
+  if (pages.length > 1) {
+    gotoPage(0);
     swipePager(box, strip, { width: () => pageW, page: () => curPage, total: () => pages.length, turn: gotoPage });
+    ov.addEventListener('keydown', e => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const inPage = strip.contains(document.activeElement);
+      gotoPage(curPage + (e.key === 'ArrowRight' ? pageDir() : -pageDir()));
+      /* Keep preventScroll. A focus scroll moves the clipped strip off its page. */
+      if (inPage) strip.children[curPage].querySelector('a')?.focus({ preventScroll: true });
+    });
+  }
   for (const type of ['touchstart', 'touchmove', 'touchend'])
     box.addEventListener(type, e => e.stopPropagation(), { passive: true });
   ov.appendChild(titleEl);
@@ -747,6 +753,7 @@ export function openFolderMobile(folder, isz, _ir, _im, sc, tile) {
 const MOB_FOOTPRINT = { small: [2, 2], medium: [4, 2], large: [4, 4], xlarge: [4, 6] };
 
 export function buildMobile() {
+  closeFolders();
   /* The previous widgets' observers and timers outlive their DOM. Stop them
      before it is replaced. */
   teardownWidgets();
@@ -1006,7 +1013,7 @@ export function buildMobile() {
     dk.appendChild(a);
   });
 
-  const pillSearchW = Math.round(96 * sc);
+  const pillSearchW = Math.max(Math.round(96 * sc), 92);
   const _pdotSz = Math.round(8 * sc),
     _pdotGap = Math.round(5 * sc),
     _pdotPad = Math.round(14 * sc);
@@ -1061,12 +1068,16 @@ export function buildMobile() {
     }, 260);
   }
   function pillBump(newPg) {
+    if (pillNewDots.children.length < 2) return;
     pillPaging(true);
     pillDotEls.forEach((d, i) => d.classList.toggle('on', i === newPg));
     clearTimeout(_pillIdleTimer);
     _pillIdleTimer = setTimeout(() => pillPaging(false), 1500);
   }
   CB().mobPillBump = pillBump;
+  CB().mobPillSync = newPg => {
+    Array.from(pillNewDots.children).forEach((d, i) => d.classList.toggle('on', i === newPg));
+  };
 
   const { _mobTsCleanup, _mobTeCleanup } = st();
   if (_mobTsCleanup) document.removeEventListener('touchstart', _mobTsCleanup);
@@ -1088,6 +1099,7 @@ export function resetMobileChrome() {
   pill.style.cssText = '';
   pill.classList.remove('paging');
   CB().mobPillBump = null;
+  CB().mobPillSync = null;
   const { _mobTsCleanup, _mobTeCleanup } = st();
   if (_mobTsCleanup) document.removeEventListener('touchstart', _mobTsCleanup);
   if (_mobTeCleanup) document.removeEventListener('touchend', _mobTeCleanup);

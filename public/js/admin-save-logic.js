@@ -1,4 +1,6 @@
 // @ts-check
+import { folderChildren } from '/js/admin-logic.js?v=c1ed16c7';
+
 /* Keep this module free of the DOM. The DOM reads stay in doSave. */
 
 const BADGE_DEFAULT = 'info';
@@ -164,6 +166,13 @@ export function restoresSettings(file, live) {
   return !sameData(next, now);
 }
 
+/* Early versions could drop any item on a folder. The server refuses those. */
+function withoutBadFolderChildren(items) {
+  if (!Array.isArray(items)) return items;
+  const apps = new Set(items.filter(i => i?.type === 'app').map(i => i.id));
+  return items.map(i => (i?.type === 'folder' ? { ...i, children: folderChildren(i).filter(id => apps.has(id)) } : i));
+}
+
 /** The config write that restores a backup over `live`. It carries the file's
     schema version so the server migrates what an older release wrote.
     @param {any} file @param {any} live
@@ -178,9 +187,66 @@ export function restoreBody(file, live, keepBackground = false) {
   return {
     _rev: live?._rev,
     _schemaVersion: file?._schemaVersion,
-    items: file?.items,
+    items: withoutBadFolderChildren(file?.items),
     settings: settings || live?.settings,
   };
+}
+
+const GENERAL_SERVER_FIELDS = [
+  'hostIp',
+  'healthChecks',
+  'socketProxyUrl',
+  'hideHealthyBadge',
+  'proxmox',
+  'allowedHosts',
+];
+const GENERAL_TOP_FIELDS = ['logLevel', 'language'];
+
+/** The General values as the server holds them, one entry per field.
+    @param {any} settings @returns {Record<string, unknown>} */
+export function generalServerFields(settings) {
+  /** @type {Record<string, unknown>} */
+  const out = {};
+  for (const k of GENERAL_SERVER_FIELDS) out[k] = settings?.server?.[k];
+  for (const k of GENERAL_TOP_FIELDS) out[k] = settings?.[k];
+  return out;
+}
+
+/** Copies only `changed` from the form into `settings`.
+    @param {any} settings @param {string[]} changed @param {Record<string, unknown>} form */
+export function applyGeneralFields(settings, changed, form) {
+  const server = { ...settings.server };
+  for (const k of changed) {
+    if (GENERAL_TOP_FIELDS.includes(k)) settings[k] = form[k];
+    else server[k] = form[k];
+  }
+  settings.server = server;
+}
+
+/** Which fields a section may write. The form and the server can hold a value
+    in different shapes, so each side is compared only with its own earlier copy.
+
+    @param {{ formBase: Record<string, unknown>, form: Record<string, unknown>,
+              serverBase: Record<string, unknown>, server: Record<string, unknown> }} args
+    @returns {{ changed: string[], conflicts: string[] }} */
+export function planFieldSave({ formBase, form, serverBase, server }) {
+  const changed = Object.keys(form).filter(k => !sameData(form[k], formBase[k]));
+  return { changed, conflicts: changed.filter(k => !sameData(server[k], serverBase[k])) };
+}
+
+/** `base` with `keys` moved to the values in `server`.
+    @param {Record<string, unknown>} base @param {Iterable<string>} keys
+    @param {Record<string, unknown>} server */
+export function advancedBase(base, keys, server) {
+  const next = { ...base };
+  for (const k of keys) next[k] = server[k];
+  return next;
+}
+
+/** The label setting with one switch moved and the other kept from the server.
+    @param {any} current @param {'desktop'|'ios'} key @param {boolean} value */
+export function labelsWith(current, key, value) {
+  return { desktop: current?.desktop !== false, ios: current?.ios === true, [key]: value };
 }
 
 /** Run writes one at a time, in the order asked. A write asked for while
@@ -213,6 +279,15 @@ export function upsertItem(items, id, item) {
   return { items: list, replaced: at !== -1 };
 }
 
+/** @param {any[]} items @param {string} id @returns {boolean} whether the item was removed */
+export function removeItem(items, id) {
+  const at = items.findIndex(i => i && i.id === id);
+  if (at === -1) return false;
+  for (const f of items) if (f?.type === 'folder') f.children = folderChildren(f).filter(c => c !== id);
+  items.splice(at, 1);
+  return true;
+}
+
 /** Remove `childIds` from every folder except `folderId`. An app belongs to one
     folder, or the dashboard renders it twice.
 
@@ -224,10 +299,16 @@ export function claimFolderChildren(items, folderId, childIds) {
   if (!claimed.size) return list;
   for (const it of list) {
     if (!it || it.type !== 'folder' || it.id === folderId) continue;
-    if (!Array.isArray(it.children)) continue;
-    it.children = it.children.filter(id => !claimed.has(id));
+    it.children = folderChildren(it).filter(id => !claimed.has(id));
   }
   return list;
+}
+
+/** A widget whose type has no manifest. Its form cannot edit the settings, so
+    only the name and the size change.
+    @param {any} orig @param {string} label @param {string} size @returns {any} */
+export function keptWidget(orig, label, size) {
+  return { ...orig, label, widgetSize: size };
 }
 
 /** One stored Live Activity label. Array order is priority order.

@@ -921,6 +921,23 @@ starlight-toc nav a {
 .sy-i3s { stroke: currentColor; stroke-opacity: 0.4; }
 .sy-as { stroke: var(--icon-accent, currentColor); }
 
+#starlight__search .pagefind-ui__form::before {
+  -webkit-mask: var(--sy-mask-search) center / contain no-repeat;
+  mask: var(--sy-mask-search) center / contain no-repeat;
+}
+#starlight__search .pagefind-ui__search-clear::before {
+  -webkit-mask: var(--sy-mask-close) center / 1.125rem no-repeat;
+  mask: var(--sy-mask-close) center / 1.125rem no-repeat;
+}
+#starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title::before {
+  -webkit-mask: var(--sy-mask-page) center / 1.5rem no-repeat;
+  mask: var(--sy-mask-page) center / 1.5rem no-repeat;
+}
+mobile-starlight-toc .isMobile a[aria-current='true']::after {
+  -webkit-mask: var(--sy-mask-check) center / contain no-repeat;
+  mask: var(--sy-mask-check) center / contain no-repeat;
+}
+
 html {
   -webkit-tap-highlight-color: transparent;
 }

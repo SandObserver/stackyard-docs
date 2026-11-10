@@ -126,6 +126,25 @@ report(
     : [],
 );
 
+/* The docs draw their interface icons from the app's icon set. A Starlight icon
+   that src/lib/starlight-icon-map.ts replaces must not ship, and every mapped
+   name must still exist in Starlight. */
+const ICON_SRC = 'node_modules/@astrojs/starlight/components-internals/Icons.ts';
+const mappedIcons = [...read('src/lib/starlight-icon-map.ts').matchAll(/^\s+'?([\w-]+)'?: \{ id:/gm)].map((m) => m[1]);
+const starlightIcons = new Map(
+  existsSync(ICON_SRC) ? [...read(ICON_SRC).matchAll(/^\t'?([\w-]+)'?:\s*'<path d="([^"]+)"/gm)].map((m) => [m[1], m[2]]) : [],
+);
+const docsHtml = html.filter((f) => f.startsWith(join(DIST, 'docs')));
+report('icons', [
+  ...mappedIcons.filter((name) => !starlightIcons.has(name)).map((name) => `${name}: no longer a Starlight icon`),
+  ...mappedIcons.flatMap((name) => {
+    const d = starlightIcons.get(name);
+    if (!d) return [];
+    const hits = docsHtml.filter((f) => read(f).includes(`d="${d}"`));
+    return hits.length ? [`${name}: Starlight's icon still on ${hits.length} page(s), e.g. ${relative(DIST, hits[0])}`] : [];
+  }),
+]);
+
 /* The placeholder domain must never ship. */
 report('domain', html.filter((f) => read(f).includes('stackyard.example')).map((f) => relative(DIST, f)));
 

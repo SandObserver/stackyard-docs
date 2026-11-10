@@ -6,7 +6,8 @@ import rehypeExternalLinks from 'rehype-external-links';
 import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
 import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
-import { iconModules } from './src/lib/vite-icon-modules.mjs';
+import { iconModules, starlightIcons } from './src/lib/vite-icon-modules.mjs';
+import rehypeStackyardIcons from './src/lib/rehype-stackyard-icons.mjs';
 
 const SITE = 'https://stackyard.sandobserver.com';
 
@@ -19,7 +20,7 @@ export default defineConfig({
     '/docs/widgets/github': '/docs/widgets/git/',
   },
   vite: {
-    plugins: [iconModules()],
+    plugins: [starlightIcons(), iconModules()],
   },
   markdown: {
     rehypePlugins: [
@@ -202,7 +203,7 @@ export default defineConfig({
       name: 'problem-pages',
       hooks: {
         'astro:config:setup': ({ updateConfig }) => {
-          updateConfig({ markdown: { rehypePlugins: [rehypeProblemPages] } });
+          updateConfig({ markdown: { rehypePlugins: [rehypeProblemPages, rehypeStackyardIcons] } });
         },
       },
     },

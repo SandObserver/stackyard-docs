@@ -11,6 +11,24 @@ function read(path) {
   return existsSync(full) ? readFileSync(full, 'utf8') : null;
 }
 
+const ORIGINAL = 'virtual:starlight-original-icon';
+const STARLIGHT_ICON = resolve(process.cwd(), 'node_modules/@astrojs/starlight/user-components/Icon.astro');
+const OVERRIDE = resolve(process.cwd(), 'src/components/StarlightIcon.astro');
+
+export function starlightIcons() {
+  if (!existsSync(STARLIGHT_ICON)) throw new Error(`${STARLIGHT_ICON} is missing. Update src/lib/vite-icon-modules.mjs.`);
+  return {
+    name: 'sy-starlight-icons',
+    enforce: 'pre',
+    async resolveId(id, importer, options) {
+      if (id === ORIGINAL) return STARLIGHT_ICON;
+      if (!importer || importer.split('?')[0] === OVERRIDE || !id.endsWith('Icon.astro')) return null;
+      const found = await this.resolve(id, importer, { ...options, skipSelf: true });
+      return found?.id.split('?')[0] === STARLIGHT_ICON ? OVERRIDE : null;
+    },
+  };
+}
+
 export function iconModules() {
   return {
     name: 'sy-icon-modules',

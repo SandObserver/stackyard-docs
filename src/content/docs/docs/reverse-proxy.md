@@ -31,7 +31,7 @@ Without it, every request through the proxy counts as the same client, and rate 
 
 ## While no password is set
 
-A request through a proxy is answered only if its name is in **Allowed Addresses**. An IP address or a local name does not count. `X-Forwarded-Host` counts only from a proxy named in `TRUSTED_PROXY`.
+A request through a proxy is answered only if its `Host` header is in **Allowed Addresses**. An IP address or a local name does not count. `X-Forwarded-Host` is ignored, so the proxy must pass the original `Host` header.
 
 Stackyard detects a proxy from its forwarding headers. A proxy that sends none looks like a direct visit. Make the proxy send `X-Forwarded-For`, and set a password before you publish Stackyard.
 

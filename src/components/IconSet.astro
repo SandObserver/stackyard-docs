@@ -1,7 +1,6 @@
 ---
 import { iconSprite, loadIconSet } from '../lib/icon-set';
 import { readRepoFile } from '../lib/repo';
-import { SIDEBAR_ICON_IDS } from '../lib/sidebar-icons';
 
 type Cluster = { note: string; ids: string[] };
 type Group = { name: string; clusters: Cluster[] };
@@ -49,7 +48,7 @@ const MARKS = [
   {
     name: 'Stackyard',
     viewBox: '0 0 24 24',
-    body: '<defs><clipPath id="sy-mark-orbit-clip"><polygon points="12,12 -70.31,-35.52 -70.31,-70.31 93.75,-70.31 93.75,93.75 12,93.75"/></clipPath></defs><g clip-path="url(#sy-mark-orbit-clip)"><use data-mark-part="orbit" href="#sy-solid-logo-arc"/></g><use href="#sy-solid-logo-ink"/>',
+    body: '<defs><clipPath id="sy-mark-orbit-clip"><polygon points="12,12 -70.31,-35.52 -70.31,-70.31 93.75,-70.31 93.75,93.75 12,93.75"/></clipPath></defs><g clip-path="url(#sy-mark-orbit-clip)"><use data-mark-part="orbit" href="#sy-grid-logo-arc"/></g><use href="#sy-grid-logo-ink"/>',
   },
   {
     name: 'Posteryard',
@@ -77,9 +76,8 @@ const unplaced = [...known].filter((id) => !placed.has(id)).sort();
 if (unplaced.length) groups[2].clusters.push({ note: '', ids: unplaced });
 
 const glyphs = glyphNames();
-/* The sidebar sprite defines these ids on every docs page. Repeating them duplicates ids. */
-const spriteIds = [...known].filter((id) => !SIDEBAR_ICON_IDS.includes(id));
-const sprite = mod ? await iconSprite(spriteIds) : '';
+/* Keep the separate prefix. The sidebar sprite owns the sy-solid- ids, and grid icons masked from it render blank on iOS Safari. */
+const sprite = mod ? (await iconSprite([...known])).replaceAll('sy-solid-', 'sy-grid-') : '';
 const info = (id: string, note: string) => (glyphs[id] ? `Glyph "${glyphs[id]}"` : note);
 const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[id]}`, note].filter(Boolean).join(', ');
 ---
@@ -117,7 +115,7 @@ const label = (id: string, note: string) => [id, glyphs[id] && `glyph ${glyphs[i
               {g.clusters.flatMap((c) =>
                 c.ids.map((id) => (
                   <button type="button" data-icon={id} data-info={info(id, c.note)} aria-label={label(id, c.note)} aria-describedby="sy-icons-hint">
-                    <svg class="sy-icon" width="24" height="24" aria-hidden="true" focusable="false"><use href={`#sy-solid-${id}`} /></svg>
+                    <svg class="sy-icon" width="24" height="24" aria-hidden="true" focusable="false"><use href={`#sy-grid-${id}`} /></svg>
                   </button>
                 )),
               )}

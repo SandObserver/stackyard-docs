@@ -194,6 +194,20 @@ The container log names the account and what it cannot do:
 | `UID 2000 cannot write /run/stackyard. If the container's root filesystem is read-only, mount a tmpfs on /run/stackyard.` | Add a tmpfs mount on `/run/stackyard`. |
 | `cannot take ownership of /data; config and icon writes will fail` | The container runs as root without `CAP_CHOWN`. Add `CHOWN` under `cap_add`, or make the folder writable by UID 1000 yourself. |
 
+### The container stops with "Stackyard did not start"
+
+`INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` is set, but the password could not be stored on the first start. The log line ends with the reason:
+
+| Reason | What to do |
+| --- | --- |
+| `INITIAL_PASSWORD_FILE could not be read` | Mount the file, and let the container's account read it. |
+| `Password must be at least 15 characters.` | Use a longer password. In `docker-compose.yml` or `.env`, write each `$` as `$$`, or the password arrives shorter. |
+| `Password must be at most 1024 characters.` | Use a shorter password. |
+| `This password is too common or too easy to guess.` | Choose another password. |
+| `holds control characters or text that is not UTF-8` | Save the value as plain UTF-8 text. |
+
+Fix the value and start the container again.
+
 ### The container health check is failing
 
 The health check runs through nginx to the API, so it covers both processes. It also fails while the API cannot write `/data` or `/icons`. Check the logs for a process that failed to start or a folder the API cannot write.

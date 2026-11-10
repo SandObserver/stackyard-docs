@@ -33,7 +33,7 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 - A sign-in checked against a password that changed meanwhile is refused.
 - Changing the password, or turning protection off, needs the current password as well as a session. Wrong attempts count toward the login limit of 5 per IP per 15 minutes.
 
-Authentication is only in force once a password is stored. Until then, the endpoint that sets one accepts the first caller. `INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` stores one on the first start. See [First setup](/docs/first-setup/).
+Authentication is only in force once a password is stored. Until then, the endpoint that sets one accepts the first caller. `INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` stores one on the first start, before any request is answered. It is ignored once a password was set, skipped or removed. If it cannot be stored, the container stops. `INITIAL_PASSWORD` shows in `docker inspect`, so prefer `INITIAL_PASSWORD_FILE` with a Docker secret. See [First setup](/docs/first-setup/).
 
 ### Addresses without a password
 

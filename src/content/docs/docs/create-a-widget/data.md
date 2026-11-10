@@ -44,7 +44,7 @@ Await every call. A rejected promise that nothing awaits stops the API process, 
 
 ### Metrics and XML bodies
 
-Metrics are recognised from `application/openmetrics-text`, `text/plain; version=0.0.4`, or a bare `text/plain` containing a `# TYPE` comment. Other plain text comes back as a string.
+Metrics are recognized from `application/openmetrics-text`, `text/plain; version=0.0.4`, or a bare `text/plain` containing a `# TYPE` comment. Other plain text comes back as a string.
 
 XML `data` is keyed by the root tag. Attributes and child elements become keys, a repeated tag becomes an array, and a text-only element becomes its text. Numbers convert only when they round-trip exactly, so `007` stays a string.
 

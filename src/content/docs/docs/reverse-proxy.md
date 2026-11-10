@@ -5,7 +5,7 @@ description: Put Stackyard behind a TLS-terminating reverse proxy, and set TRUST
 
 Stackyard serves plain HTTP only. It does not terminate TLS. For HTTPS, put it behind a reverse proxy that terminates TLS.
 
-Two features need HTTPS: Keep Screen Awake, and logging in from behind a proxy.
+Two features need HTTPS: **Keep Screen Awake**, and logging in from behind a proxy.
 
 ## The two variables
 
@@ -19,7 +19,7 @@ If `TRUST_PROXY=true` is set while Stackyard is also reachable directly, a clien
 
 `TRUSTED_PROXY` tells nginx where the front proxy sits, so it can resolve the real client address for rate limiting:
 
-```
+```text
 TRUSTED_PROXY=172.18.0.0/16
 TRUSTED_PROXY="172.18.0.0/16 10.0.0.5"
 ```
@@ -38,12 +38,37 @@ services:
 
 Make the proxy send `X-Forwarded-Proto: https`.
 
+## Caddy
+
+Caddy sends `X-Forwarded-Proto` without extra configuration. Run it on the same Docker network as Stackyard:
+
+```text
+dashboard.home.arpa {
+    reverse_proxy stackyard:80
+}
+```
+
+## Traefik
+
+Add these labels to the Stackyard service. Replace `websecure` and `letsencrypt` with your own entry point and certificate resolver:
+
+```yaml
+services:
+  stackyard:
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.stackyard.rule=Host(`dashboard.home.arpa`)
+      - traefik.http.routers.stackyard.entrypoints=websecure
+      - traefik.http.routers.stackyard.tls.certresolver=letsencrypt
+      - traefik.http.services.stackyard.loadbalancer.server.port=80
+```
+
 ## One instance
 
 Rate-limit counters are held in memory and are not shared across replicas. Run a single instance behind any proxy.
 
 ## When login fails
 
-A login that returns to the login screen with no error usually means `TRUST_PROXY` is unset or the proxy does not send the header. See [Troubleshooting](/docs/troubleshooting/#i-cannot-log-in-or-i-get-bounced-back-to-the-login-screen).
+A login that returns to the login screen with no error usually means `TRUST_PROXY` is unset or the proxy does not send the header. See [Troubleshooting](/docs/troubleshooting/#login-returns-to-the-login-screen).
 
 Stackyard is not hardened for the public internet, even behind a proxy. See [Security](/docs/security/).

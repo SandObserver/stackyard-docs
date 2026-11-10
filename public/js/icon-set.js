@@ -29,7 +29,7 @@ export const bar = (x, y, w, role = 'cut') => detail(x, y, w, T.BAR, T.BAR / 2, 
 export const circle = (cx, cy, r, role = 'ink') => ({ k: 'area', t: 'circle', cx, cy, r, role: rl(role) });
 export const dot = (cx, cy, r, role = 'ink') => ({ k: 'solid', t: 'circle', cx, cy, r, role: rl(role) });
 export const shape = (d, role = 'ink', o = {}) => ({ k: 'area', t: 'path', d, role: rl(role), ...o });
-export const line = (d, role = 'ink') => ({ k: 'line', t: 'path', d, role: rl(role) });
+export const line = (d, role = 'ink', o = {}) => ({ k: 'line', t: 'path', d, role: rl(role), ...o });
 export const ring = (cx, cy, r, role = 'ink') => ({ k: 'line', t: 'circle', cx, cy, r, role: rl(role) });
 
 export const STYLES = {
@@ -80,7 +80,8 @@ export function symbol(id, ic, styleId = 'solid', sharp = false) {
   const gap = ic.gap ?? T.G;
   const sid = `sy-${styleId}${sharp ? '-sharp' : ''}-${id}`;
   const shapes = ic.shapes.map(p => (st.line && p.lineAlt ? { ...p, ...p.lineAlt } : p));
-  const ink = shapes.filter(p => p.role !== 'a' && (st.line || p.role !== 'c'));
+  const ink = shapes.filter(p => p.role !== 'a' && !p.knock && (st.line || p.role !== 'c'));
+  const knock = shapes.filter(p => p.knock);
   const acc = shapes.filter(p => p.role === 'a');
   let holes = st.line
     ? ''
@@ -89,6 +90,7 @@ export function symbol(id, ic, styleId = 'solid', sharp = false) {
         .map(p => hole(p, sharp, 0))
         .join('');
   if (ic.inkMask !== false) holes += acc.map(p => hole(p, sharp, gap)).join('');
+  holes += knock.map(p => hole(p, sharp, gap)).join('');
   let defs = '';
   let inkAttr = '';
   let accAttr = '';
@@ -100,7 +102,7 @@ export function symbol(id, ic, styleId = 'solid', sharp = false) {
     defs += mask(`${sid}-am`, ic.accentCut.map(p => hole(p, sharp, p.grow ?? 0)).join(''));
     accAttr = ` mask="url(#${sid}-am)"`;
   }
-  const body = `<g${inkAttr}>${ink.map(p => draw(p, st, sharp)).join('')}</g><g${accAttr}>${acc.map(p => draw(p, st, sharp)).join('')}</g>`;
+  const body = `<g${inkAttr}>${ink.map(p => draw(p, st, sharp)).join('')}</g>${knock.map(p => draw(p, st, sharp)).join('')}<g${accAttr}>${acc.map(p => draw(p, st, sharp)).join('')}</g>`;
   return { defs, sym: `<symbol id="${sid}" viewBox="0 0 24 24">${body}</symbol>` };
 }
 
@@ -159,6 +161,8 @@ function sizeIcon(k) {
     shapes.push(bar(ix, y + T.PAD + i * (T.BAR + T.G), i === rows - 1 && rows > 2 ? iw - 4 : iw));
   return { gap: 0, shapes };
 }
+
+const EYE = 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z';
 
 export const ICONS = {
   general: TOGGLES,
@@ -281,6 +285,13 @@ export const ICONS = {
     ],
   },
   info: { shapes: [circle(12, 12, 10), line('M12 11v6', 'cut'), detail(11, 6, 2, 2, 1, 'cut')] },
+  success: { shapes: [circle(12, 12, 10), line('M7 12l3 3 7-7', 'cut')] },
+  failure: { shapes: [circle(12, 12, 10), line('M8 8l8 8M16 8l-8 8', 'cut')] },
+  check: { shapes: [line('M5 13l4 4 10-10')] },
+  plus: { shapes: [line('M12 5v14M5 12h14')] },
+  warning: {
+    shapes: [shape('M12 3l10 17H2z', 'ink', { rj: true }), line('M12 9v4', 'cut'), detail(11, 16, 2, 2, 1, 'cut')],
+  },
   heart: { shapes: [shape('M12 21l-8-8a5 5 0 0 1 8-6 5 5 0 0 1 8 6z')] },
   grip: {
     shapes: [
@@ -292,7 +303,8 @@ export const ICONS = {
       dot(15, 18, T.DOT),
     ],
   },
-  eye: { shapes: [line('M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z'), dot(12, 12, 3)] },
+  eye: { shapes: [line(EYE), dot(12, 12, 3)] },
+  'eye-slash': { shapes: [line(EYE), dot(12, 12, 3), line('M4 4l16 16', 'ink', { knock: true })] },
   search: { shapes: [ring(10, 10, 7), line('M15 15l6 6')] },
   'arrow-down': { shapes: [line('M12 4v15M6 13l6 6 6-6')] },
   'arrow-up': { shapes: [line('M12 20V5M6 11l6-6 6 6')] },

@@ -129,7 +129,7 @@ poll({
 ```
 
 - `content` is what goes inert. Without it, every child of `root` except the caption does.
-- `caption` is the widget metadata slot. Without one, a line is placed at the foot of `root`, or over its centre with `place: 'center'`.
+- `caption` is the widget metadata slot. Without one, a line is placed at the foot of `root`, or over its center with `place: 'center'`.
 - `fail(err, { since, inert })` returns the line it drew. Pass `inert: false` when the widget never had data.
 - Set `--wt-cap-color` on a widget with a light card.
 

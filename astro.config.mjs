@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import rehypeExternalLinks from 'rehype-external-links';
 import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
+import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
 
 const SITE = 'https://stackyard.sandobserver.com';
@@ -39,10 +40,12 @@ export default defineConfig({
         Sidebar: './src/components/Sidebar.astro',
       },
       customCss: ['./src/styles/docs.css'],
+      routeMiddleware: './src/route-data.ts',
       head: [
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
-        { tag: 'meta', attrs: { name: 'theme-color', content: '#0d1117' } },
+        { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: dark)', content: '#000000' } },
+        { tag: 'meta', attrs: { name: 'theme-color', media: '(prefers-color-scheme: light)', content: '#f2f2f7' } },
         { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}/img/og-2f94d569.jpg` } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
@@ -52,17 +55,39 @@ export default defineConfig({
       ],
 
       expressiveCode: {
-        themes: ['github-dark', 'github-light'],
+        themes: ['github-dark-default'],
         styleOverrides: {
-          borderRadius: '14px',
+          borderRadius: '12px',
           borderWidth: '1px',
-          codePaddingBlock: '0.9rem',
+          borderColor: '#38383a',
+          codeBackground: '#0d1117',
+          codeForeground: '#e6edf3',
+          codeFontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          codeFontSize: '12.5px',
+          codeLineHeight: '1.4',
+          codePaddingBlock: '10px',
+          codePaddingInline: '14px',
+          uiFontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+          uiFontSize: '12.5px',
           frames: {
+            editorBackground: '#0d1117',
+            editorTabBarBackground: '#0d1117',
+            editorTabBarBorderColor: 'transparent',
+            editorTabBarBorderBottomColor: '#38383a',
             editorActiveTabBackground: 'transparent',
+            editorActiveTabForeground: '#a3a3a8',
+            editorActiveTabBorderColor: 'transparent',
+            editorActiveTabIndicatorTopColor: 'transparent',
+            editorActiveTabIndicatorBottomColor: 'transparent',
+            terminalBackground: '#0d1117',
+            terminalTitlebarBackground: '#0d1117',
+            terminalTitlebarForeground: '#a3a3a8',
+            terminalTitlebarBorderBottomColor: '#38383a',
+            terminalTitlebarDotsOpacity: '0',
             frameBoxShadowCssValue: 'none',
           },
         },
-        defaultProps: { frame: 'none' },
+        defaultProps: { frame: 'code', wrap: true, preserveIndent: true },
       },
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/SandObserver/stackyard' },
@@ -75,11 +100,12 @@ export default defineConfig({
           label: 'Get started',
           items: [
             { label: 'Introduction', link: '/docs/' },
-            { label: 'Comparison', link: '/docs/is-stackyard-for-you/' },
             { label: 'Install with Docker', link: '/docs/installation/docker/' },
             { label: 'Install on Unraid', link: '/docs/installation/unraid/' },
+            { label: 'Install on TrueNAS', link: '/docs/installation/truenas/' },
             { label: 'Build from source', link: '/docs/installation/build-from-source/' },
             { label: 'First setup', link: '/docs/first-setup/' },
+            { label: 'Compare dashboards', link: '/docs/is-stackyard-for-you/' },
           ],
         },
         {
@@ -114,14 +140,24 @@ export default defineConfig({
         {
           label: 'Run Stackyard',
           items: [
+            { label: 'Update Stackyard', link: '/docs/update/' },
             { label: 'Back up and restore', link: '/docs/import-export/backup-and-restore/' },
             { label: 'Import', link: '/docs/import-export/migrating/' },
             { label: 'Use a reverse proxy', link: '/docs/reverse-proxy/' },
+            { label: 'Verify a release image', link: '/docs/verify-image/' },
             { label: 'Security', link: '/docs/security/' },
           ],
         },
-        { label: 'Settings', link: '/docs/settings-reference/' },
-        { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
+        { label: 'Settings reference', link: '/docs/settings-reference/' },
+        {
+          label: 'Get help',
+          items: [
+            { label: 'Troubleshooting', link: '/docs/troubleshooting/' },
+            { label: 'Docker and network', link: '/docs/troubleshooting/docker/' },
+            { label: 'Error messages', link: '/docs/troubleshooting/messages/' },
+            { label: 'Support', link: '/docs/support/' },
+          ],
+        },
         {
           label: 'Create a widget',
           collapsed: true,
@@ -153,12 +189,19 @@ export default defineConfig({
             { label: 'Accessibility', link: '/docs/accessibility/' },
             { label: 'Security policy', link: '/docs/security-policy/' },
             { label: 'Governance', link: '/docs/governance/' },
-            { label: 'Support', link: '/docs/support/' },
             { label: 'Changelog', link: '/docs/changelog/' },
           ],
         },
       ],
     }),
+    {
+      name: 'problem-pages',
+      hooks: {
+        'astro:config:setup': ({ updateConfig }) => {
+          updateConfig({ markdown: { rehypePlugins: [rehypeProblemPages] } });
+        },
+      },
+    },
     mdx(),
   ],
 });

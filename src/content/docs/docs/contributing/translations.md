@@ -115,7 +115,7 @@ The language then appears under Settings, General, Language.
 
 Two locales exist for testing and are never offered in the selector. Add `?lang=` to the dashboard or admin URL:
 
-```
+```text
 http://localhost:8080/?lang=en-XA
 http://localhost:8080/admin/?lang=cimode
 ```
@@ -139,7 +139,7 @@ A widget frame never loads the dashboard i18n module. The selected code arrives 
 
 Everything a widget shows, in its settings form and in the widget itself, comes from its own folder:
 
-```
+```text
 ui/widgets/<name>/
   widget.json
   i18n/

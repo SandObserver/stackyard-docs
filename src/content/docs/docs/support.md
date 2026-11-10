@@ -1,6 +1,7 @@
 ---
 title: Get help with Stackyard
 description: Where to get help, how to read the logs, and how to file a bug report that gets fixed.
+next: false
 ---
 
 For a problem you are trying to solve yourself, start with [Troubleshooting](/docs/troubleshooting/). This page is about getting help from a person.
@@ -52,7 +53,7 @@ In Portainer, open the container and use the **Logs** view.
 
 Every API record is one line:
 
-```
+```text
 <ISO-8601 UTC timestamp> <LVL> msg=<message> key=value
 ```
 

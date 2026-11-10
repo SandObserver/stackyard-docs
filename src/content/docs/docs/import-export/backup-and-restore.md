@@ -3,7 +3,7 @@ title: Back up and restore Stackyard
 description: Export your Stackyard configuration to a file, and import it back.
 ---
 
-**In the admin:** General, then Backup. See the [Settings reference](/docs/settings-reference/).
+**In Settings:** General, then Backup. See the [Settings reference](/docs/settings-reference/).
 
 Stackyard's whole configuration is one JSON file. <span class="sy-btn sy-btn--ghost">Export</span> and <span class="sy-btn sy-btn--ghost">Import</span> are under **General**.
 

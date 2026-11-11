@@ -8,6 +8,7 @@ const HOVER_LISTS = [
   { container: 'starlight-toc nav', item: 'a' },
 ];
 const DISCLOSURES = '#starlight__sidebar details, details.cl-item, details.sy-disc';
+const SIDEBAR_GROUPS = '#starlight__sidebar .top-level > li > details';
 
 const measurable = (el: Element) => {
   const r = el.getBoundingClientRect();
@@ -155,5 +156,37 @@ document.addEventListener('click', (e) => {
   e.preventDefault();
   const opening = running.has(details) ? details.dataset.syClosing === 'true' : !details.open;
   details.dataset.syClosing = String(!opening);
+  if (opening && details.matches(SIDEBAR_GROUPS)) {
+    const scroller = document.getElementById('starlight__sidebar');
+    const anchor = summary.getBoundingClientRect().top;
+    for (const other of otherGroups(details)) {
+      if (!other.open || other.dataset.syClosing === 'true') continue;
+      other.dataset.syClosing = 'true';
+      animateDisclosure(other, false);
+    }
+    if (scroller) {
+      scroller.style.overflowAnchor = 'none';
+      const until = performance.now() + REVEAL_MS;
+      requestAnimationFrame(function pin(now) {
+        scroller.scrollTop += summary.getBoundingClientRect().top - anchor;
+        if (now < until) requestAnimationFrame(pin);
+        else scroller.style.overflowAnchor = '';
+      });
+    }
+  }
   animateDisclosure(details, opening);
 });
+
+const otherGroups = (details: HTMLDetailsElement) =>
+  [...document.querySelectorAll<HTMLDetailsElement>(SIDEBAR_GROUPS)].filter((d) => d !== details);
+
+document.addEventListener(
+  'toggle',
+  (e) => {
+    const details = e.target;
+    if (!(details instanceof HTMLDetailsElement) || !details.matches(SIDEBAR_GROUPS)) return;
+    if (!details.open || running.has(details)) return;
+    for (const other of otherGroups(details)) if (!running.has(other)) other.open = false;
+  },
+  true,
+);

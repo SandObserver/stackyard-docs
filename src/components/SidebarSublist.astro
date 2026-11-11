@@ -1,11 +1,10 @@
 ---
 import { Icon } from '@astrojs/starlight/components';
-import SidebarRestorePoint from '@astrojs/starlight/components/SidebarRestorePoint.astro';
 import { sidebarIcon } from '../lib/sidebar-icons';
 
 type Entry =
   | { type: 'link'; label: string; href: string; isCurrent: boolean; attrs: Record<string, string> }
-  | { type: 'group'; label: string; entries: Entry[]; collapsed: boolean };
+  | { type: 'group'; label: string; entries: Entry[] };
 
 interface Props {
   sublist: Entry[];
@@ -38,7 +37,7 @@ const hasCurrent = (entries: Entry[]): boolean =>
               <span>{entry.label}</span>
             </a>
           ) : (
-            <details open={hasCurrent(entry.entries) || !entry.collapsed}>
+            <details open={hasCurrent(entry.entries)}>
               <summary class:list={['sy-nl', { 'has-icon': icon }]}>
                 {icon && (
                   <svg class="sy-icon" width="20" height="20" aria-hidden="true" focusable="false">
@@ -48,7 +47,6 @@ const hasCurrent = (entries: Entry[]): boolean =>
                 <span class="group-label large">{entry.label}</span>
                 <Icon name="right-caret" class="caret" size="1.125rem" />
               </summary>
-              <SidebarRestorePoint />
               <Astro.self sublist={entry.entries} nested />
             </details>
           )}

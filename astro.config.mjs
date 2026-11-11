@@ -123,7 +123,6 @@ export default defineConfig({
         },
         {
           label: 'Widgets',
-          collapsed: true,
           items: [
             { label: 'Overview', link: '/docs/widgets/' },
             { label: 'Backup', link: '/docs/widgets/backup/' },
@@ -165,7 +164,6 @@ export default defineConfig({
         },
         {
           label: 'Create a widget',
-          collapsed: true,
           items: [
             { label: 'Build your first widget', link: '/docs/create-a-widget/' },
             { label: 'Manifest', link: '/docs/create-a-widget/manifest/' },
@@ -176,7 +174,6 @@ export default defineConfig({
         },
         {
           label: 'Contributing',
-          collapsed: true,
           items: [
             { label: 'How to contribute', link: '/docs/contributing/' },
             { label: 'Architecture', link: '/docs/contributing/architecture/' },
@@ -189,7 +186,6 @@ export default defineConfig({
         },
         {
           label: 'About',
-          collapsed: true,
           items: [
             { label: 'Accessibility', link: '/docs/accessibility/' },
             { label: 'Security policy', link: '/docs/security-policy/' },

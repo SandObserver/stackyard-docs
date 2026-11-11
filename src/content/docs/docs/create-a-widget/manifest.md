@@ -75,6 +75,8 @@ Settings lists every item with an icon. A widget that names a `glyph` shows it. 
 
 The icons come from the shared [icon set](/docs/contributing/design-system/#icons).
 
+To add a glyph, [draw the icon](/docs/contributing/design-system/#add-an-icon). Map a glyph name to it in `GLYPH_ICON` in `ui/js/widget-glyphs.js`. Add the same name to `VALID_GLYPHS` in `api/src/widgets.js`, then set it as `"glyph"` in `widget.json`.
+
 Two widgets may not name the same glyph. A test refuses it. A name not on this list is rejected at startup.
 
 ## Card background

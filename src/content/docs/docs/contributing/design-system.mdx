@@ -16,20 +16,25 @@ Teal is the brand accent. Rules name a role below, never a raw color.
 
 The other hues and grays are Apple's system colors.
 
-<div class="sy-guts">
-<section class="sy-gut">
+**Text on cards** uses `--sy-a11y-dim`. WCAG asks for 4.5:1.
 
-## What differs
-
-<div class="sy-gut__body">
-
-- **Both pages carry both themes.** **Display Mode** sets the theme on `<html>`, and the dashboard, the Settings pages and every widget follow it.
-- **Text on cards uses `--sy-a11y-dim`.** Apple's secondary label colors fail WCAG contrast on Stackyard's cards.
-- **Text on a user-picked tile color is black or white,** whichever contrasts more. It is measured, never fixed.
-- **Widgets cannot read tokens.** A widget copies the values it needs from the palette.
+<div class="sy-cardtext not-content">
+  <div class="sy-cardtext__row"><span style="color:#8e8e93">Updated 2 min ago</span><span>3.48:1, system gray</span></div>
+  <div class="sy-cardtext__row"><span style="color:#a3a3a8">Updated 2 min ago</span><span>4.52:1, <code>{'--sy-a11y-dim'}</code></span></div>
 </div>
-</section>
 
+**Text on a colored tile** is black or white, whichever measures higher.
+
+<ul class="sy-tiles not-content">
+  <li><span class="sy-tiles__tile" style="background:#ffcc00;color:#000" role="img" aria-label="Black text on yellow">Aa</span>13.89:1</li>
+  <li><span class="sy-tiles__tile" style="background:#34c759;color:#000" role="img" aria-label="Black text on green">Aa</span>9.46:1</li>
+  <li><span class="sy-tiles__tile" style="background:#5856d6;color:#fff" role="img" aria-label="White text on indigo">Aa</span>5.65:1</li>
+  <li><span class="sy-tiles__tile sy-tiles__tile--edge" style="background:#1c1c1e;color:#fff" role="img" aria-label="White text on near black">Aa</span>17.01:1</li>
+</ul>
+
+**Display Mode** sets the theme on `<html>`, for every page and widget. Widgets cannot read tokens. A widget copies the values it needs from the palette.
+
+<div class="sy-guts">
 <section class="sy-gut">
 
 ## Icons
@@ -70,21 +75,9 @@ Each icon is a short list of shapes on a 24-unit grid. The file turns the list i
 
 <div class="sy-gut__body">
 
-1. Add an entry to `ICONS` in `ui/js/icon-set.js`. Draw what the widget shows, in as few shapes as read at 16 pixels.
+Add an entry to `ICONS` in `ui/js/icon-set.js`, in as few shapes as read at 16 pixels. Draw bodies with `rect`, `circle` or `shape`, a container with `frame`, small parts with `detail`, `dot` or `bar`, and lines with `line` or `ring`.
 
-   ```js
-   system: {
-     shapes: [
-       line('M3 16l5-5 4 4 5-5'),      // the graph
-       dot(19, 6, 3, 'accent'),         // the latest reading
-     ],
-   },
-   ```
-
-2. Map a glyph name to it in `ui/js/widget-glyphs.js`, and add the same name to `VALID_GLYPHS` in `api/src/widgets.js`.
-3. Set `"glyph"` in the widget's `widget.json`. See [List icon](/docs/create-a-widget/manifest/#list-icon).
-
-`rect`, `circle` and `shape` draw bodies. `frame` draws a hollow container. `detail`, `dot` and `bar` draw small parts. `line` and `ring` draw lines. A part that holds something is a frame with solid contents. An action or state is a line. The one accent part sits on open background. A test rejects a glyph that points at no icon.
+To use it as a widget's list icon, see [List icon](/docs/create-a-widget/manifest/#list-icon).
 
 </div>
 </section>

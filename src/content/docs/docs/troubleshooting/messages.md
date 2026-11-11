@@ -1,12 +1,17 @@
 ---
 title: Error messages
 description: What each Stackyard widget and Settings message means, and where to look next.
-tableOfContents: false
 ---
 
 Find the exact text of the message. For problems without a message, see [Troubleshooting](/docs/troubleshooting/).
 
 A widget message is one line, in place of the widget's data. Each names a kind of failure rather than repeating what the service said, because a service's own message names hosts, ports and status codes.
+
+<div class="sr-only">
+
+## Messages
+
+</div>
 
 | Message | Area | Meaning |
 | --- | --- | --- |

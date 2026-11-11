@@ -1,21 +1,45 @@
 ---
 title: Stackyard vs Homepage, Dashy and Homarr
 description: Stackyard compared with gethomepage, Dashy and Homarr on settings, supported services and dependencies, and who each one suits.
+tableOfContents: false
 next: false
 ---
 
 import CompareTable from '../../../components/CompareTable.astro';
-import CalmContrast from '../../../components/CalmContrast.astro';
 
 Stackyard next to the three dashboards people most often compare it with.
+
+<div class="sy-fit not-content">
+<div class="sy-fit__cols">
+<section class="sy-fit__yes">
+<h2 class="sy-fit__h">Choose Stackyard if</h2>
+
+- You want a launcher that flags an unhealthy app.
+- You set things up in a web UI, not a YAML file.
+- You check the dashboard many times a day.
+- You want a value from any API on a tile, with no code.
+- You want [WCAG 2.2 AA](/docs/accessibility/), a home-screen app and six languages.
+
+</section>
+<section>
+<h2 class="sy-fit__h">Choose another if</h2>
+
+- You want history or alerts. Stackyard shows current values only.
+- You want configuration as code in a Git repository.
+- You need user accounts. Stackyard has [one admin password](/docs/security/).
+- You want plugins. The widget set is fixed.
+
+</section>
+</div>
+</div>
 
 <CompareTable
   rivals={['gethomepage', 'Dashy', 'Homarr']}
   footnotes={[
     'Point a tile at any API and pick a value. No code. See <a href="/docs/badges/">Badges</a>.',
-    'From each project\u2019s docs and source, October 2026.',
+    'From each project’s docs and source, October 2026.',
     'One password per instance. Link instances with the <a href="/docs/widgets/dashboard-switch/">Dashboard switch</a>.',
-    'Counted from each project\u2019s source, November 2026. Each service counts once, however many widgets read it. Cloud services and generic widgets such as RSS, iframe and custom API are not counted.',
+    'Counted from each project’s source, November 2026. Each service counts once, however many widgets read it. Cloud services and generic widgets such as RSS, iframe and custom API are not counted.',
   ]}
   rows={[
     {
@@ -49,28 +73,4 @@ Stackyard next to the three dashboards people most often compare it with.
   ]}
 />
 
-<CalmContrast />
-
-A health badge is hidden while a service is fine, so a working Stackyard shows no badges at all. See [Badges](/docs/badges/).
-
-## Is Stackyard for you?
-
-### Stackyard is a good fit if
-
-- You want a launcher first. The dashboard's job is to get you into your apps, and to tell you when one is unhealthy.
-- You configure things in a web UI. There is no YAML file to hand-edit.
-- You look at the dashboard many times a day. It is designed to stay calm at that frequency rather than to impress once.
-- You want values from your own services on the tiles, without waiting for someone to write a widget for them.
-- You want it to install to a phone home screen and work in six languages, right to left included.
-- Accessibility matters to you. Stackyard is built to WCAG 2.2 level AA. See [Accessibility](/docs/accessibility/).
-
-### Another dashboard is a better fit if
-
-- You want a metrics dashboard. Stackyard shows current values, not history, and it does not alert. It sits next to a monitoring stack rather than replacing one.
-- You want configuration as code. State lives in a single JSON file that the web UI writes. You can [export and import](/docs/import-export/backup-and-restore/) it, but it is not designed to be hand-edited or templated in a Git repository.
-- You need user accounts. There is one admin password and one shared dashboard per instance. For a separate dashboard per person, room or site, run separate instances and link them with the [Dashboard switch](/docs/widgets/dashboard-switch/) widget. See [Security](/docs/security/).
-- You want a plugin ecosystem. The widget set is fixed, plus a [Custom](/docs/widgets/custom/) widget that embeds any web page.
-
-## Switching
-
-Stackyard imports apps and folders from Homepage and Dashy files. See [Import](/docs/import-export/migrating/).
+<div class="sy-fit__foot not-content"><p>Switching? Stackyard imports apps and folders from Homepage and Dashy files. See <a href="/docs/import-export/migrating/">Import</a>.</p></div>

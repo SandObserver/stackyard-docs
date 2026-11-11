@@ -7,7 +7,7 @@ const HOVER_LISTS = [
   { container: '.sidebar-content', item: 'a, summary' },
   { container: 'starlight-toc nav', item: 'a' },
 ];
-const DISCLOSURES = '#starlight__sidebar details, details.cl-item, details.sy-disc';
+const DISCLOSURES = '#starlight__sidebar details, details.cl-item, details.sy-disc, details.sy-cmp__notes';
 const SIDEBAR_GROUPS = '#starlight__sidebar .top-level > li > details';
 
 const measurable = (el: Element) => {

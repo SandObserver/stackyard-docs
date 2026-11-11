@@ -20,59 +20,41 @@ const names = ['Stackyard', ...rivals];
 ---
 
 <div class="sy-cmp not-content">
-  <div class="sy-cmp__card">
-    <table class="sy-cmp__t">
-      <caption class="sy-cmp__sr">Stackyard compared with {rivals.join(', ')}</caption>
-      <thead>
+  <table class="sy-cmp__t">
+    <caption class="sy-cmp__sr">Stackyard compared with {rivals.join(', ')}</caption>
+    <thead>
+      <tr>
+        <th scope="col"><span class="sy-cmp__sr">Feature</span></th>
+        {names.map((name, i) => <th scope="col" class={i === 0 ? 'sy-cmp__own' : undefined}>{name}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row) => (
         <tr>
-          <th scope="col"><span class="sy-cmp__sr">Feature</span></th>
-          <th scope="col" class="sy-cmp__own">
-            <img
-              class="sy-cmp__logo sy-cmp__logo--light"
-              src="/img/stackyard-wordmark-light-b3140d1e.svg"
-              alt="Stackyard"
-              width="100"
-              height="22"
-            />
-            <img
-              class="sy-cmp__logo sy-cmp__logo--dark"
-              src="/img/stackyard-wordmark-dark-4680834d.svg"
-              alt="Stackyard"
-              width="100"
-              height="22"
-            />
+          <th scope="row">
+            {row.label}
+            {row.labelNote && (
+              <a class="sy-cmp__mark" href={`#sy-fn-${row.labelNote}`}>
+                <sup>{row.labelNote}</sup>
+                <span class="sy-cmp__sr">See note {row.labelNote}</span>
+              </a>
+            )}
           </th>
-          {rivals.map((name) => <th scope="col">{name}</th>)}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr>
-            <th scope="row">
-              {row.label}
-              {row.labelNote && (
-                <a class="sy-cmp__mark" href={`#sy-fn-${row.labelNote}`}>
-                  <sup>{row.labelNote}</sup>
-                  <span class="sy-cmp__sr">See note {row.labelNote}</span>
+          {row.values.map((value, i) => (
+            <td class={i === 0 ? 'sy-cmp__own' : undefined}>
+              {value}
+              {i === 0 && row.cellNote && (
+                <a class="sy-cmp__mark" href={`#sy-fn-${row.cellNote}`}>
+                  <sup>{row.cellNote}</sup>
+                  <span class="sy-cmp__sr">See note {row.cellNote}</span>
                 </a>
               )}
-            </th>
-            {row.values.map((value, i) => (
-              <td class={i === 0 ? 'sy-cmp__own' : undefined}>
-                {value}
-                {i === 0 && row.cellNote && (
-                  <a class="sy-cmp__mark" href={`#sy-fn-${row.cellNote}`}>
-                    <sup>{row.cellNote}</sup>
-                    <span class="sy-cmp__sr">See note {row.cellNote}</span>
-                  </a>
-                )}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+            </td>
+          ))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
 
   <div class="sy-cmp__list">
     {rows.map((row, g) => (
@@ -106,10 +88,28 @@ const names = ['Stackyard', ...rivals];
     ))}
   </div>
 
-  <ol class="sy-cmp__notes">
-    {footnotes.map((text, i) => <li id={`sy-fn-${i + 1}`} set:html={text} />)}
-  </ol>
+  <details class="sy-cmp__notes">
+    <summary>Sources and notes</summary>
+    <ol>
+      {footnotes.map((text, i) => <li id={`sy-fn-${i + 1}`} set:html={text} />)}
+    </ol>
+  </details>
 </div>
+
+<script>
+  const openNotesFor = (hash: string) => {
+    if (!/^#sy-fn-\d+$/.test(hash)) return;
+    const note = document.querySelector(hash);
+    const details = note?.closest('details');
+    if (details && !details.open) details.open = true;
+  };
+
+  document.addEventListener('click', (e) => {
+    const mark = (e.target as Element).closest?.('a.sy-cmp__mark');
+    if (mark) openNotesFor(mark.getAttribute('href') ?? '');
+  });
+  openNotesFor(location.hash);
+</script>
 
 <style>
   .sy-cmp {
@@ -117,173 +117,120 @@ const names = ['Stackyard', ...rivals];
     margin: 20px 0 24px;
   }
 
-  .sy-cmp__card {
-    background: var(--sy-card);
-    border-radius: 22px;
-    overflow: hidden;
-  }
-
-  .sy-cmp__t {
+  .sy-cmp .sy-cmp__t {
+    display: table;
     width: 100%;
+    margin: 0;
     table-layout: fixed;
     border-collapse: separate;
     border-spacing: 0;
+    background: none;
+    border-radius: 0;
+    overflow: visible;
     font-size: 15px;
     line-height: 1.3333;
     letter-spacing: -0.0153em;
   }
 
-  .sy-cmp__t th,
-  .sy-cmp__t td {
-    position: relative;
-    padding: 14px 10px;
+  .sy-cmp .sy-cmp__t th,
+  .sy-cmp .sy-cmp__t td {
+    padding: 12px 10px;
     border: 0;
-    background: transparent;
+    background: none;
     text-align: center;
     vertical-align: middle;
+    font-weight: 400;
+    color: var(--sy-dim);
   }
 
-  .sy-cmp__t thead th {
-    padding-block: 16px 10px;
+  .sy-cmp .sy-cmp__t thead th {
     font-size: 13px;
     line-height: 1.3846;
     letter-spacing: -0.0062em;
     font-weight: 600;
-    color: var(--sy-dim);
-    vertical-align: bottom;
-  }
-
-  .sy-cmp__t tbody th {
-    width: 30%;
-    padding-inline-start: 16px;
-    text-align: start;
-    font-size: 15px;
-    letter-spacing: -0.0153em;
-    font-weight: 400;
     color: var(--sy-tx);
   }
 
-  .sy-cmp__t td {
-    color: var(--sy-dim);
+  .sy-cmp .sy-cmp__t tbody th {
+    width: 24%;
+    font-size: 15px;
+    letter-spacing: -0.0153em;
+    padding-inline-start: 0;
+    text-align: start;
+    color: var(--sy-tx);
   }
 
-  .sy-cmp__t .sy-cmp__own {
+  .sy-cmp .sy-cmp__t tbody > tr > * {
+    box-shadow: inset 0 1px var(--sy-row-sep);
+  }
+
+  .sy-cmp .sy-cmp__t .sy-cmp__own {
     background: color-mix(in srgb, var(--sy-accent) 10%, transparent);
     color: var(--sy-tx);
     font-weight: 600;
   }
 
-  .sy-cmp__t thead .sy-cmp__own {
-    border-start-start-radius: 16px;
-    border-start-end-radius: 16px;
+  .sy-cmp .sy-cmp__t thead .sy-cmp__own {
+    border-start-start-radius: 14px;
+    border-start-end-radius: 14px;
   }
 
-  .sy-cmp__t tbody tr:last-child .sy-cmp__own {
-    border-end-start-radius: 16px;
-    border-end-end-radius: 16px;
-  }
-
-  .sy-cmp__t tbody tr + tr > *::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    inset-inline: 0;
-    height: 1px;
-    background: var(--sy-row-sep);
-  }
-
-  .sy-cmp__t tbody tr + tr > th::before {
-    inset-inline-start: 16px;
-  }
-
-  .sy-cmp__t tbody tr + tr > :last-child::before {
-    inset-inline-end: 16px;
-  }
-
-  .sy-cmp__logo {
-    display: block;
-    width: 100px;
-    height: auto;
-    margin: 0 auto;
-  }
-
-  .sy-cmp__logo--dark,
-  :root[data-theme='dark'] .sy-cmp__logo--light {
-    display: none;
-  }
-
-  :root[data-theme='dark'] .sy-cmp__logo--dark {
-    display: block;
+  .sy-cmp .sy-cmp__t tbody tr:last-child .sy-cmp__own {
+    border-end-start-radius: 14px;
+    border-end-end-radius: 14px;
   }
 
   .sy-cmp__list {
     display: none;
   }
 
+  .sy-cmp__group {
+    padding: 12px;
+    border: 1px solid var(--sy-row-sep);
+    border-radius: 12px;
+  }
+
   .sy-cmp__group + .sy-cmp__group {
-    margin-top: 18px;
+    margin-top: 6px;
   }
 
   .sy-cmp__gh {
-    margin: 0;
-    padding: 0 16px 6px;
+    margin: 0 0 8px;
     font-size: 13px;
     line-height: 1.3846;
     letter-spacing: -0.0062em;
     font-weight: 600;
-    color: var(--sy-dim);
+    color: var(--sy-tx);
   }
 
   .sy-cmp__rows {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
     margin: 0;
-    background: var(--sy-card);
-    border-radius: 22px;
-    overflow: hidden;
-  }
-
-  .sy-cmp__row {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    min-height: 44px;
-    padding: 11px 16px;
-    font-size: 15px;
-    line-height: 1.3333;
-    letter-spacing: -0.0153em;
-  }
-
-  .sy-cmp__row + .sy-cmp__row::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    inset-inline: 16px;
-    height: 1px;
-    background: var(--sy-row-sep);
   }
 
   .sy-cmp__row dt {
-    color: var(--sy-tx);
+    font-size: 12px;
+    line-height: 1.3333;
+    color: var(--sy-dim);
   }
 
   .sy-cmp__row dd {
     margin: 0;
+    font-size: 15px;
+    line-height: 1.3333;
+    letter-spacing: -0.0153em;
     color: var(--sy-dim);
-    text-align: end;
   }
 
-  .sy-cmp__row.sy-cmp__own {
-    background: color-mix(in srgb, var(--sy-accent) 10%, transparent);
-  }
-
-  .sy-cmp__row.sy-cmp__own :is(dt, dd) {
+  .sy-cmp__row.sy-cmp__own dd {
     color: var(--sy-tx);
     font-weight: 600;
   }
 
   @container (max-width: 520px) {
-    .sy-cmp__card {
+    .sy-cmp .sy-cmp__t {
       display: none;
     }
     .sy-cmp__list {
@@ -293,6 +240,7 @@ const names = ['Stackyard', ...rivals];
 
   .sy-cmp__mark {
     text-decoration: none;
+    font-weight: 400;
     color: var(--sl-color-text-accent);
   }
 
@@ -309,12 +257,71 @@ const names = ['Stackyard', ...rivals];
   }
 
   .sy-cmp__notes {
-    margin: 14px 0 0;
-    padding-inline-start: 16px;
+    margin-top: 8px;
     font-size: 13px;
     line-height: 1.3846;
     letter-spacing: -0.0062em;
     color: var(--sy-dim);
+  }
+
+  .sy-cmp__notes summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    min-height: 44px;
+    border-radius: 8px;
+    list-style: none;
+    cursor: pointer;
+    color: var(--sy-dim);
+    transition: color 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .sy-cmp__notes summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .sy-cmp__notes summary::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border: solid currentColor;
+    border-width: 0 1.5px 1.5px 0;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 200ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .sy-cmp__notes[open] summary::after {
+    transform: translateY(1px) rotate(-135deg);
+  }
+
+  .sy-cmp__notes[data-sy-closing='true'] summary::after {
+    transform: translateY(-2px) rotate(45deg);
+    transition-duration: 160ms;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .sy-cmp__notes summary:hover {
+      color: var(--sy-tx);
+    }
+  }
+
+  .sy-cmp__notes summary:focus-visible {
+    outline: 2px solid var(--sl-color-text-accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sy-cmp__notes summary::after {
+      transition: none;
+    }
+  }
+
+  .sy-cmp__notes ol {
+    margin: 0;
+    padding-block-end: 4px;
+    padding-inline-start: 16px;
   }
 
   .sy-cmp__notes li + li {

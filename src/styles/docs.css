@@ -358,12 +358,85 @@ starlight-toc nav a {
 .sl-markdown-content :where(
   .sy-shot,
   .wpv, .wpv__mat, .wpv__card,
-  .sy-cmp, .sy-cmp__notes,
-  .sy-cc, .sy-cc__pair, .sy-cc__panel, .sy-cc__screen, .sy-cc__head,
-  .sy-cc__stats, .sy-cc__stat, .sy-cc__grid, .sy-cc__tile, .sy-cc__card,
-  .sy-cc__head, .sy-cc__names
+  .sy-cmp, .sy-cmp__notes, .sy-cmp__group, .sy-cmp__rows,
+  .sy-fit, .sy-fit__cols, .sy-fit section, .sy-fit ul
 ) > * {
   margin-top: 0;
+}
+
+.sy-fit {
+  container-type: inline-size;
+  margin: 28px 0 40px;
+}
+
+.sy-fit__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+@container (max-width: 560px) {
+  .sy-fit__cols {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.sy-fit__h {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.3846;
+  letter-spacing: -0.0062em;
+  font-weight: 600;
+  color: var(--sy-dim);
+}
+
+.sy-fit ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sy-fit li {
+  position: relative;
+  padding-block: 5px;
+  padding-inline-start: 16px;
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--sy-tx);
+}
+
+.sy-fit li::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  inset-inline-start: 2px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sy-dim);
+}
+
+.sy-fit__yes li::before {
+  background: var(--sy-accent);
+}
+
+.sy-fit a,
+.sy-fit__foot a {
+  color: var(--sl-color-text-accent);
+}
+
+.sy-fit__foot {
+  margin-top: 32px;
+  padding-top: 14px;
+  border-top: 1px solid var(--sy-row-sep);
+  font-size: 15px;
+  color: var(--sy-dim);
+}
+
+.sy-fit__foot p {
+  max-width: 37.5rem;
+  margin: 0;
 }
 
 .sy-shot img.sy-shot__dark {

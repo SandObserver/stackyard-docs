@@ -2004,6 +2004,57 @@ main {
   color: var(--c);
 }
 
+.sl-markdown-content .sy-cardtext {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 24rem;
+  margin-block: 0.75rem 1.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--sy-radius-lg);
+  background: #3a3a3c;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.sl-markdown-content .sy-cardtext__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+.sl-markdown-content .sy-cardtext code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+.sl-markdown-content .sy-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block: 0.75rem 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+.sl-markdown-content .sy-tiles li {
+  display: grid;
+  justify-items: center;
+  gap: 0.3rem;
+  margin: 0;
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--sy-dim);
+}
+.sl-markdown-content .sy-tiles__tile {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--sy-radius-lg);
+  font-weight: 600;
+}
+.sl-markdown-content .sy-tiles__tile--edge {
+  outline: 1px solid var(--sy-sep);
+}
+
 .sl-markdown-content .sy-guts {
   container-type: inline-size;
   margin-top: 2rem;

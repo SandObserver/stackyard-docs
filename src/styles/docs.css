@@ -382,13 +382,18 @@ starlight-toc nav a {
   }
 }
 
-.sy-fit__h {
+.sy-fit h2 {
+  display: block;
   margin: 0 0 8px;
   font-size: 13px;
   line-height: 1.3846;
   letter-spacing: -0.0062em;
   font-weight: 600;
   color: var(--sy-dim);
+}
+
+.sy-fit .sl-anchor-link {
+  display: none;
 }
 
 .sy-fit ul {

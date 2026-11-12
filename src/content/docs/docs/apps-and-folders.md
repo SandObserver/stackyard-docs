@@ -24,7 +24,7 @@ Pick the tile color under **Style**.
 | Dark | A near-black tile in both display modes. |
 | White | A white tile in both display modes. |
 | Auto | Dark in dark mode, white in light mode. |
-| Clear | Frosted glass, so the wallpaper reads through, like a folder tile. |
+| Clear | Clear glass, so the wallpaper reads through, like a folder tile. |
 | Color | One of thirteen system colors, each drawn for the display mode it is shown in, or a color you set. |
 
 **Color** shows the system colors, sliders for hue, saturation and brightness, and a color code. A color set by code or slider is used exactly as given in both modes.

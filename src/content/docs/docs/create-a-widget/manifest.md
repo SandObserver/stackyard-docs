@@ -88,7 +88,7 @@ The card behind a widget follows the display mode: white in light, `#1c1c1e` in 
 | `dark` | Solid `#1c1c1e` in both themes. |
 | `graphite` | Solid `#2c2c2e` in both themes, for a widget drawn on that gray. |
 | `light` | Solid white in both themes. |
-| `translucent` | The default card, kept for a widget that named it. |
+| `translucent` | Glass. The wallpaper shows through a tinted fill, dark or light with the display mode. |
 
 A `card` inside a `views` entry overrides the widget-level one for that view.
 

@@ -32,7 +32,7 @@ Match the existing look: a transparent background, the system font stack, the da
 
 The frame's `<html>` carries two attributes:
 
-- `data-glass` while a `translucent` card shows the wallpaper. Text under it must clear 4.5:1 over a white and over a black wallpaper.
+- `data-glass` while a `translucent` card shows the wallpaper. Text under it must clear 4.5:1 over a white and over a black wallpaper. The frame then sets `--glass-ink-2` and `--glass-red` for secondary and error text, and `--glass-ink-3` for icons; each clears that bar.
 - `data-transparency="reduce"` when the viewer turned on Reduce Transparency, on the device or in the system. Drop any blur under it.
 
 ## What a page may load

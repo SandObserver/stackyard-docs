@@ -49,6 +49,8 @@ A number from any API.
 
 If the API asks for a username and password, turn on **Authentication** and enter them under **Sign In**. The password stays on the server. A username and password typed into the URL are not sent.
 
+Turning **Authentication** off removes the stored sign-in, query parameters and headers when you save. **Fetch** sends none of them while it is off.
+
 Tick **Secret** on a header to keep its value on the server. **Poll** sets how often it reads, in seconds. Every open dashboard shares that reading.
 
 ### More than one value

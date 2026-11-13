@@ -68,6 +68,8 @@ window.__clearActive = () => { /* drop the active state, hide any tooltip */ };
 
 The dashboard resets every other widget when it receives the message, and calls `__clearActive` when a tap lands outside any widget. The frames are same-origin, so a widget needs no `message` listener. If you add one, check `e.origin` against `window.location.origin` first.
 
+For a card that a first tap reveals and a second tap opens, `twoTap(el, { reveal, conceal, open })` from the toolbox does all of this. A finger that moves more than 8px is a swipe and does nothing. `timeout` conceals the card after that many milliseconds without a second tap.
+
 ## Off-screen pages
 
 Every dashboard page is mounted at once. The dashboard slows the polling of widgets on other pages through `window.__setPollRate`, which the toolbox defines. A widget that uses `poll()` needs nothing. A widget with its own timer must read the same hook.
@@ -145,5 +147,8 @@ The wording comes from the failure kind, not the upstream message. `errorLine(er
 - `setBar(track, percent)` moves a `barFill` bar to `percent`, clamped to 0 to 100.
 - `smoothPath(points)` returns a smoothed SVG path through `[[x, y], ...]`.
 - `setCardAppearance(dark)` gives the card the dark card's edge and border. Call it when the widget paints its own dark background, for example at night.
+- `toneForColor(color)` returns `'light'` or `'dark'`, the text tone that meets WCAG contrast on that fill, or `null` for a colour it cannot read.
+- `formatBytes(bytes, opts?)` returns a size such as "1.5 GB", and `formatByteRate(bytesPerSecond, opts?)` a rate such as "1.5 MB/s". Both count in steps of 1000 and use the reader's digits and unit names.
+- `reducedMotion(onChange?)` returns whether the reader asks for reduced motion. `onChange` runs with the new answer each time the setting changes.
 
 Check the toolbox before drawing a visual by hand.

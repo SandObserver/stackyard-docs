@@ -32,7 +32,7 @@ Match the existing look: a transparent background, the system font stack, the da
 
 ## What a page may load
 
-The widget frame has a stricter Content-Security-Policy than the dashboard. Scripts and styles must be inline or same-origin. `connect-src` is `'self'`, so the only host a widget can call is Stackyard. Images may come from the icon CDN or a `data:` URI.
+The widget frame has a stricter Content-Security-Policy than the dashboard. Scripts and styles must be inline or same-origin. `connect-src` is `'self'`, so the only host a widget can call is Stackyard. Images may come from the icon CDN or a `data:` URI. Forms and plugins are blocked: `form-action` and `object-src` are `'none'`.
 
 ## Text direction
 

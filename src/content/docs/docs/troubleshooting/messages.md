@@ -39,8 +39,9 @@ A widget message is one line, in place of the widget's data. Each names a kind o
 | `The id settings is reserved for the Settings tile. Delete this item, then add it again.` | App status | An item uses the id of the Settings tile. |
 | `This backup was made by a newer version of Stackyard. Update first, then import it.` | App status | The backup's schema is newer than this version. |
 | `This configuration is larger than the 2 MB limit.` | App status | The import or save is over the size limit. |
-| `The disk is full. Free some space, then save again.` | App status | Nothing was saved. |
+| `The disk is full. Free some space, then try again.` | App status | Nothing was saved. |
 | `Stackyard cannot write to its data folder. Give the user running Stackyard write access, and check that the folder is not read-only.` | App status | Nothing was saved. |
+| `Stackyard cannot write to its icons folder. Give the user running Stackyard write access, and check that the folder is not read-only.` | Images and icons | The icon or wallpaper was not saved. |
 | `The config file is mounted on its own. Mount its folder instead.` | App status | Saves fail on a single-file mount. The dashboard still loads. |
 | `Stackyard never connects to this address. It is reserved for link-local and cloud metadata use.` | App status | The address is refused on every outbound request, even with `ALLOW_PRIVATE_IPS=true`. |
 | `Your password was changed, but the other settings were not saved.` | Passwords and sign-in | The new password is active. Save the other settings again. |

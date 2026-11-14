@@ -85,8 +85,8 @@ All optional.
 ]} />
 
 <SettingList title="Paths and runtime" items={[
-  { name: '`CONFIG_PATH`', text: 'Default `/data/apps.json`.' },
-  { name: '`ICONS_PATH`', text: 'Default `/icons`.' },
+  { name: '`CONFIG_PATH`', text: 'Default `/data/apps.json`. An absolute path with no `.` or `..` part. It cannot be inside `ICONS_PATH` or a system folder of the image such as `/etc` or `/usr`. A folder below `/var`, `/tmp`, `/root` or `/app` works only on a mounted volume.' },
+  { name: '`ICONS_PATH`', text: 'Default `/icons`. Uploaded icons, wallpapers and the custom favicon are saved and served from here. Letters, digits, dots, dashes, underscores and slashes only. The folder rules of `CONFIG_PATH` apply. With one volume at `/data`, set `/data/icons`.' },
   { name: '`WIDGETS_PATH`', text: 'Default `/usr/share/nginx/html/widgets`. A wrong path loads no widgets.' },
   { name: '`NODE_OPTIONS`', text: 'Default `--max-old-space-size=192`. Keep near half the container memory limit.' },
   { name: '`LISTEN_PORT`', text: 'The port nginx listens on inside the container. Default `80`. Set it when the container runs as another account on a system that reserves ports below 1024, and map the same port.' },

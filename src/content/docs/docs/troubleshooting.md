@@ -194,6 +194,17 @@ The container log names the account and what it cannot do:
 | `UID 2000 cannot write /run/stackyard. If the container's root filesystem is read-only, mount a tmpfs on /run/stackyard.` | Add a tmpfs mount on `/run/stackyard`. |
 | `cannot take ownership of /data; config and icon writes will fail` | The container runs as root without `CAP_CHOWN`. Add `CHOWN` under `cap_add`, or make the folder writable by UID 1000 yourself. |
 
+### The container stops because of `CONFIG_PATH` or `ICONS_PATH`
+
+The container log names the variable and the folder:
+
+| Log line | What to do |
+| --- | --- |
+| `ICONS_PATH must be a folder below / named with letters, digits, dots, dashes, underscores and slashes, with no . or .. part, not "..."` | Use a folder name with only those characters. |
+| `CONFIG_PATH cannot use /etc/stackyard; /etc is a system folder of the image. Use a folder such as /data or /icons` | Use a folder outside the image's system folders. |
+| `CONFIG_PATH cannot use /var/lib/stackyard; /var is a system folder of the image. Mount a volume at /var/lib/stackyard, or use a folder such as /data or /icons` | Mount a volume at that folder or at a parent below `/var`, or use `/data`. |
+| `CONFIG_PATH cannot be inside ICONS_PATH; nginx serves every file in /icons to anyone` | Move the config file out of the icons folder. |
+
 ### The container stops with "Stackyard did not start"
 
 `INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` is set, but the password could not be stored on the first start. The log line ends with the reason:

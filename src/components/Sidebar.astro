@@ -14,3 +14,25 @@ const sprite = await iconSprite(SIDEBAR_ICON_IDS);
 <SidebarPersister>
   <SidebarSublist sublist={sidebar} />
 </SidebarPersister>
+
+<script>
+  for (const btn of document.querySelectorAll<HTMLElement>('.sy-sb-search site-search > button')) {
+    const kbd = btn.querySelector<HTMLElement>(':scope > kbd');
+    const keys = kbd && getComputedStyle(kbd).display !== 'none' ? [...kbd.querySelectorAll('kbd')].map((k) => k.textContent).join(' ') : '';
+    btn.setAttribute('aria-label', [btn.getAttribute('aria-label'), keys].filter(Boolean).join(' '));
+  }
+
+  const hold = (msg: HTMLElement) => {
+    if (!/^Searching/.test(msg.textContent ?? '')) {
+      delete msg.dataset.syHold;
+      return;
+    }
+    if ('syHold' in msg.dataset) return;
+    msg.dataset.syHold = '';
+    setTimeout(() => delete msg.dataset.syHold, 600);
+  };
+  new MutationObserver(() => {
+    const msg = document.querySelector<HTMLElement>('site-search .pagefind-ui__message');
+    if (msg) hold(msg);
+  }).observe(document.querySelector('site-search') ?? document.body, { subtree: true, childList: true, characterData: true });
+</script>

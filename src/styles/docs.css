@@ -2751,3 +2751,6 @@ html:root:not(:has(.sy-tbar)) {
     mask: var(--sy-mask-page) center / contain no-repeat;
   }
 }
+site-search .pagefind-ui__message[data-sy-hold] {
+  visibility: hidden;
+}

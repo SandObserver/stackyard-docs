@@ -4,22 +4,14 @@ import { iconMaskUri } from '../lib/icon-set';
 import { SPECULATION_RULES } from '../lib/speculation.mjs';
 
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
-const { entry, id, head } = Astro.locals.starlightRoute;
+const { entry, head } = Astro.locals.starlightRoute;
 for (const tag of head) if (tag.attrs?.property === 'og:locale') tag.attrs.content = 'en_US';
 const docTitle = head.find((tag) => tag.tag === 'title')?.content;
 const pageTitle = entry.data.title;
 const pageDescription = entry.data.description ?? '';
 
-const segments = id.split('/').filter(Boolean);
 const crumbs = [{ name: 'Stackyard', item: `${site}/` }];
-let path = '';
-for (const segment of segments.slice(0, -1)) {
-  path += `/${segment}`;
-  crumbs.push({
-    name: segment.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()),
-    item: `${site}${path}/`,
-  });
-}
+if (Astro.url.pathname !== '/docs/') crumbs.push({ name: 'Docs', item: `${site}/docs/` });
 crumbs.push({ name: pageTitle, item: new URL(Astro.url.pathname, `${site}/`).href });
 
 const MASKS = { search: 'search', close: 'close', check: 'check', page: 'docs' };

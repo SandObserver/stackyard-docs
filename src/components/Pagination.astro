@@ -1,0 +1,25 @@
+---
+import { inlineIcon } from '../lib/icon-set';
+
+const { prev, next } = Astro.locals.starlightRoute.pagination;
+const back = await inlineIcon('back');
+---
+
+{
+  (prev || next) && (
+    <nav class="sy-pager print:hidden" aria-label="Previous and next page">
+      {prev && (
+        <a class="pg-prev" href={prev.href} rel="prev">
+          <svg class="sy-icon pg-chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" set:html={back} />
+          <span class="pg-txt"><small>Previous</small><span class="pg-t">{prev.label}</span></span>
+        </a>
+      )}
+      {next && (
+        <a class="pg-next" href={next.href} rel="next">
+          <svg class="sy-icon pg-chev" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" style="scale:-1 1" set:html={back} />
+          <span class="pg-txt"><small>Next</small><span class="pg-t">{next.label}</span></span>
+        </a>
+      )}
+    </nav>
+  )
+}

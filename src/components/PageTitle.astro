@@ -1,0 +1,43 @@
+---
+import { inlineIcon } from '../lib/icon-set';
+import { currentGroup } from '../lib/breadcrumbs';
+
+const { entry, sidebar } = Astro.locals.starlightRoute;
+const title = entry.data.title;
+const group = currentGroup(sidebar);
+const isIntro = Astro.url.pathname === '/docs/';
+const back = await inlineIcon('back');
+const backIcon = back && `<svg class="sy-icon sy-crumb-back" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">${back}</svg>`;
+---
+
+<nav class="sy-crumbs" aria-label="Breadcrumb">
+  <ol>
+    {!isIntro && <li><a href="/docs/"><Fragment set:html={backIcon} />Docs</a></li>}
+    {
+      group && (
+        <li>
+          <button class="sy-crumb-grp" type="button" data-group={group}><Fragment set:html={backIcon} />{group}</button>
+        </li>
+      )
+    }
+    <li><a href={Astro.url.pathname} aria-current="page">{title}</a></li>
+  </ol>
+</nav>
+<h1 id="_top">{title}</h1>
+
+<script>
+  document.querySelector('.sy-crumbs')?.addEventListener('click', (e) => {
+    const btn = (e.target as Element).closest<HTMLButtonElement>('.sy-crumb-grp');
+    if (!btn) return;
+    const toggle = document.querySelector('starlight-menu-button');
+    const menu = toggle?.querySelector('button');
+    if (menu && getComputedStyle(menu).display !== 'none' && toggle!.getAttribute('aria-expanded') !== 'true') menu.click();
+    const summary = [...document.querySelectorAll<HTMLElement>('#starlight__sidebar details > summary')].find(
+      (s) => s.querySelector('.group-label')?.textContent?.trim() === btn.dataset.group,
+    );
+    if (!summary) return;
+    (summary.parentElement as HTMLDetailsElement).open = true;
+    summary.scrollIntoView({ block: 'nearest' });
+    summary.focus({ preventScroll: true });
+  });
+</script>

@@ -314,6 +314,14 @@ starlight-toc nav a {
   background: color-mix(in srgb, var(--sl-color-text-accent) 14%, transparent);
 }
 
+.sl-markdown-content :is(h1, h2, h3, h4),
+.content-panel h1 {
+  text-wrap: balance;
+}
+.sl-markdown-content :is(p, li, dd, blockquote) {
+  text-wrap: pretty;
+}
+
 @view-transition {
   navigation: auto;
 }
@@ -498,6 +506,8 @@ starlight-toc nav a {
     inset: 0;
     background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
       url('/img/wallpaper.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
+      image-set(url("/img/wallpaper-a6425c42.avif") type("image/avif"), url("/img/wallpaper-b978fc23.webp") type("image/webp"), url("/img/wallpaper.jpg") type("image/jpeg"));
     background-size: cover, cover;
     background-position: center, center;
     filter: blur(6px);

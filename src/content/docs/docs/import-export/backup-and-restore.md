@@ -1,6 +1,6 @@
 ---
 title: Back up and restore Stackyard
-description: Export your Stackyard configuration to a file, and import it back.
+description: Export your Stackyard configuration to one JSON file and import it back. Covers what an import replaces, stored secrets, and which volumes to back up.
 ---
 
 **In Settings:** General, then Backup. See the [Settings reference](/docs/settings-reference/).

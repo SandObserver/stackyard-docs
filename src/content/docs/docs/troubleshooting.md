@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting Stackyard
-description: Find a problem by its symptom, then the cause and the fix.
+description: Find a Stackyard problem by its symptom, from signing in to the dashboard, app badges, widgets and settings, with the cause and the fix for each.
 prev: false
 tableOfContents:
   minHeadingLevel: 2

@@ -51,6 +51,9 @@ export default defineConfig({
       components: {
         Head: './src/components/Head.astro',
         Header: './src/components/Header.astro',
+        MobileTableOfContents: './src/components/TitleBar.astro',
+        PageTitle: './src/components/PageTitle.astro',
+        Pagination: './src/components/Pagination.astro',
         PageFrame: './src/components/PageFrame.astro',
         Sidebar: './src/components/Sidebar.astro',
       },

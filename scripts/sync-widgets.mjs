@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
+import { scopeCss } from './scope-css.mjs';
 
 const REPO = process.env.STACKYARD_REPO ?? resolve(process.cwd(), '..', 'stackyard');
 const PUB = resolve(process.cwd(), 'public');
@@ -30,8 +31,8 @@ for (const [from, to] of [
   ['ui/widgets', join(PUB, 'widgets')],
   ['ui/js', join(PUB, 'js')],
   ['docs/widget-template', join(PUB, 'widgets', 'mywidget')],
-  ['ui/css/tokens.css', join(PUB, 'css', 'tokens.css')],
-  ['ui/css/admin.css', join(PUB, 'css', 'admin.css')],
+  ['ui/css/tokens.css', join(VENDOR, 'tokens.css')],
+  ['ui/css/admin.css', join(VENDOR, 'admin.css')],
   ['ui/i18n/en.json', join(PUB, 'i18n', 'en.json')],
   ['ui/admin/index.html', join(VENDOR, 'admin.html')],
 ]) {
@@ -40,6 +41,20 @@ for (const [from, to] of [
   cpSync(join(tree, from), to, { recursive: true, filter: (src) => !src.endsWith('README.md') });
 }
 writeFileSync(join(VENDOR, 'VERSION'), `${REF}\n`);
+rmSync(join(PUB, 'css'), { recursive: true, force: true });
+mkdirSync(join(PUB, 'css'));
+const appCss = ['tokens.css', 'admin.css'].map((f) => readFileSync(join(VENDOR, f), 'utf8')).join('\n');
+writeFileSync(join(PUB, 'css', 'settings.css'), scopeCss(appCss, '.sy-app, .row-dd-list'));
+
+const admin = readFileSync(join(VENDOR, 'admin.html'), 'utf8');
+const start = admin.indexOf('<section class="sec" id="sec-appearance"');
+if (start < 0) throw new Error('Settings section sec-appearance is gone');
+const section = admin.slice(start, admin.indexOf('</section>', start));
+const appearance = section.slice(section.indexOf('<h2 class="grp-hdr"'));
+const LIFTED = ['set-lbl-d', 'set-lbl-m', 'theme-slot', 'dev-transparency', 'set-awake', 'set-type-search', 'bg-type-slot', 'bg-unsplash-fields', 'bg-url-fields', 'bg-color-fields', 'bg-color-slot', 'bg-file-v', 'ie-bgurl-v', 'bg-fit-slot', 'bg-br', 'bg-brightness-row', 'bgcol-hint', 'bg-url-hint'];
+for (const id of LIFTED) if (!appearance.includes(`id="${id}"`)) throw new Error(`Appearance element #${id} is gone`);
+mkdirSync(join(PUB, 'settings'), { recursive: true });
+writeFileSync(join(PUB, 'settings', 'appearance.json'), JSON.stringify({ appearance }));
 rmSync(tree, { recursive: true, force: true });
 
 function walk(dir, out = []) {

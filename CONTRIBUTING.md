@@ -98,9 +98,13 @@ These are copies of the app at one release tag:
 | --- | --- |
 | `public/widgets/` | `ui/widgets/` and `docs/widget-template/` |
 | `public/js/` | `ui/js/` |
-| `public/css/` | `ui/css/tokens.css` and `ui/css/admin.css` |
 | `public/i18n/en.json` | `ui/i18n/en.json` |
-| `vendor/stackyard/admin.html` | `ui/admin/index.html` |
+| `vendor/stackyard/` | `ui/admin/index.html`, `ui/css/tokens.css` and `ui/css/admin.css` |
+
+The sync also writes two files from those copies:
+
+- `public/css/settings.css`: the app's Settings styles, limited to `.sy-app` and the app's dropdown lists. It styles the live Settings examples only.
+- `public/settings/appearance.json`: the Appearance section of the Settings page. The sync fails if an element the examples use is gone.
 
 `vendor/stackyard/VERSION` holds the tag. Refresh them with a checkout of the
 app repo beside this one:

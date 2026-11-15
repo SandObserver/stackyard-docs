@@ -46,7 +46,8 @@ const menuIcon = await inlineIcon('menu');
 
     const setTitle = (text: string, down: boolean) => {
       if (text === shown) return;
-      const old = titleBox.firstElementChild as HTMLElement | null;
+      const old = titleBox.lastElementChild as HTMLElement | null;
+      for (const span of [...titleBox.children]) if (span !== old) span.remove();
       const next = Object.assign(document.createElement('span'), { textContent: text });
       shown = text;
       if (!bar.classList.contains('stuck') || !old || reduce.matches) {

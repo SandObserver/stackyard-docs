@@ -1,5 +1,3 @@
-const crypto = require('crypto');
-
 const SEED_POINTS = 120;
 const SEED_STEP_SEC = 10;
 
@@ -178,7 +176,7 @@ async function speedtestTrackerV1(ctx, base, token) {
 
 /* Glances serves the same fields under /api/4 and /api/3, and offers no way to
    ask which it speaks. One probe per host settles it, shared by every call in
-   the poll and remembered afterwards. */
+   the poll and remembered until a plugin answers 404. */
 const API_VERSIONS = [4, 3];
 const _apiVersion = new Map();
 
@@ -202,14 +200,14 @@ function glancesVersion(ctx, base, headers) {
     ctx.fail('Glances HTTP ' + last);
   })();
   /* A failed probe must not be the cached answer for every later poll. */
-  _apiVersion.set(
+  return ctx.remember(
+    _apiVersion,
     base,
     probe.catch(e => {
       _apiVersion.delete(base);
       throw e;
     }),
   );
-  return _apiVersion.get(base);
 }
 
 async function glancesGet(ctx, plugin) {
@@ -217,8 +215,10 @@ async function glancesGet(ctx, plugin) {
   if (!config.glancesUrl) ctx.fail('Enter the Glances URL first.', { kind: ctx.KIND.INVALID });
   const base = normalizeBase(config.glancesUrl);
   const headers = glancesAuth(config);
-  const version = await glancesVersion(ctx, base, headers);
+  const probe = glancesVersion(ctx, base, headers);
+  const version = await probe;
   const r = await fetchJSON(`${base}/api/${version}/${plugin}`, { headers, timeout: 8000 });
+  if (r.status === 404 && _apiVersion.get(base) === probe) _apiVersion.delete(base);
   if (r.status === 401) ctx.fail('Glances returned 401, check the username and password', { kind: ctx.KIND.AUTH });
   if (r.status >= 400) ctx.fail('Glances HTTP ' + r.status);
   return r.data;
@@ -300,7 +300,7 @@ const _beszelSession = new Map();
    token to every config that names the same hub. */
 function beszelSessionKey(ctx, base) {
   const { beszelUser = '', beszelPass = '' } = ctx.config;
-  return [base, beszelUser, crypto.createHash('sha256').update(String(beszelPass)).digest('hex')].join('\n');
+  return JSON.stringify([base, String(beszelUser), String(beszelPass)]);
 }
 
 async function beszelLogin(ctx, base) {
@@ -321,7 +321,7 @@ async function beszelLogin(ctx, base) {
     });
     if (r.status < 400 && r.data?.token) {
       const session = { collection, token: r.data.token };
-      _beszelSession.set(key, session);
+      ctx.remember(_beszelSession, key, session);
       return session;
     }
   }
@@ -811,7 +811,7 @@ async function systemSummaryTrueNas(ctx) {
    out stands until the counters actually move. */
 const _netPrev = new Map();
 
-function rateFromTotals(key, at, rx, tx) {
+function rateFromTotals(ctx, key, at, rx, tx) {
   const prev = _netPrev.get(key);
   if (prev && at <= prev.at) return prev.rate;
   let rate = null;
@@ -823,7 +823,7 @@ function rateFromTotals(key, at, rx, tx) {
       rate = { rx: Math.round((rx - prev.rx) / seconds), tx: Math.round((tx - prev.tx) / seconds) };
     }
   }
-  _netPrev.set(key, { at, rx, tx, rate });
+  ctx.remember(_netPrev, key, { at, rx, tx, rate });
   return rate;
 }
 
@@ -867,15 +867,15 @@ async function glancesThroughput(ctx) {
   const list = await glancesGet(ctx, 'network');
   const e = (Array.isArray(list) ? list : []).find(x => x?.interface_name === name);
   if (!e) ctx.fail(`Glances is not reporting the ${name} interface.`, { kind: ctx.KIND.INVALID });
-  /* Version 4 reports the rate. Version 3 reports the window and its length. */
+  /* Version 4 reports the rate. Version 3 reports the bytes in the window and its length. */
   const perSec = (rate, bytes) => {
     if (typeof rate === 'number') return Math.round(rate);
     const window = Number(e.time_since_update);
     return window > 0 ? Math.round((Number(bytes) || 0) / window) : 0;
   };
   return {
-    rx: perSec(e.bytes_recv_rate_per_sec, e.bytes_recv),
-    tx: perSec(e.bytes_sent_rate_per_sec, e.bytes_sent),
+    rx: perSec(e.bytes_recv_rate_per_sec, e.rx),
+    tx: perSec(e.bytes_sent_rate_per_sec, e.tx),
   };
 }
 
@@ -912,7 +912,7 @@ async function beszelThroughput(ctx) {
   /* Per-interface entries carry totals, and a new record only lands once a
      minute, so the record's own timestamp is the window. */
   const at = Date.parse(record?.created) || 0;
-  return rateFromTotals(`beszel|${base}|${id}|${name}`, at, Number(row[3]) || 0, Number(row[2]) || 0);
+  return rateFromTotals(ctx, `beszel|${base}|${id}|${name}`, at, Number(row[3]) || 0, Number(row[2]) || 0);
 }
 
 /* ── Unraid ──────────────────────────────────────────────────────────────── */
@@ -933,5 +933,11 @@ async function unraidThroughput(ctx) {
   if (!n) ctx.fail(`Unraid is not reporting the ${name} interface.`, { kind: ctx.KIND.INVALID });
   const base = ctx.normalizeBase(ctx.config.unraidUrl);
   /* Unraid's counters move continuously, so the clock is the only window. */
-  return rateFromTotals(`unraid|${base}|${name}`, Date.now(), Number(n.bytesReceived) || 0, Number(n.bytesSent) || 0);
+  return rateFromTotals(
+    ctx,
+    `unraid|${base}|${name}`,
+    Date.now(),
+    Number(n.bytesReceived) || 0,
+    Number(n.bytesSent) || 0,
+  );
 }

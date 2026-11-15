@@ -33,19 +33,23 @@ function numberingSystem(loc) {
   }
 }
 
+/** @param {string} loc @param {number} value @param {Intl.NumberFormatOptions} options
+    @param {string} [nu] @returns {string} */
+function formatIn(loc, value, options, nu = numberingSystem(loc)) {
+  try {
+    return new Intl.NumberFormat(loc, nu ? { numberingSystem: nu, ...options } : options).format(value);
+  } catch {
+    return String(value);
+  }
+}
+
 /** @param {number} value @param {Intl.NumberFormatOptions} [options]
     @returns {string} */
 export function formatNumber(value, options) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return String(value);
   const loc = locale();
+  if (options) return formatIn(loc, value, options);
   const nu = numberingSystem(loc);
-  if (options) {
-    try {
-      return new Intl.NumberFormat(loc, nu ? { numberingSystem: nu, ...options } : options).format(value);
-    } catch {
-      return String(value);
-    }
-  }
   /* One formatter for the common case: this runs per badge on every poll. */
   const key = `${loc}|${nu || ''}`;
   if (!cached || cachedFor !== key) {
@@ -117,4 +121,105 @@ export function localiseDigits(text) {
     digitMapFor = key;
   }
   return String(text).replace(/\d/g, d => digitMap[Number(d)]);
+}
+
+/** @typedef {'byte'|'kilobyte'|'megabyte'|'gigabyte'|'terabyte'|'petabyte'} ByteUnit */
+/** @typedef {{ min?: ByteUnit, max?: ByteUnit, digits?: (value: number, unit: ByteUnit) => number, fixed?: boolean }} ByteOptions */
+
+/** @type {ByteUnit[]} */
+const BYTE_UNITS = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte'];
+
+/** @param {number} _value @param {ByteUnit} unit */
+const byteDigits = (_value, unit) => (unit === 'byte' || unit === 'kilobyte' ? 0 : 1);
+
+/** The unit and figure for a byte count, in decimal steps of 1000.
+    @param {number} bytes @param {ByteOptions} [options]
+    @returns {{ value: number, unit: ByteUnit, digits: number }} */
+export function byteScale(bytes, options = {}) {
+  const lo = Math.max(0, BYTE_UNITS.indexOf(options.min ?? 'byte'));
+  const top = BYTE_UNITS.indexOf(options.max ?? 'petabyte');
+  const hi = top < 0 ? BYTE_UNITS.length - 1 : Math.max(lo, top);
+  const digitsFor = options.digits ?? byteDigits;
+  const at = step => {
+    const value = bytes / 1000 ** step;
+    return { value, unit: BYTE_UNITS[step], digits: digitsFor(Math.abs(value), BYTE_UNITS[step]) };
+  };
+  let k = lo;
+  while (k < hi && Math.abs(bytes) >= 1000 ** (k + 1)) k++;
+  let scaled = at(k);
+  if (k < hi && Math.abs(Number(scaled.value.toFixed(scaled.digits))) >= 1000) scaled = at(k + 1);
+  return scaled;
+}
+
+/** @param {number} n @param {ByteOptions} options @param {string} per */
+function formatScaled(n, options, per) {
+  if (typeof n !== 'number' || !Number.isFinite(n)) return String(n);
+  const { value, unit, digits } = byteScale(n, options);
+  return formatNumber(value, {
+    style: 'unit',
+    unit: unit + per,
+    maximumFractionDigits: digits,
+    minimumFractionDigits: options.fixed ? digits : 0,
+  });
+}
+
+/** A size such as "1.5 GB", in the reader's digits and unit words.
+    @param {number} bytes @param {ByteOptions} [options] @returns {string} */
+export function formatBytes(bytes, options = {}) {
+  return formatScaled(bytes, options, '');
+}
+
+/** A transfer rate such as "1.5 MB/s", in the reader's digits and unit words.
+    @param {number} bytesPerSecond @param {ByteOptions} [options] @returns {string} */
+export function formatByteRate(bytesPerSecond, options = {}) {
+  return formatScaled(bytesPerSecond, options, '-per-second');
+}
+
+const LATIN = /[a-z]/i;
+
+/** The reader's own numbering system, else the interface language's.
+    @param {string} loc @returns {string|undefined} */
+function durationDigits(loc) {
+  try {
+    const own = new Intl.Locale(locale()).numberingSystem;
+    if (own) return own;
+  } catch {}
+  return numberingSystem(loc);
+}
+
+/** The interface language, else the reader's locale, else 'en': the first one
+    the engine accepts. @returns {string} */
+function interfaceLocale() {
+  for (const tag of [language, locale()]) {
+    if (!tag) continue;
+    try {
+      if (Intl.NumberFormat.supportedLocalesOf(tag).length) return tag;
+    } catch {}
+  }
+  return 'en';
+}
+
+/** A span such as "3 days 4 hr" or "5 hr 12 min": its two largest units, in the
+    interface language's digits and unit words. `part` receives each unit as it
+    is written.
+    @param {number} minutes @param {Intl.NumberFormatOptions['unitDisplay']} [unitDisplay]
+    @param {(text: string) => string} [part] @returns {string} */
+export function formatDuration(minutes, unitDisplay = 'short', part = text => text) {
+  const total = Math.max(0, Math.floor(minutes));
+  const loc = interfaceLocale();
+  const nu = durationDigits(loc);
+  const say = (/** @type {number} */ v, /** @type {string} */ unit) => {
+    const text = formatIn(loc, v, { style: 'unit', unit, unitDisplay, maximumFractionDigits: 0 }, nu);
+    if (unitDisplay !== 'narrow' || !LATIN.test(text)) return part(text);
+    const short = formatIn(loc, v, { style: 'unit', unit, unitDisplay: 'short', maximumFractionDigits: 0 }, nu);
+    return part(LATIN.test(short) ? text : short);
+  };
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (h >= 24) {
+    const days = Math.floor(h / 24);
+    return h % 24 ? `${say(days, 'day')} ${say(h % 24, 'hour')}` : say(days, 'day');
+  }
+  if (!h) return say(m, 'minute');
+  return m ? `${say(h, 'hour')} ${say(m, 'minute')}` : say(h, 'hour');
 }

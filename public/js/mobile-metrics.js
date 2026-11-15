@@ -4,12 +4,12 @@
    Never read a safe-area inset into JavaScript: it is reported after the first
    paint, so the value is stale when it is taken. The stylesheet owns them. */
 
-const BASE_VW = 393;
+export const BASE_VW = 393;
 
 /* The grid answers a wider window with more cells, not with bigger ones, so the
    chrome around it must stop growing too. Phones scale up to the widest one;
    anything wider keeps the base size. */
-const WIDEST_PHONE = 430;
+export const WIDEST_PHONE = 430;
 
 const BASE_VH = 560;
 
@@ -77,15 +77,4 @@ export function gridColumnWidth({ gridW, rowH, gap, cols, footprints }) {
     k = Math.min(k, ((cellH * design[0]) / design[1] - gap * (sc - 1)) / sc);
   }
   return Math.max(0, Math.floor(k));
-}
-
-/* Both are distances above the bottom safe-area inset, which CSS adds. */
-
-export function pillBottom(m) {
-  return m.dh + m.pillGap;
-}
-
-/* Distance from the reserved bottom to the first pixel the grid may paint. */
-export function contentBottom(m) {
-  return m.dh + m.dz;
 }

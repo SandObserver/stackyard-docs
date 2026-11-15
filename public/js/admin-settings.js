@@ -1,5 +1,5 @@
-import { renderColorControl } from '/js/admin-color-control.js?v=29a2c296';
-import { socketProbeAdvice } from '/js/admin-error.js?v=d1f8f6f4';
+import { renderColorControl } from '/js/admin-color-control.js?v=860d341e';
+import { passwordRefusalKey, socketProbeAdvice } from '/js/admin-error.js?v=5abd7438';
 import {
   BLOCK,
   clearsStoredPassword,
@@ -9,7 +9,7 @@ import {
   settingsSaveBlocker,
   shouldWritePassword,
   wallpaperFileName,
-} from '/js/admin-logic.js?v=c1ed16c7';
+} from '/js/admin-logic.js?v=06da6a19';
 import {
   advancedBase,
   applyGeneralFields,
@@ -17,7 +17,7 @@ import {
   labelsWith,
   planFieldSave,
   serialWrites,
-} from '/js/admin-save-logic.js?v=81636161';
+} from '/js/admin-save-logic.js?v=6ebda0e2';
 import {
   apiGet,
   apiPost,
@@ -34,9 +34,9 @@ import {
   swapContent,
   toast,
   wireInlineEdit,
-} from '/js/admin-shared.js?v=bb375b32';
-import { BACKDROP } from '/js/background.js?v=e9980cbc';
-import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+} from '/js/admin-shared.js?v=495be496';
+import { BACKDROP } from '/js/background.js?v=eca5642a';
+import { formatNumber } from '/js/format-number.js?v=263fa390';
 import {
   ALLOWED_HOSTS_MAX,
   firstBadHost,
@@ -44,19 +44,19 @@ import {
   isLocalAddress,
   parseHostList,
 } from '/js/host-names.js?v=98bf44d7';
-import { t } from '/js/i18n.js?v=ec60b9bd';
-import { confirmText, promptModal } from '/js/modal.js?v=c4c1c4c4';
-import { contextWords, passwordMeter, passwordMismatch, REFUSAL_KEYS } from '/js/password-policy.js?v=0c0fd0af';
+import { t } from '/js/i18n.js?v=99563c71';
+import { confirmText, promptModal } from '/js/modal.js?v=84ba5279';
+import { contextWords, passwordMeter, passwordMismatch } from '/js/password-policy.js?v=e16ebd1a';
 import { setRevealed } from '/js/password-reveal.js?v=37f218b4';
-import { el, inp, qa, setUserText } from '/js/utils.js?v=ff7e1e5f';
+import { el, inp, qa, setUserText } from '/js/utils.js?v=c1d4e76c';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
 let _authEnabled = false;
 
-/** @type {{ sync: () => void, dirty: () => boolean, reset: (force?: boolean) => void } | null} */
+/** @type {{ sync: () => void, dirty: () => boolean, reset: (force?: boolean, value?: string) => void } | null} */
 let _srvTrack = null;
-/** @type {{ sync: () => void, dirty: () => boolean, reset: (force?: boolean) => void } | null} */
+/** @type {{ sync: () => void, dirty: () => boolean, reset: (force?: boolean, value?: string) => void } | null} */
 let _bgTrack = null;
 let _savedWallpaperUrl = '';
 /** @type {{ form: Record<string, unknown>, server: Record<string, unknown> }} */
@@ -99,16 +99,17 @@ const readServerForm = () =>
     _val('sec-en'),
     _val('sec-pw'),
   ]);
-const readWallpaperForm = () =>
-  JSON.stringify([
-    _val('bg-type'),
-    _val('bg-br'),
-    _val('bg-col-inp', 'bg-col'),
-    _val('bg-url-inp', 'bg-url'),
-    _val('bg-fit'),
-    _val('bg-color-val'),
-    _val('bg-apikey-inp'),
-  ]);
+/* Keep the Unsplash key last. saveWallpaper replaces the last value. */
+const wallpaperFormValues = () => [
+  _val('bg-type'),
+  _val('bg-br'),
+  _val('bg-col-inp'),
+  _val('bg-url-inp'),
+  _val('bg-fit'),
+  _val('bg-color-val'),
+  _val('bg-apikey-inp'),
+];
+const readWallpaperForm = () => JSON.stringify(wallpaperFormValues());
 
 const readGeneralFields = () => ({
   hostIp: inp('srv-ip')?.value?.trim() || '',
@@ -128,9 +129,9 @@ function readBackgroundFields() {
   const type = inp('bg-type')?.value || 'unsplash';
   const background = { type, brightness: parseFloat(inp('bg-br')?.value || '0.62') };
   if (type === 'unsplash') {
-    background.collection = (inp('bg-col-inp') || inp('bg-col'))?.value?.trim() || '';
+    background.collection = inp('bg-col-inp')?.value?.trim() || '';
   } else if (type === 'url') {
-    background.url = (inp('bg-url-inp') || inp('bg-url'))?.value?.trim() || '';
+    background.url = inp('bg-url-inp')?.value?.trim() || '';
     background.fit = inp('bg-fit')?.value === 'fit' ? 'fit' : 'fill';
   } else if (type === 'color') {
     background.color = inp('bg-color-val')?.value?.trim() || '';
@@ -172,9 +173,9 @@ function trackSave(buttonId, read) {
     dirty: tr.dirty,
     /* Do not re-baseline a touched form. The edit is swallowed and Save never
        lights again.
-       @param {boolean} [force] */
-    reset: (force = true) => {
-      if (force || !touched) tr.reset();
+       @param {boolean} [force] @param {string} [value] the baseline, the live form by default */
+    reset: (force = true, value) => {
+      if (force || !touched) tr.reset(value);
       if (force) touched = false;
       sync();
     },
@@ -274,31 +275,18 @@ export function loadSettings(c) {
   apiGet('/api/settings/unsplash-key')
     .then(d => showUnsplashKeyState(!!d.configured))
     .catch(() => {});
-  const colEl = inp('bg-col');
-  if (colEl) colEl.value = bg.collection || '';
-  const urlEl = inp('bg-url');
-  if (urlEl) urlEl.value = bg.url || '';
   const brEl = inp('bg-br');
-  const brVal = el('bg-br-val');
   function updateSliderFill(slider) {
     if (!slider) return;
     const min = parseFloat(slider.min) || 0.1,
       max = parseFloat(slider.max) || 1.0;
-    const pct = ((parseFloat(slider.value) - min) / (max - min)) * 100;
-    /* backgroundImage, never the background shorthand. The shorthand resets
-       background-clip, which is what keeps the track thin inside the 44px touch
-       target on a phone. */
-    slider.style.backgroundImage = `linear-gradient(var(--slider-dir), var(--ac) 0%, var(--ac) ${pct}%, var(--bd-inner) ${pct}%, var(--bd-inner) 100%)`;
+    slider.style.setProperty('--range-fill', String((parseFloat(slider.value) - min) / (max - min)));
+    slider.setAttribute('aria-valuetext', formatNumber(parseFloat(slider.value), { style: 'percent' }));
   }
-  const twoPlaces = v => formatNumber(parseFloat(v), { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   if (brEl) {
     brEl.value = bg.brightness ?? 0.62;
-    if (brVal) brVal.textContent = twoPlaces(brEl.value);
     updateSliderFill(brEl);
-    brEl.addEventListener('input', () => {
-      updateSliderFill(brEl);
-      if (brVal) brVal.textContent = twoPlaces(brEl.value);
-    });
+    brEl.addEventListener('input', () => updateSliderFill(brEl));
   }
   el('bg-save').addEventListener(
     'click',
@@ -586,6 +574,7 @@ function saveSwitch(e, key) {
 }
 async function saveWallpaper() {
   try {
+    const sent = wallpaperFormValues();
     const form = readBackgroundFields();
     const bg = form.background;
     const type = bg.type;
@@ -608,20 +597,13 @@ async function saveWallpaper() {
         showUnsplashKeyState(true);
       }
     }
-    _bgTrack?.reset();
+    /* Not the live form. A wallpaper that lands during the save would never be written. */
+    _bgTrack?.reset(true, JSON.stringify(sent.with(-1, _val('bg-apikey-inp'))));
     confirmSaved(el('bg-save'));
   } catch (e) {
     toast(staleText(e) || t('toast.saveFailed', { err: errorText(e) }), 'err', errorAction(e));
   }
 }
-const PASSWORD_ERROR_KEYS = Object.freeze({
-  'invalid.current-password': 'toast.currentPasswordWrong',
-  'invalid.password-changed': 'toast.passwordChangedElsewhere',
-  'invalid.password-short': REFUSAL_KEYS.short,
-  'invalid.password-long': REFUSAL_KEYS.long,
-  'invalid.password-common': REFUSAL_KEYS.common,
-  'invalid.setup-code': 'hostBlock.codeWrong',
-});
 /** @param {unknown} e @returns {string} the message for a section changed elsewhere, or '' */
 function staleText(e) {
   const err = /** @type {any} */ (e);
@@ -726,7 +708,7 @@ async function saveServer() {
         } catch (e) {
           const code = /** @type {any} */ (e).code;
           if (code === 'blocked.rate-limit') return errorText(e);
-          if (RETRY_IN_DIALOG.has(code)) return t(PASSWORD_ERROR_KEYS[code]);
+          if (RETRY_IN_DIALOG.has(code)) return t(passwordRefusalKey(e));
           failure = e;
         }
         return null;
@@ -747,7 +729,7 @@ async function saveServer() {
         try {
           done = await write(undefined, code);
         } catch (e) {
-          if (/** @type {any} */ (e).code === 'invalid.setup-code') return t('hostBlock.codeWrong');
+          if (/** @type {any} */ (e).code === 'invalid.setup-code') return t(passwordRefusalKey(e));
           failure = e;
         }
         return null;
@@ -763,7 +745,7 @@ async function saveServer() {
   }
 
   if (failure || !done) {
-    const key = PASSWORD_ERROR_KEYS[/** @type {any} */ (failure)?.code];
+    const key = passwordRefusalKey(failure);
     if (/** @type {any} */ (failure)?.protectionOff)
       toast(
         t('toast.protectionOffOthersNot', { err: staleText(failure) || errorText(failure) }),

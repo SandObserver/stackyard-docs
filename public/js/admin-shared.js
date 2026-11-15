@@ -1,18 +1,18 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
 
-import { errorAdvice } from '/js/admin-error.js?v=d1f8f6f4';
-import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=c1ed16c7';
-import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=9b0a0ed6';
-import { formatList, formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { errorAdvice } from '/js/admin-error.js?v=5abd7438';
+import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=06da6a19';
+import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=da14e1c7';
+import { formatList, formatNumber } from '/js/format-number.js?v=263fa390';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { t } from '/js/i18n.js?v=ec60b9bd';
-import { iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { t } from '/js/i18n.js?v=99563c71';
+import { iconSvg } from '/js/icon-set.js?v=361e54a5';
 import { iconChain } from '/js/icons.js?v=76c29d43';
-import { slideBlock } from '/js/modal.js?v=c4c1c4c4';
+import { slideBlock } from '/js/modal.js?v=84ba5279';
 import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
-import { el, isolate, q, qa } from '/js/utils.js?v=ff7e1e5f';
+import { el, isolate, q, qa } from '/js/utils.js?v=c1d4e76c';
 
-export const API = '';
+const API = '';
 
 let tt;
 let _toastWired = false;
@@ -605,7 +605,7 @@ export function swapContent(node, apply) {
 export const PE_SVG = iconSvg('edit', 17);
 
 /** @param {HTMLInputElement} inp */
-export function plainInput(inp) {
+function plainInput(inp) {
   inp.setAttribute('autocapitalize', 'none');
   inp.setAttribute('autocorrect', 'off');
   inp.spellcheck = false;
@@ -733,6 +733,7 @@ export function wireInlineEdit(
     'keydown',
     /** @param {KeyboardEvent} e */ e => {
       if (!row.classList.contains('editing')) return;
+      if (e.isComposing || e.keyCode === 229) return;
       if (e.key === 'Enter' && e.target === inp) {
         e.preventDefault();
         commit();

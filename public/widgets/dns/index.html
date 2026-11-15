@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DNS Server</title>
-<script src="/js/widget-theme.js?v=9bd864aa"></script>
+<script src="/js/widget-theme.js?v=9f9e1b99"></script>
 <style>
   *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
   html { -webkit-tap-highlight-color: transparent; }
@@ -47,6 +47,8 @@
   .src-node { fill:#fff }
   html[data-theme="light"] .src-node { fill:#1c1c1e }
   html[data-theme="light"] .sub, html[data-theme="light"] .legend { color:rgba(0,0,0,0.62) }
+  /* Keep. The solid-card ink falls below 4.5:1 on glass over a bright wallpaper. */
+  html[data-glass] .sub, html[data-glass] .legend { color:var(--glass-ink-2) }
   @media (prefers-contrast:more) {
     .sub, .legend { color:#EBEBF5 }
     html[data-theme="light"] .sub, html[data-theme="light"] .legend { color:#3C3C43 }
@@ -68,23 +70,19 @@
 </div>
 
 <script type="module">
-import { poll, fetchData, rollText, linkTo, loadStrings, wt, formatNumber, errorState, readableInk, placeholder } from '/js/widget-toolbox.js?v=1aeedc33';
+import { poll, fetchData, getConfig, rollText, linkTo, loadStrings, wt, formatNumber, errorState, readableInk, placeholder } from '/js/widget-toolbox.js?v=643fc12f';
 await loadStrings();
 /* These two are in the markup, so the widget still reads correctly in English
    if the catalog fetch fails. */
 document.getElementById('sub-label').textContent = wt('ui.queriesBlocked', 'Queries Blocked');
 document.getElementById('widget').setAttribute('aria-label', wt('ui.aria', 'DNS filtering'));
 const TICK_MS = 30000;
-const params = new URLSearchParams(location.search);
-const id   = params.get('id')   || '';
-const API  = '/api';
-const NS   = 'http://www.w3.org/2000/svg';
 
 let _href = '';
-let _provider = 'adguard';
 let _last = null;
 
 const widgetEl = document.getElementById('widget');
+const BLOCKED_RED = '#FF4245';
 const pctEl = document.getElementById('pct');
 const svgEl = document.getElementById('svg');
 const subEl = document.getElementById('sub-label');
@@ -104,13 +102,8 @@ async function boot() {
   pctEl.replaceChildren(placeholder(64, 26, 6));
   flowEl.classList.add('ph');
   render({ allowed: 6, cached: 3, blocked: 2 }, true);
-  let cfg = null;
-  try {
-    const r = await fetch(`${API}/widget-config/${encodeURIComponent(id)}`);
-    if (r.ok) cfg = await r.json();
-  } catch {}
+  const cfg = await getConfig().catch(() => null);
   _href = cfg?.widgetConfig?.dnsHref || '';
-  _provider = cfg?.widgetConfig?.provider || 'adguard';
   const link = d => {
     if (linkTo(widgetEl, d?.link || _href)) widgetEl.setAttribute('aria-describedby', 'sr');
     else widgetEl.removeAttribute('aria-describedby');
@@ -141,9 +134,9 @@ function apply(d) {
   render(model);
   showHeadline();
 
-  srEl.textContent = wt('ui.summary', '{pct}% of {total} queries blocked. Allowed {allowed}, cached {cached}, blocked {blocked}.')
-    .replace('{pct}', formatNumber(pct)).replace('{total}', fmt(total))
-    .replace('{allowed}', fmt(allowed)).replace('{cached}', fmt(cached)).replace('{blocked}', fmt(blocked));
+  srEl.textContent = wt('ui.summary', '{pct}% of {total} queries blocked. Allowed {allowed}, cached {cached}, blocked {blocked}.', {
+    pct: formatNumber(pct), total: fmt(total), allowed: fmt(allowed), cached: fmt(cached), blocked: fmt(blocked),
+  });
 }
 
 function constLink(x0,c0,x1,c1,t) {
@@ -162,13 +155,13 @@ function render(m, ph = false) {
   const segs = [
     { key:'allowed', label:wt('ui.allowed','Allowed'), value:m.allowed, color:'#30D158' },
     { key:'cached',  label:wt('ui.cached','Cached'),   value:m.cached,  color:'#0091FF' },
-    { key:'blocked', label:wt('ui.blocked','Blocked'), value:m.blocked, color:'#FF4245' },
+    { key:'blocked', label:wt('ui.blocked','Blocked'), value:m.blocked, color:BLOCKED_RED },
   ].filter(s => s.value > 0).map(s => (ph ? { ...s, color: 'currentColor' } : s));
 
   _segs = segs;
   if (_sel >= segs.length) _sel = -1;
   if (!ph) renderLegend(segs);
-  if (!segs.length) { svgEl.innerHTML=''; return; }
+  if (!segs.length) { svgEl.replaceChildren(); return; }
 
   const sum = segs.reduce((a,s)=>a+s.value,0);
   const srcH = H * SRC_SHARE;
@@ -223,7 +216,7 @@ function showHeadline() {
     subEl.textContent = s.label;
   } else if (_last) {
     rollText(pctEl, formatNumber(_last.pct / 100, { style: 'percent' }));
-    pctEl.style.color = '';
+    pctEl.style.color = readableInk(BLOCKED_RED, 3);
     subEl.textContent = wt('ui.queriesBlocked', 'Queries Blocked');
   }
 }

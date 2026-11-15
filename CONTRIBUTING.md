@@ -90,17 +90,28 @@ iframe. Never reproduce a widget's appearance in CSS.
 written by hand. Anything captured from a live instance carries internal
 hostnames, IPs and real domains, and must be replaced before it is committed.
 
-## Widget previews
+## App files
 
-`public/widgets/` and `public/js/` are copies of the app's `ui/widgets/` and
-`ui/js/`. Refresh them with a checkout of the app repo beside this one:
+These are copies of the app at one release tag:
+
+| Here | From the app |
+| --- | --- |
+| `public/widgets/` | `ui/widgets/` and `docs/widget-template/` |
+| `public/js/` | `ui/js/` |
+| `public/css/` | `ui/css/tokens.css` and `ui/css/admin.css` |
+| `public/i18n/en.json` | `ui/i18n/en.json` |
+| `vendor/stackyard/admin.html` | `ui/admin/index.html` |
+
+`vendor/stackyard/VERSION` holds the tag. Refresh them with a checkout of the
+app repo beside this one:
 
 ```sh
-npm run sync-widgets
+npm run sync-widgets            # newest vX.Y.Z tag
+npm run sync-widgets -- v1.23.0 # a given tag
 ```
 
 The copies are committed, because CI has no checkout of the app repo. Re-run the
-sync and commit the result whenever a widget changes.
+sync after each app release and commit the result.
 
 ## Docs style
 

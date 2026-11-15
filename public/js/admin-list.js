@@ -11,8 +11,8 @@
    The filter and the collapsed folders are in admin-state.js, because the page
    reads and writes them too. */
 
-import { initDrag, redrawHeld, wireDockZone, wireRowDrag } from '/js/admin-drag.js?v=690d7425';
-import { listGroup } from '/js/admin-drag-logic.js?v=127f18c9';
+import { initDrag, redrawHeld, wireDockZone, wireRowDrag } from '/js/admin-drag.js?v=f9ca43d1';
+import { listGroup } from '/js/admin-drag-logic.js?v=4824d269';
 import {
   filterActive,
   folderChildren,
@@ -21,23 +21,23 @@ import {
   reorderItems,
   shownChildren,
   topLevelRows,
-} from '/js/admin-logic.js?v=c1ed16c7';
-import { snapshotItems } from '/js/admin-save-logic.js?v=81636161';
-import { announce, paintIcon, toast } from '/js/admin-shared.js?v=bb375b32';
+} from '/js/admin-logic.js?v=06da6a19';
+import { snapshotItems } from '/js/admin-save-logic.js?v=6ebda0e2';
+import { announce, paintIcon, toast } from '/js/admin-shared.js?v=495be496';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=064b9b85';
-import { sizeLabel } from '/js/admin-widget-form.js?v=b6f96409';
-import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { sizeLabel } from '/js/admin-widget-form.js?v=93bb034e';
+import { formatNumber } from '/js/format-number.js?v=263fa390';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { t } from '/js/i18n.js?v=ec60b9bd';
-import { iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { t } from '/js/i18n.js?v=99563c71';
+import { iconSvg } from '/js/icon-set.js?v=361e54a5';
 import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
 import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
 import { pageTheme } from '/js/palette.js?v=3fb8ae43';
 import { SETTINGS_ICON, SETTINGS_ICON_LIGHT } from '/js/settings-icon.js?v=4079b66a';
-import { clr, el, focusFirst, initial, isolate, qa, setUserText } from '/js/utils.js?v=ff7e1e5f';
-import { widgetGlyph } from '/js/widget-glyphs.js?v=ffd906d5';
+import { clr, el, focusFirst, initial, isolate, qa, setUserText } from '/js/utils.js?v=c1d4e76c';
+import { widgetGlyph } from '/js/widget-glyphs.js?v=aef2eec0';
 
-/** @type {{ openModal: (idx: number|null) => void,
+/** @type {{ openModal: (id: string|null) => void,
              openFolderPicker: (folderId: string) => void,
              save: (before: unknown, done?: string|false) => Promise<boolean>|boolean }} */
 let _page = {
@@ -124,7 +124,7 @@ export function isReordering() {
 export function setReordering(on) {
   if (_reordering === on) return;
   _reordering = on;
-  if (on && (filter.q || filter.type !== 'all')) {
+  if (on && filterActive(filter)) {
     filter.q = '';
     filter.type = 'all';
     syncFilterUI();
@@ -174,14 +174,10 @@ function turnFrom(chevron, from) {
   chevron.style.transform = to;
 }
 
-export function mkRow(
-  item,
-  idx,
-  { indent = false, childIdx = null, folderId = null, top = { dock: [], home: [] } } = {},
-) {
+function mkRow(item, { indent = false, childIdx = null, folderId = null, top = { dock: [], home: [] } } = {}) {
   const row = document.createElement('div');
   row.className = 'row drow';
-  const _filtering = !!(filter.q || filter.type !== 'all');
+  const _filtering = filterActive(filter);
   row.draggable = !_filtering;
   row.dataset.itemId = item.id;
   row.dataset.group = indent ? 'home' : listGroup(item);
@@ -317,7 +313,7 @@ export function mkRow(
   ed.dataset.act = 'edit';
   ed.setAttribute('aria-label', t('common.editNamed', { name }));
   setHtml(ed, raw(CHEVRON));
-  ed.onclick = () => _page.openModal(idx);
+  ed.onclick = () => _page.openModal(item.id);
   if (!_filtering) {
     const mv = document.createElement('span');
     mv.className = 'rmove';
@@ -339,7 +335,7 @@ export function mkRow(
   row.addEventListener('click', e => {
     if (_reordering) return;
     if (/** @type {HTMLElement} */ (e.target).closest('button, a, input')) return;
-    _page.openModal(idx);
+    _page.openModal(item.id);
   });
   row.append(handle, ico, inf, pb, ac);
   wireRowDrag(row, handle, { item, indent, folderId, childIdx });
@@ -387,11 +383,9 @@ export function render() {
 function listSection(l, group, title, count) {
   const hdr = document.createElement('div');
   hdr.className = 'grp-hdr-row al-hdr';
-  const h = document.createElement('p');
+  const h = document.createElement('h2');
   h.className = 'grp-hdr';
   h.id = 'al-h-' + group;
-  h.setAttribute('role', 'heading');
-  h.setAttribute('aria-level', '2');
   h.textContent = title;
   hdr.appendChild(h);
   if (count) {
@@ -416,7 +410,7 @@ function draw(l) {
     if (state.items.length >= 6) bar.classList.remove('d-none');
     else {
       bar.classList.add('d-none');
-      if (filter.q || filter.type !== 'all') {
+      if (filterActive(filter)) {
         filter.q = '';
         filter.type = 'all';
         syncFilterUI();
@@ -436,7 +430,7 @@ function draw(l) {
   }
   const docked = top.dock;
   const dockGrp = listSection(l, 'dock', t('home.dock'), `${formatNumber(docked.length)}/${formatNumber(DOCK_MAX)}`);
-  docked.forEach(item => dockGrp.appendChild(mkRow(item, state.items.indexOf(item), { top })));
+  docked.forEach(item => dockGrp.appendChild(mkRow(item, { top })));
   if (!docked.length) {
     const zone = document.createElement('div');
     zone.className = 'row al-dock-empty';
@@ -450,14 +444,12 @@ function draw(l) {
   l.appendChild(tip);
   const homeGrp = listSection(l, 'home', t('home.homeScreen'));
   top.home.forEach(item => {
-    homeGrp.appendChild(mkRow(item, state.items.indexOf(item), { top }));
+    homeGrp.appendChild(mkRow(item, { top }));
     if (item.type === 'folder' && !collapsedFolders.has(item.id)) {
       folderChildren(item).forEach((childId, ci) => {
         if (!isShownChild(state.items, childId)) return;
         const childItem = state.items.find(i => i.id === childId);
-        homeGrp.appendChild(
-          mkRow(childItem, state.items.indexOf(childItem), { indent: true, childIdx: ci, folderId: item.id, top }),
-        );
+        homeGrp.appendChild(mkRow(childItem, { indent: true, childIdx: ci, folderId: item.id, top }));
       });
       const addRow = document.createElement('button');
       addRow.type = 'button';
@@ -490,7 +482,7 @@ function drawFiltered(l, top) {
   const g = document.createElement('div');
   g.className = 'grp';
   g.dataset.flat = '1';
-  state.items.forEach((item, i) => g.appendChild(mkRow(item, i, { top })));
+  state.items.forEach(item => g.appendChild(mkRow(item, { top })));
   const empty = document.createElement('div');
   empty.className = 'empty d-none';
   empty.dataset.flat = '1';

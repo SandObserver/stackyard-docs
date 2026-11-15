@@ -15,7 +15,9 @@ Turning titles off gives a denser grid of icons alone.
 
 Widget cards are white in light mode and near-black in dark mode. A few widgets are drawn only in dark and keep a dark card in both. The Weather widget follows its own day and night, never the display mode.
 
-Increased contrast and reduced motion are honored. Reduced transparency drops the blur behind cards and keeps the motion.
+Increased contrast and reduced motion are honored.
+
+**Reduce Transparency** replaces the glass with solid surfaces and keeps the motion. The system setting of the same name turns it on where the browser reports it. Safari does not report it, so use the switch under **Appearance** on that device.
 
 :::caution
 Browsers only allow **Keep Screen Awake** over HTTPS. On a plain HTTP address the toggle has no effect. See [Troubleshooting](/docs/troubleshooting/).

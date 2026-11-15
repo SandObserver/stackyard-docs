@@ -75,6 +75,7 @@ How the dashboard looks. Every change applies immediately. Explained in full on 
 | Keep Screen Awake | Stops the screen dimming while the dashboard is open. Browsers only allow this over HTTPS. |
 | Type to Search | Typing a letter anywhere on the dashboard opens search. On by default. |
 | Display Mode | Light, dark or system, for the dashboard and these settings pages. Stored in this browser, so it does not follow you to another device. |
+| Reduce Transparency | Replaces the glass with solid surfaces. Stored in this browser, so each device has its own. The system setting of the same name also turns it on, where the browser reports it. |
 
 ### Wallpaper
 

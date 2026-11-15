@@ -3,7 +3,7 @@ title: Docker and network problems
 description: Fix Stackyard problems with Docker host access, socket proxies, Proxmox checks and container permissions.
 ---
 
-### Stackyard cannot reach services on the Docker host
+## Stackyard cannot reach services on the Docker host
 
 On Linux a container cannot reach the host's LAN IP without help:
 
@@ -14,7 +14,7 @@ extra_hosts:
 
 Setting **Host IP** in **General** also allows that address through the SSRF guard.
 
-### The health check badge shows nothing for a container
+## The health check badge shows nothing for a container
 
 Turn on **Health Checks** in **General**. Every check type needs it.
 
@@ -22,11 +22,11 @@ Container checks read the Docker daemon through a socket proxy. Enter the proxy'
 
 A ping check needs no proxy. Switch the check type to Ping and give it a URL.
 
-### Every Proxmox tile says Guest not found
+## Every Proxmox tile says Guest not found
 
 The token sees no guests. Press <span class="sy-btn sy-btn--ghost">Test</span> under **Health Checks**. `Connected · 0 guests` means the token has no role. If **Privilege Separation** is on for the token, give PVEAuditor to the token itself, not only to its user.
 
-### Every app with a container shows as unhealthy at once
+## Every app with a container shows as unhealthy at once
 
 The container list comes from a socket proxy, which is a separate container you run yourself. Stackyard only stores its address. When that address cannot be reached, no container is found, and a container that cannot be found counts as not running. When the proxy stops answering, the last container list it sent is used for up to 2 minutes.
 
@@ -66,6 +66,6 @@ To use an IP, republish the proxy's port where containers can reach it. The Dock
 
 Publishing on `0.0.0.0` also works and is worth avoiding. Even with `POST=0` and `EXEC=0`, it offers an unauthenticated read of every container, image, network and log on that host to anyone who can reach the port.
 
-### A disk slot shows the wrong filesystem
+## A disk slot shows the wrong filesystem
 
 A Glances instance running in Docker reports its own filesystems, not the host's. Mount the host paths into the Glances container.

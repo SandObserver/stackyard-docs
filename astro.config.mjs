@@ -6,6 +6,8 @@ import rehypeExternalLinks from 'rehype-external-links';
 import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
 import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
+import sitemap from '@astrojs/sitemap';
+import { lastModified } from './src/lib/last-modified.mjs';
 import { iconModules, starlightIcons } from './src/lib/vite-icon-modules.mjs';
 import rehypeStackyardIcons from './src/lib/rehype-stackyard-icons.mjs';
 
@@ -29,6 +31,12 @@ export default defineConfig({
     ],
   },
   integrations: [
+    sitemap({
+      serialize(item) {
+        const lastmod = lastModified(item.url);
+        return lastmod ? { ...item, lastmod } : item;
+      },
+    }),
     starlight({
       title: 'Stackyard',
       description:

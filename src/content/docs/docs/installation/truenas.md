@@ -1,6 +1,6 @@
 ---
 title: Install Stackyard on TrueNAS
-description: Install Stackyard on TrueNAS from the Apps catalog.
+description: Install Stackyard on TrueNAS from the community train of the Apps catalog, with storage for the config and uploaded icons, and stats from the TrueNAS API.
 next:
   link: /docs/first-setup/
   label: First setup

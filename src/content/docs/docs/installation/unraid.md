@@ -1,6 +1,6 @@
 ---
 title: Install Stackyard on Unraid
-description: Install Stackyard on Unraid from Community Applications.
+description: Install Stackyard on Unraid from Community Applications. The template sets the port, both appdata folders and the proxy and private network variables.
 next:
   link: /docs/first-setup/
   label: First setup

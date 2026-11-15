@@ -1,9 +1,12 @@
 ---
 import Default from '@astrojs/starlight/components/Head.astro';
 import { iconMaskUri } from '../lib/icon-set';
+import { SPECULATION_RULES } from '../lib/speculation.mjs';
 
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
-const { entry, id } = Astro.locals.starlightRoute;
+const { entry, id, head } = Astro.locals.starlightRoute;
+for (const tag of head) if (tag.attrs?.property === 'og:locale') tag.attrs.content = 'en_US';
+const docTitle = head.find((tag) => tag.tag === 'title')?.content;
 const pageTitle = entry.data.title;
 const pageDescription = entry.data.description ?? '';
 
@@ -40,7 +43,15 @@ const breadcrumb = {
 ---
 
 <Default {...Astro.props}><slot /></Default>
-<meta name="twitter:title" content={`${pageTitle} | Stackyard`} />
+<meta name="color-scheme" content="light dark" />
+<script is:inline>
+  (() => {
+    const t = localStorage.getItem('starlight-theme');
+    if (t === 'light' || t === 'dark') document.querySelector('meta[name="color-scheme"]').content = t;
+  })();
+</script>
+<script type="speculationrules" is:inline set:html={SPECULATION_RULES} />
+<meta name="twitter:title" content={docTitle ?? `${pageTitle} | Stackyard`} />
 {pageDescription && <meta name="twitter:description" content={pageDescription} />}
 <meta property="og:image:alt" content="The Stackyard dashboard, showing app tiles and widgets" />
 <script type="application/ld+json" set:html={JSON.stringify(breadcrumb)} />
@@ -85,6 +96,9 @@ const breadcrumb = {
   const applyThemeColor = () => {
     const color = document.documentElement.dataset.theme === 'light' ? '#f2f2f7' : '#000000';
     for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) meta.content = color;
+    const stored = localStorage.getItem('starlight-theme');
+    const scheme = document.querySelector<HTMLMetaElement>('meta[name="color-scheme"]');
+    if (scheme) scheme.content = stored === 'light' || stored === 'dark' ? stored : 'light dark';
   };
   new MutationObserver(applyThemeColor).observe(document.documentElement, {
     attributes: true,

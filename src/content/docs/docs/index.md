@@ -1,11 +1,18 @@
 ---
 title: What is Stackyard
+head:
+  - tag: title
+    content: What is Stackyard? A self-hosted homelab dashboard
 description: Stackyard is a calm, self-hosted homelab dashboard for your apps, with status badges and widgets, configured in a web UI.
 ---
 
 Stackyard is a home screen for your homelab: app tiles, folders, a dock and a few widgets over your wallpaper, all set up in a web UI.
 
-<img src="/img/dashboard-1048c3eb.jpg" width="1800" height="1125" alt="The Stackyard dashboard, with widgets, app tiles, two folders and the dock." />
+<picture>
+  <source type="image/avif" srcset="/img/dashboard-720-4ed5f554.avif 720w, /img/dashboard-1080-666025e2.avif 1080w, /img/dashboard-1440-91cfcc41.avif 1440w, /img/dashboard-1800-57fc34f8.avif 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" />
+  <source type="image/webp" srcset="/img/dashboard-720-d6409f52.webp 720w, /img/dashboard-1080-2aa1e541.webp 1080w, /img/dashboard-1440-fba8e231.webp 1440w, /img/dashboard-1800-799957b1.webp 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" />
+  <img src="/img/dashboard-1048c3eb.jpg" srcset="/img/dashboard-720-f1fc6dbb.jpg 720w, /img/dashboard-1080-76cef4d7.jpg 1080w, /img/dashboard-1440-0f81a683.jpg 1440w, /img/dashboard-1048c3eb.jpg 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" width="1800" height="1125" fetchpriority="high" decoding="async" alt="The Stackyard dashboard, with widgets, app tiles, two folders and the dock." />
+</picture>
 
 Most homelab dashboards end up as a wall of widgets. Every service gets a card, every card says it is fine, and after a week you stop reading any of them.
 

@@ -1,5 +1,5 @@
 ---
-import MobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
+import Search from 'virtual:starlight/components/Search';
 import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro';
 import SidebarSublist from './SidebarSublist.astro';
 import { iconSprite } from '../lib/icon-set';
@@ -10,10 +10,7 @@ const sprite = await iconSprite(SIDEBAR_ICON_IDS);
 ---
 
 <Fragment set:html={sprite} />
+<div class="sy-sb-search"><Search /></div>
 <SidebarPersister>
   <SidebarSublist sublist={sidebar} />
 </SidebarPersister>
-
-<div class="md:sl-hidden">
-  <MobileMenuFooter />
-</div>

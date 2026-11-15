@@ -50,6 +50,8 @@ export default defineConfig({
       favicon: '/favicon.svg',
       components: {
         Head: './src/components/Head.astro',
+        Header: './src/components/Header.astro',
+        PageFrame: './src/components/PageFrame.astro',
         Sidebar: './src/components/Sidebar.astro',
       },
       customCss: ['./src/styles/docs.css'],

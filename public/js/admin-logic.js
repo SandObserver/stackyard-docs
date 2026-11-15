@@ -84,15 +84,6 @@ export function visibleFieldFlags(fields, readValue) {
   return fields.map((f, i) => (f && f.key != null ? isShown(i) : false));
 }
 
-export function visibleFieldKeys(fields, readValue) {
-  const flags = visibleFieldFlags(fields, readValue);
-  const out = new Set();
-  fields.forEach((f, i) => {
-    if (flags[i]) out.add(f.key);
-  });
-  return out;
-}
-
 /* A blank secret means "keep the stored one", not empty. */
 const _ALWAYS_FILLED = new Set(['toggle', 'color', 'group', 'object', 'secret']);
 export function requiredFieldMissing(field, kv) {
@@ -421,13 +412,13 @@ export function failureIsMissingApiPath(url, advice) {
 /** Compares what `read` returns now with what it returned at the last reset.
 
     @param {() => string} read
-    @returns {{ dirty: () => boolean, reset: () => void }} */
+    @returns {{ dirty: () => boolean, reset: (value?: string) => void }} */
 export function createDirtyTracker(read) {
   let base = read();
   return {
     dirty: () => read() !== base,
-    reset: () => {
-      base = read();
+    reset: (value = read()) => {
+      base = value;
     },
   };
 }

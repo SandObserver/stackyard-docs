@@ -1,13 +1,13 @@
-import { PE_SVG, initInlineEdit, showFieldError, clearFieldError, reveal } from '/js/admin-shared.js?v=bb375b32';
-import { t } from '/js/i18n.js?v=ec60b9bd';
+import { PE_SVG, initInlineEdit, showFieldError, clearFieldError, reveal } from '/js/admin-shared.js?v=495be496';
+import { t } from '/js/i18n.js?v=99563c71';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { qa, q } from '/js/utils.js?v=ff7e1e5f';
-import { iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
-import { createListbox } from '/js/listbox.js?v=5cf876f8';
+import { qa, q } from '/js/utils.js?v=c1d4e76c';
+import { iconSvg } from '/js/icon-set.js?v=361e54a5';
+import { createListbox } from '/js/listbox.js?v=384c0ad5';
+import { formatNumber } from '/js/format-number.js?v=263fa390';
 import { HUE_NAMES, ROLE_NAMES, TILE_KEYWORDS, pageTheme, tileColor } from '/js/palette.js?v=3fb8ae43';
 
 const CC_SWATCHES = ['#1c1c1e', '#8e8e93', '#f2f2f7', '#ff393c', '#ffcd00', '#35c759', '#0289ff', '#cb30df'];
-export const BADGE_DEFAULT = 'info';
 const _ccIco = {
   hueLo: iconSvg('hue-lo', 16),
   hueHi: iconSvg('hue-hi', 16),
@@ -48,6 +48,22 @@ function _hsvToHex(h, s, v) {
       .map(n => n.toString(16).padStart(2, '0'))
       .join('')
   );
+}
+/** The bar colour under the physical left and right edges of a slider knob.
+    @param {'h'|'s'|'v'} k @param {{h:number,s:number,v:number}} hsv
+    @param {number} frac value / max @param {number} width @param {number} knob
+    @param {boolean} rtl @returns {[string, string]} */
+function _lensEdges(k, hsv, frac, width, knob, rtl) {
+  const start = Math.max(0, width - knob) * frac;
+  const near = width > 0 ? Math.min(1, start / width) : 0;
+  const far = width > 0 ? Math.min(1, (start + knob) / width) : 0;
+  const at = f =>
+    k === 'h'
+      ? _hsvToHex(f * 360, 100, 100)
+      : k === 's'
+        ? _hsvToHex(hsv.h, f * 100, hsv.v)
+        : _hsvToHex(hsv.h, 100, f * 100);
+  return rtl ? [at(far), at(near)] : [at(near), at(far)];
 }
 /* Any CSS colour to lowercase #rrggbb, or null. Callers compare these strings,
    so the case must stay stable. */
@@ -110,7 +126,7 @@ function _hexToHsv(hex) {
   return { h: Math.round(h), s: Math.round(mx ? (d / mx) * 100 : 0), v: Math.round(mx * 100) };
 }
 
-export const _internals = { cssToHex: _cssToHex, hsvToRgb: _hsvToRgb, hexToHsv: _hexToHsv };
+export const _internals = { cssToHex: _cssToHex, hsvToRgb: _hsvToRgb, hexToHsv: _hexToHsv, lensEdges: _lensEdges };
 
 const COLOR_KEYS = {
   dark: 'color.dark',
@@ -216,7 +232,7 @@ export function renderColorControl(
         value: styleOf(),
         onChange: next => {
           if (next !== 'color') {
-            if (!styles.includes(mode)) resume = { mode, hex: curHex(), pristine };
+            if (!styles.includes(mode)) resume = { mode, hex: pristine ?? curHex() };
             mode = next;
             showTune = false;
             commit();
@@ -227,17 +243,17 @@ export function renderColorControl(
             setSliders(resume?.hex ?? _swatchFill('blue'));
           }
           showTune = true;
-          commit(resume?.pristine);
+          commit();
         },
       })
     : null;
   if (styleBox) rows[0].appendChild(styleBox.el);
   /* The first paint restores stored state, so it must not animate. */
   let _painted = false;
-  /* The value as it was stored. The sliders are integers, so reading a colour
-     back out of them shifts it, and an untouched control would save a colour
-     nobody picked. Cleared the moment the user changes anything. */
-  let pristine = mode === 'color' ? value : null;
+  /* The colour the sliders were last set from. The sliders are integers, so
+     reading a colour back out of them shifts it and saves a colour nobody
+     picked. Null once a slider moves. */
+  let pristine = mode === 'color' ? value : isKw(value) ? _swatchFill(value) || null : null;
   const curHex = () => _hsvToHex(+hEl.value, +sEl.value, +vEl.value);
   const _rgb = h => {
     const x = _cssToHex(h);
@@ -248,22 +264,40 @@ export function renderColorControl(
       rb = _rgb(b);
     return ra && rb && ra.every((n, i) => Math.abs(n - rb[i]) <= 3);
   };
-  const setSliders = hex => {
-    const hv = _hexToHsv(hex);
+  const setSliders = color => {
+    const hv = _hexToHsv(color);
     if (!hv) return;
     hEl.value = String(hv.h);
     sEl.value = String(hv.s);
     vEl.value = String(hv.v);
+    pristine = color;
   };
+  function tintLenses() {
+    const hsv = { h: +hEl.value, s: +sEl.value, v: +vEl.value };
+    for (const [el, k] of /** @type {const} */ ([
+      [hEl, 'h'],
+      [sEl, 's'],
+      [vEl, 'v'],
+    ])) {
+      const cs = getComputedStyle(el);
+      const knob = parseFloat(cs.getPropertyValue('--range-thumb')) || 38;
+      const [l, r] = _lensEdges(k, hsv, +el.value / +el.max, el.clientWidth, knob, cs.direction === 'rtl');
+      el.style.setProperty('--lens-lc', `color-mix(in srgb,${l} 80%,var(--control-knob))`);
+      el.style.setProperty('--lens-rc', `color-mix(in srgb,${r} 80%,var(--control-knob))`);
+    }
+  }
   function paint() {
     const h = +hEl.value,
       v = +vEl.value,
-      hex = curHex();
+      hex = (pristine && _cssToHex(pristine)) || curHex();
     /* backgroundImage, never the background shorthand. The shorthand resets
        background-clip, which is what keeps the track thin inside the 44px touch
        target on a phone. */
     sEl.style.backgroundImage = `linear-gradient(var(--slider-dir), ${_hsvToHex(h, 0, v)}, ${_hsvToHex(h, 100, v)})`;
     vEl.style.backgroundImage = `linear-gradient(var(--slider-dir), #000, ${_hsvToHex(h, 100, 100)})`;
+    hEl.setAttribute('aria-valuetext', `${formatNumber(h)}°`);
+    sEl.setAttribute('aria-valuetext', formatNumber(+sEl.value / 100, { style: 'percent' }));
+    vEl.setAttribute('aria-valuetext', formatNumber(v / 100, { style: 'percent' }));
     qa('.cc-swatch', container).forEach(b => {
       let on = false;
       if (mode !== 'color') on = b.dataset.v === mode;
@@ -288,17 +322,19 @@ export function renderColorControl(
     hidden.value = mode === 'color' ? (pristine ?? hex) : mode;
     _painted = true;
   }
-  const commit = (keep = null) => {
-    pristine = keep;
+  const commit = () => {
     clearFieldError(codeRow);
     paint();
     onChange?.(hidden.value);
   };
+  [hEl, sEl, vEl].forEach(el => el.addEventListener('pointerdown', tintLenses));
   [hEl, sEl, vEl].forEach(el =>
     el.addEventListener('input', () => {
       mode = 'color';
       showTune = true;
+      pristine = null;
       commit();
+      tintLenses();
     }),
   );
   qa('.cc-swatch', container).forEach(b =>
@@ -338,7 +374,7 @@ export function renderColorControl(
       if (hv) {
         mode = 'color';
         showTune = true;
-        setSliders(parsed);
+        setSliders(_cssToHex(parsed));
       }
       commit();
       if (!hv && val) showFieldError(codeRow, t('toast.colorInvalid'), { focus: false });

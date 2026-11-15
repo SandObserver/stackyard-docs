@@ -16,11 +16,11 @@ import {
   edgeScrollSpeed,
   folderRowZone,
   pastLiftSlop,
-} from '/js/admin-drag-logic.js?v=127f18c9';
+} from '/js/admin-drag-logic.js?v=4824d269';
 import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
 import { state } from '/js/admin-state.js?v=064b9b85';
-import { snapshotItems } from '/js/admin-save-logic.js?v=81636161';
-import { qa } from '/js/utils.js?v=ff7e1e5f';
+import { snapshotItems } from '/js/admin-save-logic.js?v=6ebda0e2';
+import { qa } from '/js/utils.js?v=c1d4e76c';
 
 /** @type {(before: unknown) => void} */
 let _save = () => {};
@@ -401,7 +401,7 @@ export function wireRowDrag(row, handle, { item, indent, folderId, childIdx }) {
     if (!raw) return;
     const drop = parseDragData(raw);
     if (!drop) return;
-    commit({
+    const moved = commit({
       ...drop,
       targetId: item.id,
       targetFolderId: folderId,
@@ -411,6 +411,7 @@ export function wireRowDrag(row, handle, { item, indent, folderId, childIdx }) {
       dropAbove,
       targetGroup: row.dataset.group,
     });
+    if (moved) _redraw();
   });
 
   wireTouchDrag(row, handle, { indent, folderId });

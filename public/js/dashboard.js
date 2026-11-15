@@ -1,4 +1,4 @@
-import { setupErrorKey } from '/js/admin-error.js?v=d1f8f6f4';
+import { setupErrorKey } from '/js/admin-error.js?v=5abd7438';
 import {
   applyBackground,
   BACKDROP,
@@ -6,17 +6,19 @@ import {
   firstViewWait,
   rememberBackground,
   resolveBackground,
-} from '/js/background.js?v=e9980cbc';
+  parseWallpaperUrl,
+} from '/js/background.js?v=eca5642a';
 import {
   badgeMinimum,
   badgeSignature,
   computeBadgeVisual,
   folderLabelName,
   readBadgeUpdate,
-} from '/js/badge-logic.js?v=04a4ece8';
-import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=2352c034';
-import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=9b0a0ed6';
+} from '/js/badge-logic.js?v=7112fd10';
+import { closeBadgePopover, wireBadgePopover } from '/js/badge-popover.js?v=b2c35c27';
+import { blockingScreenFor, showBlockingScreen } from '/js/config-recovery.js?v=da14e1c7';
 import {
+  clampPage,
   configChanged,
   desktopCols,
   desktopPages,
@@ -26,13 +28,15 @@ import {
   restorePage,
   wheelPager,
   withKnownSizes,
-} from '/js/dashboard-logic.js?v=8b2dad40';
+} from '/js/dashboard-logic.js?v=b4828b62';
+import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
 import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
-import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
-import { observeGlass } from '/js/glass-rim.js?v=3faec233';
+import { formatNumber } from '/js/format-number.js?v=263fa390';
+import { easing, glide, isScripted } from '/js/frame-motion.js?v=1d86154d';
+import { glassWallpaper, startGlass } from '/js/glass.js?v=258316fb';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { currentLang, initI18n, isSupported, t } from '/js/i18n.js?v=ec60b9bd';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { currentLang, initI18n, isSupported, t } from '/js/i18n.js?v=99563c71';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=361e54a5';
 import { iconChain, loadLocalIcons } from '/js/icons.js?v=76c29d43';
 import { repeatJittered } from '/js/jitter.js?v=087a1fcf';
 import {
@@ -41,16 +45,16 @@ import {
   loadSamplingImage,
   sampleImage,
   toneForColor,
-} from '/js/label-contrast.js?v=e046296b';
+} from '/js/label-contrast.js?v=a160c6d1';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
 import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
 import { sanitizeItemLinks } from '/js/link-url.js?v=54adb40f';
 import { pageTheme, paletteColor } from '/js/palette.js?v=3fb8ae43';
-import { contextWords, meterColor, passwordMeter, passwordMismatch } from '/js/password-policy.js?v=0c0fd0af';
+import { contextWords, meterColor, passwordMeter, passwordMismatch } from '/js/password-policy.js?v=e16ebd1a';
 import { fillUsernames, wireReveal } from '/js/password-reveal.js?v=37f218b4';
 import { creditPlacement, showPhotoCredit } from '/js/photo-credit.js?v=1801451c';
-import { initSpotlight } from '/js/spotlight.js?v=8f5b3158';
-import { applyTheme, prefersDark, readMode, resolveTheme, THEME_KEY } from '/js/theme.js?v=eeafa4b5';
+import { initSpotlight } from '/js/spotlight.js?v=709d9cce';
+import { applyTheme, prefersDark, readMode, resolveTheme, THEME_KEY, watchTransparency } from '/js/theme.js?v=0bbd81e8';
 import {
   buildMobile,
   closeFolders,
@@ -61,7 +65,7 @@ import {
   openFolderMobile,
   resetMobileChrome,
   swipePager,
-} from '/js/ui.js?v=3a8b6601';
+} from '/js/ui.js?v=2905a03c';
 import {
   mkWrap as _mkWrap,
   el,
@@ -84,7 +88,7 @@ import {
   teardownWidgets,
   titleWhenTruncated,
   within,
-} from '/js/utils.js?v=ff7e1e5f';
+} from '/js/utils.js?v=c1d4e76c';
 import { startWakeLock } from '/js/wake-lock.js?v=6b9591cf';
 import { saveBootHint } from '/js/wallpaper-cache.js?v=cd968718';
 import {
@@ -106,12 +110,8 @@ if (!('GestureEvent' in window)) {
     viewport.setAttribute('content', `${viewport.getAttribute('content')},interactive-widget=resizes-content`);
 }
 
-/* Recomputed, never stored: the window can cross the breakpoint after load. */
 let MOB = isMobileLayout(true);
 
-const wCols = { d: WIDGET_COLS.desktop, m: WIDGET_COLS.mobile };
-const wRows = { d: WIDGET_ROWS.desktop, m: WIDGET_ROWS.mobile };
-const WH = { d: WIDGET_HEIGHTS };
 /* A widget tile's corner, at design size. WIDGET_DESIGN's small is 170 square
    against the reference's 165, so this is its 28 unchanged. */
 const WIDGET_R = 28;
@@ -162,9 +162,8 @@ const CB = { spotOpen: null, spotClose: null, mobPillBump: null, mobPillSync: nu
 const COMPAT_POINTER_MS = 500;
 let _lastTouch = 0;
 
-/* A backend that accepts the connection and never answers would otherwise leave
-   the boot veil up forever. Generous: this only has to beat a hang. */
-const BOOT_TIMEOUT_MS = 15000;
+/* Set by boot-hints.js, which sends the first requests with it. */
+const BOOT_TIMEOUT_MS = /** @type {any} */ (window).__bootTimeoutMs;
 
 const PAGE_STORE = 'dash_page';
 const LANG_STORE = 'dash_lang';
@@ -172,14 +171,11 @@ const LANG_STORE = 'dash_lang';
 let items = [],
   pg = 0,
   totalPages = 0,
-  S = {},
-  _stateRef = null;
+  S = {};
 let _rev = null;
 /* Null prototype. Keyed by values from config, so an inherited property must
    never answer a miss. */
 let widgetReg = Object.create(null);
-const _mobTsCleanup = null,
-  _mobTeCleanup = null;
 
 const badgeState = Object.create(null);
 let _badgeFails = 0,
@@ -209,8 +205,7 @@ function bupd(id) {
   const hideHealthy = S.server?.hideHealthyBadge !== false;
   const custom = item?.monitoring?.activity?.custom || {};
   const staticBdg = item?.monitoring?.staticBadge || {};
-  const hasHC =
-    S.server?.healthChecks !== false && !!(item?.monitoring?.healthcheck?.enabled || item?.container || item?.ping);
+  const hasHC = S.server?.healthChecks !== false && !!(item?.monitoring?.healthcheck?.enabled || item?.container);
 
   const act = item?.monitoring?.activity || {};
   const isFolder = item?.type === 'folder';
@@ -360,7 +355,6 @@ function folderBadge(folder) {
 const mkWrap = (item, sz, r, isz, cls) => _mkWrap(item, sz, r, isz, cls, breg);
 
 function paginate() {
-  const pl = 'd';
   const inFolder = new Set(
     items
       .filter(i => i.type === 'folder')
@@ -376,7 +370,7 @@ function paginate() {
   const span = item => {
     if (item.type !== 'widget') return [1, 1];
     const sz = item.widgetSize || 'medium';
-    return [wCols[pl][sz], wRows[pl][sz]];
+    return [WIDGET_COLS.desktop[sz], WIDGET_ROWS.desktop[sz]];
   };
   return desktopPages(tiles, span, gm.cols, rows);
 }
@@ -413,9 +407,10 @@ function widgetTitle(item) {
 function mkWidget(item) {
   const sz = item.widgetSize || 'medium';
   const cell = mk('div');
-  let cls = `wc c${wCols.d[sz]}`;
-  if (wRows.d[sz] >= 3) cls += ' r3';
-  else if (wRows.d[sz] >= 2) cls += ' r2';
+  const rows = WIDGET_ROWS.desktop[sz];
+  let cls = `wc c${WIDGET_COLS.desktop[sz]}`;
+  if (rows >= 3) cls += ' r3';
+  else if (rows >= 2) cls += ' r2';
   cell.className = cls;
   const card = mk('div');
   card.className = 'widget';
@@ -424,10 +419,10 @@ function mkWidget(item) {
   if (preset) card.dataset.card = preset;
   if (fixedAppearance(item, widgetReg)) card.dataset.appearance = 'dark';
   const design = WIDGET_DESIGN[sz] || WIDGET_DESIGN.medium;
-  if (wRows.d[sz] >= 2) {
-    card.style.minHeight = WH.d[sz] + 'px';
+  if (rows >= 2) {
+    card.style.minHeight = WIDGET_HEIGHTS[sz] + 'px';
     card.style.height = '100%';
-  } else card.style.height = WH.d[sz] + 'px';
+  } else card.style.height = WIDGET_HEIGHTS[sz] + 'px';
   card.style.borderRadius = WIDGET_R + 'px';
   mountScaledWidget(card, {
     src: widgetSrc(item, widgetReg, { lang: currentLang() }),
@@ -467,6 +462,7 @@ function mkDot(i, total, current, go) {
   return d;
 }
 
+/** @returns {number} the page count */
 function buildDesktop() {
   /* Removing the DOM does not stop the observers and timers the previous
      widgets started. */
@@ -482,7 +478,6 @@ function buildDesktop() {
   const dock = items.filter(i => i.type === 'app' && i.dock && !i.hidden).slice(0, DOCK_MAX);
   document.body.classList.toggle('no-dock', !dock.length);
   const pages = paginate();
-  totalPages = pages.length;
   const strip = el('pages');
   strip.replaceChildren();
   pages.forEach(pageItems => {
@@ -504,25 +499,31 @@ function buildDesktop() {
   dk.replaceChildren();
   dock.forEach(item => dk.appendChild(mkDock(item)));
   dk.hidden = !dock.length;
-  observeGlass(dk, 38, 0.6);
+  return pages.length;
 }
 
 /* Every page is mounted at once, so widgets the user has swiped away from keep
    polling. Off-screen frames run at a fraction of their configured rate. */
 const OFF_PAGE_RATE = 4;
 
+/** @param {Event} e */
+const onFrameLoad = e => {
+  if (/** @type {Element} */ (e.target).tagName === 'IFRAME') applyPollRates();
+};
+let _rateBound = false;
 function applyPollRates() {
   const strip = el('pages');
   if (!strip) return;
+  /* A frame that has not loaded yet carries no toolbox to tell. A refresh
+     loads a new frame element. */
+  if (!_rateBound) {
+    _rateBound = true;
+    strip.addEventListener('load', onFrameLoad, true);
+  }
   Array.from(strip.children).forEach((page, i) => {
     const rate = i === pg ? 1 : OFF_PAGE_RATE;
     qa('iframe', /** @type {HTMLElement} */ (page)).forEach(ifr => {
       const frame = /** @type {HTMLIFrameElement} */ (ifr);
-      /* A frame that has not loaded yet carries no toolbox to tell. */
-      if (!frame.dataset.rateBound) {
-        frame.dataset.rateBound = '1';
-        frame.addEventListener('load', applyPollRates);
-      }
       try {
         /** @type {any} */ (frame.contentWindow)?.__setPollRate?.(rate);
       } catch {
@@ -552,31 +553,54 @@ function syncPageInert(current) {
   if (strip) inertAllBut(strip, current);
 }
 
+const pageEase = easing(EASE_IOS);
+
+/** @param {HTMLElement} strip @param {number} n @param {number} ms */
+function slidePages(strip, n, ms) {
+  const shift = `translateX(${-pageDir() * n * 100}%)`;
+  if (!isScripted()) {
+    strip.style.transform = shift;
+    return;
+  }
+  const m = getComputedStyle(strip).transform;
+  const from = m === 'none' ? 0 : new DOMMatrixReadOnly(m).m41;
+  const to = -pageDir() * n * strip.offsetWidth;
+  glide(
+    strip,
+    ms,
+    pageEase,
+    p => {
+      strip.style.transform = `translateX(${from + (to - from) * p}px)`;
+    },
+    () => {
+      strip.style.transform = shift;
+    },
+  );
+}
+
 let _willChangeTimer = 0;
-function goTo(n, dotEls, announce = true, bump = true) {
-  const total = dotEls ? dotEls.length : totalPages;
+/** @param {number} [ms] how long the move takes */
+function goTo(n, announce = true, bump = true, ms = PAGE_TURN_MS) {
   const was = pg;
-  pg = Math.max(0, Math.min(total - 1, n));
+  pg = clampPage(n, totalPages);
   if (pg !== was) closeBadgePopover();
-  if (pg !== was && announce) announcePage(pg, total);
-  if (_stateRef) _stateRef.pg = pg;
+  if (pg !== was && announce) announcePage(pg, totalPages);
   storeSet(PAGE_STORE, String(pg));
   const strip = el('pages');
   syncPageInert(pg);
-  const shift = `translateX(${-pageDir() * pg * 100}%)`;
-  strip.style.transform = strip.style.webkitTransform = shift;
+  slidePages(strip, pg, ms);
   strip.style.willChange = 'transform';
   clearTimeout(_willChangeTimer);
   _willChangeTimer = window.setTimeout(() => {
     if (!strip.classList.contains('dragging')) strip.style.willChange = 'auto';
   }, PAGE_TURN_MS + 50);
-  (dotEls ?? document.querySelectorAll('.dot')).forEach((d, i) => {
+  document.querySelectorAll('.dot').forEach((d, i) => {
     d.classList.toggle('on', i === pg);
     if (i === pg) d.setAttribute('aria-current', 'true');
     else d.removeAttribute('aria-current');
   });
   if (MOB && bump && CB.mobPillBump) CB.mobPillBump(pg);
-  syncPager(total);
+  syncPager(totalPages);
   applyPollRates();
 }
 
@@ -592,36 +616,6 @@ function syncPager(total) {
     t('home.pageAnnounce', { page: formatNumber(pg + 1), total: formatNumber(total) }),
   );
 }
-
-/* ensureSpace can create overflow pages paginate() did not report, so sync the
-   dots from the DOM. */
-function syncMobPages() {
-  const strip = el('pages');
-  const domCount = strip ? strip.children.length : 0;
-  if (domCount <= totalPages) return; /* no overflow pages, nothing to fix */
-  totalPages = domCount;
-  const dots = el('dots');
-  dots.replaceChildren();
-  for (let i = 0; i < domCount; i++) dots.appendChild(mkDot(i, domCount, pg, goTo));
-  dots.hidden = domCount < 2;
-  const pillDots = q('.msp-dots');
-  if (pillDots) {
-    while (pillDots.children.length < domCount) {
-      const d = document.createElement('div');
-      d.className = 'msp-dot';
-      pillDots.appendChild(d);
-    }
-    Array.from(pillDots.children).forEach((d, i) => d.classList.toggle('on', i === pg));
-    const origBump = CB.mobPillBump;
-    CB.mobPillBump = newPg => {
-      if (origBump) origBump(newPg); /* runs the pillPaging animation */
-      Array.from(pillDots.children).forEach((d, i) => d.classList.toggle('on', i === newPg));
-    };
-  }
-}
-
-/* Matches --bg-base in tokens.css. It shows wherever a fitted wallpaper does
-   not reach. */
 
 /* A sampled wallpaper grid, or one tone for a solid colour. Null on both leaves
    the labels as they are. */
@@ -662,7 +656,8 @@ function retone() {
 let _bgSample = null;
 
 async function sampleWallpaper(url, brightness, fit, call) {
-  const img = await loadSamplingImage(url);
+  const sameOrigin = parseWallpaperUrl(url)?.origin === location.origin;
+  const img = await (sameOrigin ? decoded(url) : loadSamplingImage(url));
   if (call !== _bgCall) return;
   _bgSample = img ? { img, brightness, fit } : null;
   resampleBg();
@@ -696,35 +691,43 @@ function liftVeil() {
   document.body.classList.add('ready');
 }
 
-function showApiDown() {
-  if (document.body.classList.contains('api-down')) return;
+/** Shows one error screen over the page. A second call shows nothing.
+    @param {ReturnType<typeof html>} content @returns {HTMLElement|null} */
+function showErrorScreen(content) {
+  if (document.body.classList.contains('api-down')) return null;
   document.documentElement.style.removeProperty('--boot-bg');
   const msg = document.createElement('div');
   msg.className = 'api-error-screen';
   msg.setAttribute('role', 'alert');
-  setHtml(
-    msg,
+  setHtml(msg, content);
+  for (const child of document.body.children) /** @type {HTMLElement} */ (child).inert = true;
+  document.body.classList.add('api-down');
+  document.body.appendChild(msg);
+  return msg;
+}
+
+function showApiDown() {
+  const msg = showErrorScreen(
     html`<h2 class="api-error-title">${t('home.apiDownTitle')}</h2><p class="api-error-sub">${t('home.apiDownSub')}</p><button class="api-error-btn" type="button">${t('home.retry')}</button>`,
   );
   /* Not an inline onclick. The page's CSP refuses those. */
-  msg.querySelector('.api-error-btn')?.addEventListener('click', () => location.reload());
-  for (const child of document.body.children) /** @type {HTMLElement} */ (child).inert = true;
-  document.body.classList.add('api-down');
-  document.body.appendChild(msg);
+  msg?.querySelector('.api-error-btn')?.addEventListener('click', () => location.reload());
 }
 
 function showBuildFailed() {
-  document.documentElement.style.removeProperty('--boot-bg');
-  const msg = document.createElement('div');
-  msg.className = 'api-error-screen';
-  msg.setAttribute('role', 'alert');
-  setHtml(
-    msg,
+  showErrorScreen(
     html`<h2 class="api-error-title">${t('home.loadFailed')}</h2><a class="api-error-btn" href="/admin/">${t('home.emptyAction')}</a>`,
   );
-  for (const child of document.body.children) /** @type {HTMLElement} */ (child).inert = true;
-  document.body.classList.add('api-down');
-  document.body.appendChild(msg);
+}
+
+/** @param {() => void} build */
+function tryBuild(build) {
+  try {
+    build();
+  } catch (e) {
+    console.error('dashboard build failed', e);
+    showBuildFailed();
+  }
 }
 
 /** @param {HTMLElement} root @param {any} bg @param {number} call */
@@ -768,6 +771,8 @@ async function applyBg() {
   showPhotoCredit(el('photo-credit'), bg.credit ?? null);
   if (bg.url && bg.url !== _shownWallpaper) await showWallpaper(root, bg, call);
   else applyBackground(root, bg);
+  if (call !== _bgCall) return;
+  glassWallpaper(bg.url ? await decoded(bg.url) : null, bg.size);
   if (call !== _bgCall) return;
   if (bg.url) {
     sampleWallpaper(bg.url, Number(bg.brightness), bg.fit, call);
@@ -944,23 +949,29 @@ async function boot() {
       v => ({ v }),
       e => ({ e }),
     );
-  const configReq = settled(fetch('/api/config', { cache: 'no-store', signal: AbortSignal.timeout(BOOT_TIMEOUT_MS) }));
-  const loadWidgets = () =>
+  const early = /** @type {any} */ (window).__early;
+  /** @type {any} */ (window).__early = null;
+  const configReq = settled(
+    early?.config ?? fetch('/api/config', { cache: 'no-store', signal: AbortSignal.timeout(BOOT_TIMEOUT_MS) }),
+  );
+  /** @param {Promise<Response>} [sent] */
+  const loadWidgets = sent =>
     settled(
-      fetch('/api/widgets', { cache: 'no-store' }).then(r => {
+      (sent ?? fetch('/api/widgets', { cache: 'no-store' })).then(r => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       }),
     );
-  let widgetsReq = loadWidgets();
+  let widgetsReq = loadWidgets(early?.widgets);
   const iconsReq = loadLocalIcons();
 
   let authData = null;
   try {
-    const authCheck = await fetch('/api/auth/check', {
-      cache: 'no-store',
-      signal: AbortSignal.timeout(BOOT_TIMEOUT_MS),
-    });
+    const authCheck = await (early?.auth ??
+      fetch('/api/auth/check', {
+        cache: 'no-store',
+        signal: AbortSignal.timeout(BOOT_TIMEOUT_MS),
+      }));
     if (authCheck.status === 401) {
       window.location.href = '/admin/';
       return;
@@ -980,6 +991,9 @@ async function boot() {
   }
 
   let apiFailed = false;
+  /** @type {Promise<unknown>|null} */
+  let wallpaperShown = null;
+  const showWallpaperOnce = () => (wallpaperShown ??= applyBg());
   try {
     const got = await configReq;
     if (got.e) throw got.e;
@@ -993,6 +1007,7 @@ async function boot() {
     _rev = c._rev ?? null;
     storeSet(LANG_STORE, await initI18n(S.language || 'en'));
     saveBootHint({ lang: currentLang() });
+    showWallpaperOnce();
   } catch (e) {
     console.error('[boot]', e);
     apiFailed = true;
@@ -1028,25 +1043,7 @@ async function boot() {
   const wr = (await widgetsReq).v;
   for (const w of Array.isArray(wr?.widgets) ? wr.widgets : []) if (w && w.name) widgetReg[w.name] = w;
 
-  const state = {
-    items,
-    S,
-    CB,
-    BEL,
-    badgeState,
-    breg,
-    bunreg,
-    bupd,
-    folderBadge,
-    paginate,
-    goTo,
-    pg: 0,
-    _mobTsCleanup,
-    _mobTeCleanup,
-    widgetReg,
-  };
-  _stateRef = state;
-  initUI(state);
+  initUI({ items, S, CB, BEL, breg, bunreg, bupd, widgetReg });
   initFluidHover();
   initSpotlight({
     getItems: () => items,
@@ -1071,7 +1068,6 @@ async function boot() {
     return `${r.width}x${r.height}`;
   };
   const spaceMoved = () => innerWidth !== _mw || saSize() !== _saAt;
-  /* Mobile measures the viewport as it builds, so it waits for layout. */
   const loadVisibleIcons = () => {
     loadImagesNow(el('dock'));
     loadImagesNow(el('pages').children[pg]);
@@ -1081,33 +1077,38 @@ async function boot() {
   const firstBuild = new Promise(resolve => {
     firstBuilt = () => resolve(undefined);
   });
+  let buildCall = 0;
   const buildLayout = () => {
     _mw = innerWidth;
     _saAt = saSize();
+    const call = ++buildCall;
     if (MOB) {
       document.body.classList.add('is-mob');
+      /* The phone layout measures the viewport as it builds, so it waits for
+         layout. */
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
-          try {
-            buildMobile();
-            syncMobPages();
-            goTo(restorePage(storeGet(PAGE_STORE), totalPages), null, false, false);
+          /* A later build replaces this one. Running it would put phone pages
+             on the desktop layout. */
+          if (call !== buildCall) return;
+          tryBuild(() => {
+            totalPages = buildMobile();
+            goTo(restorePage(storeGet(PAGE_STORE), totalPages), false, false);
             CB.mobPillSync?.(pg);
             loadVisibleIcons();
             retone();
-          } catch (e) {
-            console.error('dashboard build failed', e);
-            showBuildFailed();
-          }
+          });
           firstBuilt();
         }),
       );
     } else {
       document.body.classList.remove('is-mob');
-      buildDesktop();
-      goTo(restorePage(storeGet(PAGE_STORE), totalPages), null, false);
-      loadVisibleIcons();
-      retone();
+      tryBuild(() => {
+        totalPages = buildDesktop();
+        goTo(restorePage(storeGet(PAGE_STORE), totalPages), false);
+        loadVisibleIcons();
+        retone();
+      });
       firstBuilt();
     }
   };
@@ -1121,7 +1122,7 @@ async function boot() {
      what a narrow window gets, and there its own swipe is the only pager, so a
      mouse and a keyboard cannot leave page one. */
   const pager = /** @type {HTMLInputElement} */ (el('mob-pager'));
-  pager.addEventListener('input', () => goTo(Number(pager.value) - 1, null, false));
+  pager.addEventListener('input', () => goTo(Number(pager.value) - 1, false));
   document.addEventListener('keydown', e => {
     if (e.target === pager) return;
     if (el('spot').hasAttribute('open')) return;
@@ -1193,17 +1194,16 @@ async function boot() {
     width: () => innerWidth,
     page: () => pg,
     total: () => strip.children.length,
-    turn: n => goTo(n),
+    turn: (n, ms) => goTo(n, true, true, ms),
+    scripted: isScripted,
     enabled: () =>
       !el('spot').hasAttribute('open') &&
       !document.querySelector('.folder-overlay[open], .folder-overlay-mobile[open]'),
   });
 
-  const wallpaperShown = applyBg();
+  showWallpaperOnce();
 
-  const retheme = () => {
-    applyTheme(resolveTheme(readMode(), prefersDark()));
-    rethemeTiles();
+  const rethemeFrames = () => {
     for (const frame of document.querySelectorAll('iframe')) {
       try {
         /** @type {any} */ (frame.contentWindow)?.__applyHostTheme?.();
@@ -1211,6 +1211,12 @@ async function boot() {
         /* A cross-origin page keeps its own theme. */
       }
     }
+  };
+  new MutationObserver(rethemeFrames).observe(document.documentElement, { attributeFilter: ['data-transparency'] });
+  const retheme = () => {
+    applyTheme(resolveTheme(readMode(), prefersDark()));
+    rethemeTiles();
+    rethemeFrames();
     refreshBadges();
     applyBg();
   };
@@ -1318,9 +1324,11 @@ async function boot() {
       const slots = desktopRows(hasDock()) * gm.cols;
       if (slots === _slots) return;
       _slots = slots;
-      buildDesktop();
-      goTo(Math.min(pg, totalPages - 1), null, false);
-      retone();
+      tryBuild(() => {
+        totalPages = buildDesktop();
+        goTo(pg, false);
+        retone();
+      });
     }, 200);
   });
 
@@ -1385,7 +1393,7 @@ async function boot() {
   window.addEventListener('pageshow', async e => {
     if (!e.persisted) return;
     const signal = AbortSignal.timeout(BOOT_TIMEOUT_MS);
-    /** @param {string} url @returns {Promise<import('/js/dashboard-logic.js?v=8b2dad40').RestoreCheck>} */
+    /** @param {string} url @returns {Promise<import('/js/dashboard-logic.js?v=b4828b62').RestoreCheck>} */
     const check = async url => {
       try {
         const r = await fetch(url, { cache: 'no-store', redirect: 'manual', signal });
@@ -1424,6 +1432,8 @@ async function boot() {
   liftVeil();
 }
 
+watchTransparency();
+startGlass();
 boot().catch(async e => {
   console.error('[boot]', e);
   const lastLang = storeGet(LANG_STORE);

@@ -1,5 +1,5 @@
-import { BADGE_DEFAULT, renderColorControl } from '/js/admin-color-control.js?v=29a2c296';
-import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=d1f8f6f4';
+import { renderColorControl } from '/js/admin-color-control.js?v=860d341e';
+import { badgeErrorAdvice, TONE } from '/js/admin-error.js?v=5abd7438';
 import {
   clearsStoredSecret,
   failureIsMissingApiPath,
@@ -9,7 +9,7 @@ import {
   nextActiveIndex,
   sameIconName,
   urlHasLogin,
-} from '/js/admin-logic.js?v=c1ed16c7';
+} from '/js/admin-logic.js?v=06da6a19';
 import {
   apiGet,
   apiPost,
@@ -27,14 +27,15 @@ import {
   swapContent,
   toast,
   wireInlineEdit,
-} from '/js/admin-shared.js?v=bb375b32';
+} from '/js/admin-shared.js?v=495be496';
+import { activityAuth, activityHasAuth } from '/js/admin-save-logic.js?v=6ebda0e2';
 import { state } from '/js/admin-state.js?v=064b9b85';
-import { MAX_LABELS } from '/js/badge-logic.js?v=04a4ece8';
+import { BADGE_DEFAULT, MAX_LABELS } from '/js/badge-logic.js?v=7112fd10';
 import { fluidHoverClear, fluidHoverKb } from '/js/fluid-hover.js?v=eb6cc81c';
-import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { formatNumber } from '/js/format-number.js?v=263fa390';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { t } from '/js/i18n.js?v=ec60b9bd';
-import { iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { t } from '/js/i18n.js?v=99563c71';
+import { iconSvg } from '/js/icon-set.js?v=361e54a5';
 import {
   cdnIconRef,
   iconChain,
@@ -44,9 +45,9 @@ import {
   throughServer,
 } from '/js/icons.js?v=76c29d43';
 import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
-import { createListbox } from '/js/listbox.js?v=5cf876f8';
-import { slideBlock } from '/js/modal.js?v=c4c1c4c4';
-import { clr, el, focusFirst, initial, inp as inpById, isolate, qa, qi, q as qSel, tgt } from '/js/utils.js?v=ff7e1e5f';
+import { createListbox } from '/js/listbox.js?v=384c0ad5';
+import { slideBlock } from '/js/modal.js?v=84ba5279';
+import { clr, el, focusFirst, initial, inp as inpById, isolate, qa, qi, q as qSel, tgt } from '/js/utils.js?v=c1d4e76c';
 
 export function buildFolderForm(body, item) {
   const children = folderChildren(item);
@@ -102,7 +103,7 @@ function _wireFolderApps(apps, children) {
 export function buildSettingsTileForm(body, item) {
   const dockBlocked = isDockBlocked(state.items, item, DOCK_MAX);
   const tog = (id, on, name) =>
-    html`<label class="tog"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${name}"><div class="tr"></div></label>`;
+    html`<label class="tog"><input type="checkbox" role="switch" id="${id}" ${on ? 'checked' : ''} aria-label="${name}"><div class="tr"></div></label>`;
   setHtml(
     body,
     html`
@@ -135,9 +136,8 @@ export function buildAppForm(body, item) {
   const globalHealthOn = inpById('srv-hc-en')?.checked !== false;
   const mon = item?.monitoring || {};
   const hc = mon.healthcheck || {
-    enabled: !!(item?.container || item?.ping),
+    enabled: !!item?.container,
     container: item?.container || '',
-    pingUrl: item?.ping || '',
   };
   const act = mon.activity || {
     enabled: !!item?.badge?.enabled,
@@ -149,14 +149,14 @@ export function buildAppForm(body, item) {
   const hcType = hc.proxmoxGuest ? 'pve' : hc.pingUrl ? 'ping' : 'con';
   const skipTls = !!item?.skipTlsVerify;
   const login = act.login?.username ? act.login : null;
-  const hasAuth = !!(act.params?.length || act.headers?.length || login);
+  const hasAuth = activityHasAuth(act);
 
   const ier = _ieRow;
   /* Split the string around its placeholder. Word order differs per language. */
   const [pollBefore, pollAfter] = t('app.pollInterval').split('{seconds}');
 
   const tog = (id, on, name) =>
-    html`<label class="tog"><input type="checkbox" id="${id}" ${on ? 'checked' : ''} aria-label="${name}"><div class="tr"></div></label>`;
+    html`<label class="tog"><input type="checkbox" role="switch" id="${id}" ${on ? 'checked' : ''} aria-label="${name}"><div class="tr"></div></label>`;
 
   setHtml(
     body,
@@ -167,7 +167,7 @@ export function buildAppForm(body, item) {
     </div>
     <div id="href-login" class="reveal${urlHasLogin(item?.href || '') ? ' open' : ''}"><div class="reveal-in"><p class="grp-tip warn" id="href-login-tip">${t('app.hrefHasLogin')}</p></div></div>
 
-    <p class="grp-hdr" role="heading" aria-level="2">${t('app.icon')}</p>
+    <h2 class="grp-hdr">${t('app.icon')}</h2>
     <div class="grp" id="ipw">
       <div class="icon-src-anchor">
       <div class="row icon-src-row">
@@ -188,7 +188,7 @@ export function buildAppForm(body, item) {
     </div>
     ${dockBlocked ? html`<p class="grp-tip" id="dock-full-tip">${t('app.dockFull', { max: formatNumber(DOCK_MAX) })}</p>` : ''}
 
-    <p class="grp-hdr" role="heading" aria-level="2">${t('app.badge')}</p>
+    <h2 class="grp-hdr">${t('app.badge')}</h2>
     <div class="grp">
       <div class="row"><span class="rl">${t('app.healthCheck')}</span>${tog('hc-en', hc.enabled, t('app.healthCheck'))}</div>
       <div id="hc-sub" class="reveal${hc.enabled ? ' open' : ''} row-wrap"><div class="reveal-in">
@@ -217,7 +217,7 @@ export function buildAppForm(body, item) {
         ${ier('ie-burl', t('app.apiUrl'), 'f-burl', act.url, t('app.apiUrlPh'), 'url')}
         <div class="row"><span class="rl"></span><span id="bst" class="row-status" role="status"></span><button type="button" class="row-btn" id="bfetch">${t('app.fetch')}</button></div>
         <div id="auth-row-wrap">
-          <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', !!(act.params || act.headers || login), t('app.authentication'))}</div>
+          <div class="row"><span class="rl">${t('app.authentication')}</span>${tog('auth-en', hasAuth, t('app.authentication'))}</div>
           <div id="auth-sub" class="reveal${hasAuth ? ' open' : ''}"><div class="reveal-in">
             <div class="row kv-hdr"><span class="rl">${t('app.signIn')}</span></div>
             ${ier('ie-buser', t('app.username'), 'f-buser', login?.username, t('common.notSet'))}
@@ -441,12 +441,12 @@ function renderActLabels(host) {
   host.replaceChildren();
   state.spaths.forEach((path, i) => {
     const l = actLabel(path);
-    const hdr = document.createElement('p');
+    const hdr = document.createElement('div');
     hdr.className = 'grp-hdr grp-hdr-row albl-hdr' + (i === 0 ? ' albl-hdr-first' : '');
     hdr.dataset.idx = String(i);
     setHtml(
       hdr,
-      html`<span class="albl-grip" aria-hidden="true">${raw(GRIP_SVG)}</span><span role="heading" aria-level="3">${t('app.labelN', { n: formatNumber(i + 1) })}</span>`,
+      html`<span class="albl-grip" aria-hidden="true">${raw(GRIP_SVG)}</span><h3>${t('app.labelN', { n: formatNumber(i + 1) })}</h3>`,
     );
     const ctl = document.createElement('span');
     ctl.className = 'albl-ctl';
@@ -775,6 +775,7 @@ function wireIcon() {
   };
 
   inp.onkeydown = e => {
+    if (e.isComposing || e.keyCode === 229) return;
     const open = rs?.classList.contains('open');
     /* Arrows only. nextActiveIndex also answers Home and End, which belong to
        the caret while focus is in a text field. */
@@ -1111,13 +1112,6 @@ function kvRowEl(host, rows, row, ph) {
   return rowEl;
 }
 
-/** @returns {{ username: string, password?: string }|undefined} */
-function badgeLogin() {
-  const username = inpById('f-buser')?.value?.trim() || '';
-  const password = inpById('f-bpass')?.value || '';
-  return username ? { username, password: password || undefined } : undefined;
-}
-
 /** @returns {boolean} whether the warning is shown */
 function warnUrlLogin() {
   const st = el('bst');
@@ -1141,14 +1135,18 @@ async function fetchBadge() {
   const btn = inpById('bfetch');
   if (btn) btn.disabled = true;
   try {
-    const params = serializeKvRows(state._bpar);
-    const headers = serializeKvRows(state._bhdr);
+    const { params, headers, login } = activityAuth({
+      authEn: inpById('auth-en')?.checked || false,
+      actParams: serializeKvRows(state._bpar),
+      actHeaders: serializeKvRows(state._bhdr),
+      actLogin: { username: inpById('f-buser')?.value?.trim() || '', password: inpById('f-bpass')?.value || '' },
+    });
     const skipTls = inpById('f-skip-tls')?.checked || false;
     const r = await apiPost('/api/badge-proxy', {
       url,
       params,
       headers,
-      login: badgeLogin(),
+      login,
       skipTls,
       itemId: state.eid ?? undefined,
     });

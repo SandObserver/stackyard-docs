@@ -4,8 +4,8 @@ import {
   buildSettingsTileForm,
   captureActLabels,
   serializeKvRows,
-} from '/js/admin-app-form.js?v=8a07c2e9';
-import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=2529721d';
+} from '/js/admin-app-form.js?v=48f04139';
+import { checkAuth, requireLogin, wirePasswordStrength } from '/js/admin-auth.js?v=62124aa1';
 import {
   applyFilter,
   filterMatchCount,
@@ -15,12 +15,12 @@ import {
   render,
   setReordering,
   syncFilterUI,
-} from '/js/admin-list.js?v=b4f38ab8';
-import { folderChildren, resolveAdminSection, settleDock } from '/js/admin-logic.js?v=c1ed16c7';
+} from '/js/admin-list.js?v=0864084c';
+import { filterActive, folderChildren, resolveAdminSection, settleDock } from '/js/admin-logic.js?v=06da6a19';
 import {
   afterImport,
+  applyEdit,
   buildAppItem,
-  claimFolderChildren,
   importCounts,
   keptWidget,
   newItemId,
@@ -30,8 +30,7 @@ import {
   revertingSaves,
   serialWrites,
   snapshotItems,
-  upsertItem,
-} from '/js/admin-save-logic.js?v=81636161';
+} from '/js/admin-save-logic.js?v=6ebda0e2';
 import {
   applyHealthChecks,
   loadSettings,
@@ -41,7 +40,7 @@ import {
   showWallpaperFile,
   wireProxmox,
   wireUnsplashKey,
-} from '/js/admin-settings.js?v=67db7c0e';
+} from '/js/admin-settings.js?v=36a32fdf';
 import {
   announce,
   apiGet,
@@ -66,18 +65,19 @@ import {
   swapContent,
   toast,
   withheldText,
-} from '/js/admin-shared.js?v=bb375b32';
+} from '/js/admin-shared.js?v=495be496';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=064b9b85';
-import { buildWidgetForm } from '/js/admin-widget-form.js?v=b6f96409';
-import { applyBackground, firstViewWait, rememberBackground, resolveBackground } from '/js/background.js?v=e9980cbc';
-import { recoveryShown } from '/js/config-recovery.js?v=9b0a0ed6';
+import { buildWidgetForm } from '/js/admin-widget-form.js?v=93bb034e';
+import { applyBackground, firstViewWait, rememberBackground, resolveBackground } from '/js/background.js?v=eca5642a';
+import { BADGE_DEFAULT } from '/js/badge-logic.js?v=7112fd10';
+import { recoveryShown } from '/js/config-recovery.js?v=da14e1c7';
 import { initFluidHover } from '/js/fluid-hover.js?v=eb6cc81c';
-import { formatNumber } from '/js/format-number.js?v=9dcba1ce';
+import { formatNumber } from '/js/format-number.js?v=263fa390';
 import { initGlideSelect, syncGlideSelect } from '/js/glide-select.js?v=0c57b286';
 import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=ec60b9bd';
-import { animateIcon } from '/js/icon-motion.js?v=4021def9';
-import { ensureSprite, iconSvg } from '/js/icon-set.js?v=b7e5d7d1';
+import { initI18n, LANGUAGES, t } from '/js/i18n.js?v=99563c71';
+import { animateIcon } from '/js/icon-motion.js?v=0b4fc669';
+import { ensureSprite, iconSvg } from '/js/icon-set.js?v=361e54a5';
 import { loadLocalIcons } from '/js/icons.js?v=76c29d43';
 import {
   clearSkipTls,
@@ -89,22 +89,26 @@ import {
   NOTE,
   parseErrorsAsSkipped,
   SKIP,
-} from '/js/import-foreign.js?v=5be7e56b';
+} from '/js/import-foreign.js?v=46304742';
 import { isMobileLayout, onLayoutChange } from '/js/layout.js?v=6680c0bf';
 import { CONFIG_MAX_BYTES, clampName } from '/js/limits.js?v=4b70a7dd';
-import { createListbox } from '/js/listbox.js?v=5cf876f8';
-import { confirmModal, confirmText, openModal as openDialog } from '/js/modal.js?v=c4c1c4c4';
-import { passwordMismatch } from '/js/password-policy.js?v=0c0fd0af';
+import { createListbox } from '/js/listbox.js?v=384c0ad5';
+import { confirmModal, confirmText, openModal as openDialog } from '/js/modal.js?v=84ba5279';
+import { passwordMismatch } from '/js/password-policy.js?v=e16ebd1a';
 import { fillUsernames, wireReveal } from '/js/password-reveal.js?v=37f218b4';
 import {
   applyTheme,
   prefersDark,
   readMode,
+  readReduceTransparency,
   resolveTheme,
   THEME_KEY,
+  TRANSPARENCY_KEY,
   watchSystemTheme,
+  watchTransparency,
   writeMode,
-} from '/js/theme.js?v=eeafa4b5';
+  writeReduceTransparency,
+} from '/js/theme.js?v=0bbd81e8';
 import {
   clr,
   el,
@@ -119,9 +123,9 @@ import {
   storeSet,
   tgt,
   within,
-} from '/js/utils.js?v=ff7e1e5f';
+} from '/js/utils.js?v=c1d4e76c';
 import { saveBootHint } from '/js/wallpaper-cache.js?v=cd968718';
-import { parseYamlTolerant, YamlLiteError, YamlTooLargeError } from '/js/yaml-lite.js?v=a42ef914';
+import { parseYamlTolerant, YamlLiteError, YamlTooLargeError } from '/js/yaml-lite.js?v=39538b71';
 
 ensureSprite();
 for (const b of document.querySelectorAll('.nl[data-sec], .mtab[data-sec]')) {
@@ -438,8 +442,13 @@ function _renderEditBody(focusKind) {
   }, 50);
 }
 
-function openModal(idx) {
-  const editing = idx != null ? state.items[idx] : null;
+/** @param {string|null} id */
+function openModal(id) {
+  const editing = id != null ? state.items.find(i => i?.id === id) : null;
+  if (id != null && !editing) {
+    toast(t('toast.dashboardChangedElsewhere'), 'err');
+    return;
+  }
   state.eid = editing?.id ?? null;
   const item = editing ? structuredClone(editing) : null;
   state.ctype = item?.system === 'settings' ? 'settings' : item?.type || 'app';
@@ -460,7 +469,7 @@ function openModal(idx) {
       state.slabels[l.path] = {
         name: l.name || '',
         unit: l.unit || '',
-        color: l.color || 'info',
+        color: l.color || BADGE_DEFAULT,
         min: l.min == null ? '' : String(l.min),
       };
     }
@@ -482,12 +491,12 @@ function openModal(idx) {
     state.slabels[state.spaths[0]] = {
       name: '',
       unit: typeof custom.unit === 'string' ? custom.unit : '',
-      color: typeof custom.color === 'string' && custom.color ? custom.color : 'info',
+      color: typeof custom.color === 'string' && custom.color ? custom.color : BADGE_DEFAULT,
       min: custom.min == null ? '' : String(custom.min),
     };
   }
 
-  const isEdit = idx != null;
+  const isEdit = id != null;
   const evTitle = el('ev-title');
   if (isEdit) setUserText(evTitle, t('common.editNamed', { name: isolate(item.label || item.id) }));
   else {
@@ -517,7 +526,7 @@ function openModal(idx) {
 let _filterTimer;
 function runFilter() {
   applyFilter();
-  if (filter.q || filter.type !== 'all') announce(t('list.matchCount', { count: filterMatchCount() }));
+  if (filterActive(filter)) announce(t('list.matchCount', { count: filterMatchCount() }));
 }
 
 async function _evDelete(item) {
@@ -690,9 +699,7 @@ async function doSave(orig) {
         showFieldError(el('ie-fname'), t('toast.nameRequired'));
         return;
       }
-      /* An app belongs to one folder, or the dashboard renders it twice. */
       const children = state._folderApps?.getValue() || [];
-      claimFolderChildren(state.items, orig?.id, children);
       item = {
         id:
           orig?.id ||
@@ -720,12 +727,13 @@ async function doSave(orig) {
         actEn: inp('act-en')?.checked,
         actUrl: inp('f-burl')?.value?.trim() || '',
         actInt: Math.min(3600, Math.max(10, parseInt(inp('f-bint')?.value || '30', 10))),
+        authEn: inp('auth-en')?.checked || false,
         actParams: serializeKvRows(state._bpar),
         actHeaders: serializeKvRows(state._bhdr),
         actLogin: { username: inp('f-buser')?.value?.trim() || '', password: inp('f-bpass')?.value || '' },
         staticEn: inp('static-en')?.checked || false,
         staticLabel: inp('f-static-label')?.value?.trim() || '',
-        staticColor: inp('static-col-val')?.value || 'info',
+        staticColor: inp('static-col-val')?.value || BADGE_DEFAULT,
         dock: inp('f-dock')?.checked || false,
         iconUrl: state.siurl,
         scol: state.scol,
@@ -745,8 +753,7 @@ async function doSave(orig) {
       item = res.item;
     }
     /* By id, never by position. */
-    const before = snapshotItems(state.items);
-    const { replaced } = upsertItem(state.items, state.eid, item);
+    const { before, replaced } = applyEdit(state.items, state.eid, item);
     const session = state._evSession;
     /* The editor stays open on a failed write, with the form intact. */
     if (!(await saveOrRevert(before))) return;
@@ -958,28 +965,22 @@ function initBgType() {
     hidden.value = val;
     showBgFields(val);
   };
+  const opts = () => [
+    { value: 'unsplash', label: t('appearance.sourceUnsplash') },
+    { value: 'url', label: t('appearance.sourceUrl') },
+    { value: 'color', label: t('appearance.sourceColor') },
+  ];
   const box = createListbox({
     id: 'bg-type',
     label: t('appearance.source'),
-    options: [
-      { value: 'unsplash', label: t('appearance.sourceUnsplash') },
-      { value: 'url', label: t('appearance.sourceUrl') },
-      { value: 'color', label: t('appearance.sourceColor') },
-    ],
+    options: opts(),
     value: hidden.value || 'unsplash',
     onChange: v => apply(String(v)),
   });
   slot.appendChild(box.el);
   relabel(() => {
     box.setLabel(t('appearance.source'));
-    box.setOptions(
-      [
-        { value: 'unsplash', label: t('appearance.sourceUnsplash') },
-        { value: 'url', label: t('appearance.sourceUrl') },
-        { value: 'color', label: t('appearance.sourceColor') },
-      ],
-      hidden.value,
-    );
+    box.setOptions(opts(), hidden.value);
   });
   apply(hidden.value || 'unsplash');
 }
@@ -991,26 +992,21 @@ function initBgFit() {
   const apply = val => {
     hidden.value = val;
   };
+  const opts = () => [
+    { value: 'fill', label: t('appearance.fitFill') },
+    { value: 'fit', label: t('appearance.fitContain') },
+  ];
   const box = createListbox({
     id: 'bg-fit',
     label: t('appearance.fit'),
-    options: [
-      { value: 'fill', label: t('appearance.fitFill') },
-      { value: 'fit', label: t('appearance.fitContain') },
-    ],
+    options: opts(),
     value: hidden.value || 'fill',
     onChange: v => apply(String(v)),
   });
   slot.appendChild(box.el);
   relabel(() => {
     box.setLabel(t('appearance.fit'));
-    box.setOptions(
-      [
-        { value: 'fill', label: t('appearance.fitFill') },
-        { value: 'fit', label: t('appearance.fitContain') },
-      ],
-      hidden.value,
-    );
+    box.setOptions(opts(), hidden.value);
   });
   apply(hidden.value || 'fill');
 }
@@ -1025,6 +1021,8 @@ function setWallpaperUrl(url) {
     rv.classList.remove('is-ph');
   }
   showWallpaperFile(url);
+  /* Keep this event. Save re-checks only on an edit, so without it an upload never enables Save. */
+  (urlInp ?? document).dispatchEvent(new Event('input', { bubbles: true }));
 }
 
 function initWallpaperUpload() {
@@ -1083,14 +1081,15 @@ function initLogLevel() {
   const slot = el('log-level-slot');
   const hidden = inp('log-level');
   if (!slot || !hidden) return;
+  const opts = () => [
+    { value: 'debug', label: t('general.logDebug') },
+    { value: 'info', label: t('general.logInfo') },
+    { value: 'error', label: t('general.logError') },
+  ];
   const box = createListbox({
     id: 'log-level',
     label: t('general.loggingLevel'),
-    options: [
-      { value: 'debug', label: t('general.logDebug') },
-      { value: 'info', label: t('general.logInfo') },
-      { value: 'error', label: t('general.logError') },
-    ],
+    options: opts(),
     value: hidden.value || 'info',
     onChange: v => {
       hidden.value = String(v);
@@ -1099,14 +1098,7 @@ function initLogLevel() {
   slot.appendChild(box.el);
   relabel(() => {
     box.setLabel(t('general.loggingLevel'));
-    box.setOptions(
-      [
-        { value: 'debug', label: t('general.logDebug') },
-        { value: 'info', label: t('general.logInfo') },
-        { value: 'error', label: t('general.logError') },
-      ],
-      hidden.value,
-    );
+    box.setOptions(opts(), hidden.value);
   });
   hidden.value = hidden.value || 'info';
 }
@@ -1176,7 +1168,14 @@ function initTheme() {
   hidden.value = writeMode(readMode());
   box.setValue(hidden.value);
   watchSystemTheme(() => hidden.value);
+  const solid = inp('dev-transparency');
+  if (solid) {
+    solid.checked = readReduceTransparency();
+    solid.addEventListener('change', () => writeReduceTransparency(solid.checked));
+  }
+  watchTransparency();
   addEventListener('storage', e => {
+    if (solid && e.key === TRANSPARENCY_KEY) solid.checked = readReduceTransparency();
     if (e.key !== THEME_KEY) return;
     hidden.value = readMode();
     box.setValue(hidden.value);
@@ -1300,7 +1299,7 @@ const NOTE_TEXT = {
     @param {Array<{ name: string, group: string, why: string }>} rows */
 function dlgSection(parent, heading, rows) {
   if (!rows.length) return;
-  const h = document.createElement('div');
+  const h = document.createElement('h3');
   h.className = 'dlg-sec';
   h.textContent = `${heading} (${formatNumber(rows.length)})`;
   const ul = document.createElement('ul');
@@ -1376,7 +1375,7 @@ el('btn-imp-docker').onclick = rowBusy(/** @type {HTMLButtonElement} */ (el('btn
     }
     await reviewImport(out.items, out.skipped, out.notes, 'toast.importDockerNothing');
   } catch (err) {
-    toast(t('toast.importFailed', { err: errorText(err) }), 'err');
+    toast(t('toast.importFailed', { err: errorText(err) }), 'err', errorAction(err));
   }
 });
 
@@ -1436,7 +1435,7 @@ async function reviewImport(items, skipped, notes, nothingKey) {
   /** @type {HTMLInputElement|null} */
   let skipTlsChoice = null;
   if (insecure.length) {
-    const heading = document.createElement('div');
+    const heading = document.createElement('h3');
     heading.className = 'dlg-sec';
     heading.textContent = `${t('app.allowSelfSigned')} (${formatNumber(insecure.length)})`;
     const choice = document.createElement('label');
@@ -1474,8 +1473,6 @@ async function reviewImport(items, skipped, notes, nothingKey) {
   await appendAndSave(items);
   toast(t('toast.importForeignDone', { apps: formatNumber(apps), folders: formatNumber(folders) }));
 }
-
-el('btn-add').onclick = () => openModal(null);
 
 initList({ openModal, openFolderPicker, save: saveOrRevert });
 initNav();

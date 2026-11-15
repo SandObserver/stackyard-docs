@@ -5,7 +5,7 @@
    Never draw a response's error message. It names hosts, ports and status
    codes, and it is not translated. */
 
-import { ICONS, symbol } from '/js/icon-set.js?v=b7e5d7d1';
+import { ICONS, symbol } from '/js/icon-set.js?v=361e54a5';
 
 /* kind -> [glyph, catalog key, English] */
 const COPY = {
@@ -35,7 +35,7 @@ export function errorKind(err) {
 }
 
 /** @param {string} kind @param {Document} doc @returns {Element} */
-function errorGlyph(kind, doc) {
+export function kindGlyph(kind, doc) {
   const [g] = COPY[kind] || COPY[FALLBACK];
   const id = `err-${g}`;
   const { defs, sym } = symbol(id, ICONS[id]);
@@ -51,8 +51,6 @@ export function errorCopy(kind) {
   return { key, text };
 }
 
-export const ERROR_KINDS = Object.freeze(Object.keys(COPY));
-
 const STYLE_ID = 'wt-error-css';
 const CSS = `
 .wt-inert { filter: grayscale(0.9) opacity(0.5); transition: filter 0.4s ease; pointer-events: none; }
@@ -66,6 +64,7 @@ const CSS = `
    its own hidden rule the caption never goes away. */
 .wt-cap[hidden] { display: none; }
 html[data-theme="light"] .wt-cap { color: var(--wt-cap-color, #636366); }
+html[data-glass] .wt-cap { color: var(--wt-cap-color, var(--glass-ink-2)); }
 .wt-cap svg { width: 12px; height: 12px; flex: 0 0 auto; opacity: 0.85; }
 .wt-cap .sy-i { fill: currentColor; }
 .wt-cap .sy-is { stroke: currentColor; }
@@ -146,7 +145,7 @@ export function errorState(opts = {}) {
       const line = t(key, text);
       const dim = info.inert !== false;
       for (const el of contentOf()) el.classList.toggle('wt-inert', dim);
-      paint(errorGlyph(kind, doc), line, info.since || '');
+      paint(kindGlyph(kind, doc), line, info.since || '');
       return line;
     },
     /** @param {string} text */

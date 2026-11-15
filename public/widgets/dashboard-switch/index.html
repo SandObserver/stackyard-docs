@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Dashboard Switch</title>
-<script src="/js/widget-theme.js?v=9bd864aa"></script>
+<script src="/js/widget-theme.js?v=9f9e1b99"></script>
 <style>
   *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
   html{-webkit-tap-highlight-color:transparent}
@@ -47,7 +47,7 @@
 <body>
 <div id="root"></div>
 <script type="module">
-  import { widgetId, getConfig, loadStrings, wt, errorState } from '/js/widget-toolbox.js?v=1aeedc33';
+  import { widgetId, getConfig, loadStrings, wt, errorState } from '/js/widget-toolbox.js?v=643fc12f';
   await loadStrings();
   import { buildModel, fitName, textDirection } from '/js/dashboard-switch-model.js?v=a2176749';
 
@@ -138,7 +138,7 @@
       const a = document.createElementNS(NS, 'a');
       a.setAttribute('class', s.isCurrent ? 'kc cur' : 'kc');
       a.setAttribute('tabindex', '0');
-      a.setAttribute('aria-label', wt('ui.switchTo', 'Switch to {name}').replace('{name}', s.name));
+      a.setAttribute('aria-label', wt('ui.switchTo', 'Switch to {name}', { name: s.name }));
       a.setAttributeNS(null, 'href', s.href);
       if (model.openIn === 'new') { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); }
       else { a.setAttribute('target', '_top'); }

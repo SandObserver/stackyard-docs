@@ -5,9 +5,9 @@ const {
   dupList,
   dupId,
   dupName,
-  dupMeta,
   dupSchedule,
   dupNormalizeBase,
+  dupLastFinished,
   dupDeriveStatus,
   kopiaDeriveStatus,
   kopiaSourceId,
@@ -78,7 +78,7 @@ async function dupGetToken(base, password, ctx) {
   } else {
     tokens = await dupLogin(base, password, ctx);
   }
-  _dupTokens.set(base, {
+  ctx.remember(_dupTokens, base, {
     accessToken: tokens.accessToken,
     refreshNonce: tokens.refreshNonce,
     password,
@@ -206,8 +206,7 @@ function pbsTaskNs(conn, upid, ctx, mayRead) {
       if (ns == null) _pbsTaskNs.delete(key);
       return ns;
     });
-  _pbsTaskNs.set(key, p);
-  while (_pbsTaskNs.size > PBS_TASK_NS_MAX) _pbsTaskNs.delete(_pbsTaskNs.keys().next().value);
+  ctx.remember(_pbsTaskNs, key, p, PBS_TASK_NS_MAX);
   return p;
 }
 
@@ -389,12 +388,12 @@ async function slots(config, ctx) {
             return;
           }
           const id = dupId(j);
-          const meta = dupMeta(j);
+          const finishedMs = dupLastFinished(j);
           result[i] = {
             id,
             name: customName || dupName(j),
             status: dupDeriveStatus(j, serverState),
-            lastFinished: meta.LastBackupFinished || meta.LastBackupDate || meta.LastBackupStarted || null,
+            lastFinished: finishedMs ? new Date(finishedMs).toISOString() : null,
             nextRun: proposed[id] || dupSchedule(j)?.Time || null,
             link: dupLink(ctx, list[i], id),
           };
@@ -488,9 +487,8 @@ async function slots(config, ctx) {
                 }
                 ref = { ...saved, ns: moved.ns };
                 group = moved.group;
-                _pbsMoved.delete(movedKey);
-                if (moved.ns !== saved.ns) _pbsMoved.set(movedKey, moved.ns);
-                while (_pbsMoved.size > PBS_MOVED_MAX) _pbsMoved.delete(_pbsMoved.keys().next().value);
+                if (moved.ns !== saved.ns) ctx.remember(_pbsMoved, movedKey, moved.ns, PBS_MOVED_MAX);
+                else _pbsMoved.delete(movedKey);
               }
               const q = new URLSearchParams({ 'backup-type': ref.type, 'backup-id': ref.id });
               if (ref.ns) q.set('ns', ref.ns);

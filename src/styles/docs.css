@@ -1716,7 +1716,7 @@ main {
 }
 ::view-transition-old(sy-main),
 ::view-transition-old(sy-toc) {
-  animation: sy-fade-out 0.1s ease-out both;
+  animation: sy-fade-out 0.1s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 ::view-transition-new(sy-main),
 ::view-transition-new(sy-toc) {
@@ -2330,6 +2330,25 @@ html:not(:has(.sy-tbar)) {
     background: var(--sl-color-bg-sidebar);
     box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
     overflow: clip;
+    view-transition-name: sy-window;
+    view-transition-group: contain;
+  }
+  ::view-transition-group-children(sy-window) {
+    overflow: clip;
+    border-radius: var(--sy-radius-window);
+  }
+  ::view-transition-group(sy-window),
+  ::view-transition-new(sy-window) {
+    animation: none;
+  }
+  ::view-transition-old(sy-window) {
+    display: none;
+  }
+  @supports not (view-transition-group: contain) {
+    ::view-transition-group(sy-header) {
+      overflow: clip;
+      border-radius: var(--sy-radius-window) var(--sy-radius-window) 0 0;
+    }
   }
   .page > .header {
     position: sticky;

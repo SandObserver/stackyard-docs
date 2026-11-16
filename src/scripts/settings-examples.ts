@@ -74,6 +74,7 @@ function frame(old: Element, name: string, label: string, caption: string, node:
   figure.append(pane, cap);
   ownSprite(figure, name);
   old.replaceWith(figure);
+  document.dispatchEvent(new CustomEvent('sy-example-live', { detail: { old, figure } }));
 }
 
 function prefixIds(host: Element, p: string) {

@@ -63,6 +63,7 @@ await page('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, dev
 
 const capture = (names) => `(async () => {
   const names = ${JSON.stringify(names)};
+  for (const f of document.querySelectorAll('figure[data-shot]:not([data-live])')) f.dispatchEvent(new PointerEvent('pointerenter'));
   for (let i = 0; i < 100; i++) {
     if (names.every((n) => document.querySelector('figure[data-shot="' + n + '"][data-live]'))) break;
     await new Promise((r) => setTimeout(r, 100));

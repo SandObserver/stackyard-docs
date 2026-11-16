@@ -102,3 +102,8 @@ for (const file of walk(join(PUB, 'widgets'))) {
 }
 
 console.log(`app UI synced from ${REPO} at ${REF}; meta injected into ${patched} documents`);
+
+const run = (cmd, args) => execFileSync(cmd, args, { stdio: 'inherit' });
+run('npx', ['astro', 'build']);
+run(process.execPath, ['scripts/snapshot-settings.mjs']);
+run('npx', ['astro', 'build']);

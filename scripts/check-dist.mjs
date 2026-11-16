@@ -2,6 +2,7 @@
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { globSync } from 'node:fs';
 import { relative, join } from 'node:path';
+import { settingsSourceHash } from './settings-source.mjs';
 
 const DIST = 'dist';
 const SRC_ROOTS = ['src', 'scripts', 'public/api', 'public/icons', 'public/img'];
@@ -146,6 +147,14 @@ report('icons', [
 ]);
 
 /* The placeholder domain must never ship. */
+const EXAMPLES = 'src/data/settings-examples.json';
+report('examples', [
+  ...(!existsSync(EXAMPLES) || JSON.parse(read(EXAMPLES)).source !== settingsSourceHash()
+    ? [`${EXAMPLES} does not match the synced app UI. Run npm run sync-widgets.`]
+    : []),
+  ...html.flatMap((f) => [...read(f).matchAll(/data-sy-example="([^"]+)"/g)].map((m) => `${relative(DIST, f)}: no saved example "${m[1]}"`)),
+]);
+
 report('domain', html.filter((f) => read(f).includes('stackyard.example')).map((f) => relative(DIST, f)));
 
 console.log(problems.length ? `\nFAIL: ${problems.length} problem(s)` : '\nPASS');

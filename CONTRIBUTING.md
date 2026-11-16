@@ -119,15 +119,10 @@ The copies are committed, because CI has no checkout of the app repo. Re-run the
 sync after each app release and commit the result.
 
 `src/data/settings-examples.json` holds the rendered Settings examples. The build
-puts them into the page, so they show before the scripts load. After each sync,
-refresh them from a build. The script needs Google Chrome. Set `CHROME` if it is
-not at the default macOS path.
-
-```sh
-npm run build
-npm run snapshot-settings
-npm run build
-```
+puts them into the page, so they show before the scripts load. The sync builds
+the site, saves the examples from it, and builds again. It needs Google Chrome.
+Set `CHROME` if it is not at the default macOS path. `npm run check` fails when
+the saved examples do not match the synced app UI.
 
 ## Docs style
 

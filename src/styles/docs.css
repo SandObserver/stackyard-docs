@@ -2148,9 +2148,9 @@ html:not(:has(.sy-tbar)) {
   inset: auto;
   margin: 0;
   position-anchor: --sy-theme;
-  top: calc(anchor(bottom) + 8px);
-  right: anchor(right);
-  position-try-fallbacks: flip-block;
+  position-area: block-end span-inline-start;
+  margin-block-start: 8px;
+  max-height: calc(100% - 16px);
   min-width: 180px;
   padding: 6px;
   border: 0.5px solid var(--sy-glass-rim);
@@ -2165,15 +2165,16 @@ html:not(:has(.sy-tbar)) {
   transform: scale(0.97);
   transform-origin: top right;
   transition:
-    opacity 0.18s cubic-bezier(0.32, 0.72, 0, 1),
-    transform 0.18s cubic-bezier(0.32, 0.72, 0, 1),
-    overlay 0.18s allow-discrete,
-    display 0.18s allow-discrete;
+    opacity 0.12s cubic-bezier(0.32, 0.72, 0, 1),
+    transform 0.12s cubic-bezier(0.32, 0.72, 0, 1),
+    overlay 0.12s allow-discrete,
+    display 0.12s allow-discrete;
 }
 .sy-menu:popover-open {
   display: grid;
   opacity: 1;
   transform: none;
+  transition-duration: 0.18s;
 }
 @starting-style {
   .sy-menu:popover-open {
@@ -2527,7 +2528,7 @@ html:root:not(:has(.sy-tbar)) {
   position-anchor: --sy-otp;
   min-width: 240px;
   max-width: min(340px, calc(100vw - 16px));
-  max-height: min(420px, 70dvh);
+  max-height: min(420px, 70dvh, calc(100% - 16px));
   overflow-y: auto;
   overscroll-behavior: contain;
 }

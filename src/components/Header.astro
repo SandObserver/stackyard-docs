@@ -75,7 +75,7 @@ const THEMES = [
     mark();
     if (!CSS.supports('anchor-name: --a')) {
       const r = btn.getBoundingClientRect();
-      menu.style.top = `${r.bottom + 8}px`;
+      menu.style.top = `${r.bottom}px`;
       menu.style.right = `${document.documentElement.clientWidth - r.right}px`;
     }
     (byPointer ? menu : items.find((i) => i.getAttribute('aria-checked') === 'true') ?? items[0]).focus();

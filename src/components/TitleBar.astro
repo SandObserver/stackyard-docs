@@ -107,7 +107,7 @@ const menuIcon = await inlineIcon('menu');
       if (!open) return;
       if (!CSS.supports('anchor-name: --a')) {
         const r = btn.getBoundingClientRect();
-        menu.style.top = `${r.bottom + 8}px`;
+        menu.style.top = `${r.bottom}px`;
         menu.style.right = `${document.documentElement.clientWidth - r.right}px`;
       }
       (byPointer ? menu : links.find((a) => a.hasAttribute('aria-current')) ?? links[0])?.focus({ preventScroll: true });

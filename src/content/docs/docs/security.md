@@ -4,7 +4,9 @@ description: What Stackyard protects, what it deliberately does not, and how to 
 next: false
 ---
 
-**In Settings:** General, then Security. See the [Settings reference](/docs/settings-reference/).
+<div data-sy-example="security"></div>
+
+See the [Settings reference](/docs/settings-reference/).
 
 Read this before exposing Stackyard beyond your own network.
 

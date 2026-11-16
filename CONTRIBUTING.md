@@ -101,10 +101,11 @@ These are copies of the app at one release tag:
 | `public/i18n/en.json` | `ui/i18n/en.json` |
 | `vendor/stackyard/` | `ui/admin/index.html`, `ui/css/tokens.css` and `ui/css/admin.css` |
 
-The sync also writes two files from those copies:
+The sync also writes three files from those copies:
 
 - `public/css/settings.css`: the app's Settings styles, limited to `.sy-app` and the app's dropdown lists. It styles the live Settings examples only.
 - `public/settings/appearance.json`: the Appearance section of the Settings page. The sync fails if an element the examples use is gone.
+- `public/settings/sections.json`: the Security, Backup and About parts of the Settings page, and the synced tag. The sync fails if an element the examples use is gone.
 
 `vendor/stackyard/VERSION` holds the tag. Refresh them with a checkout of the
 app repo beside this one:
@@ -116,6 +117,17 @@ npm run sync-widgets -- v1.23.0 # a given tag
 
 The copies are committed, because CI has no checkout of the app repo. Re-run the
 sync after each app release and commit the result.
+
+`src/data/settings-examples.json` holds the rendered Settings examples. The build
+puts them into the page, so they show before the scripts load. After each sync,
+refresh them from a build. The script needs Google Chrome. Set `CHROME` if it is
+not at the default macOS path.
+
+```sh
+npm run build
+npm run snapshot-settings
+npm run build
+```
 
 ## Docs style
 

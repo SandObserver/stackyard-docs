@@ -95,7 +95,7 @@ for (const f of authored) {
 report('secrets', secretHits);
 
 /* House style. */
-report('style', files.filter((f) => f.startsWith('src') && read(f).includes('—')));
+report('style', files.filter((f) => f.startsWith('src') && !f.startsWith('src/data/') && read(f).includes('—')));
 
 /* The changelog, accessibility, security policy and governance pages are
    generated from the application repository. When that checkout is absent they

@@ -1,17 +1,21 @@
 type I18n = { initI18n(lang: string): Promise<void>; t(key: string, vars?: Record<string, string>): string };
 
 let ready: Promise<Record<string, any>> | null = null;
+let icons: { ICONS: Record<string, unknown>; symbol(id: string, icon: unknown): { defs: string; sym: string } };
 const app = (path: string) => import(/* @vite-ignore */ path);
 
 /* Import shared modules by the exact specifier the editor uses, or each gets its own copy of the state and strings. */
 const load = () =>
   (ready ??= (async () => {
-    const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: '/css/settings.css' });
-    const css = new Promise((done) => link.addEventListener('load', done, { once: true }));
-    document.head.append(link);
+    let link = document.querySelector<HTMLLinkElement>('link[href="/css/settings.css"]');
+    let css: Promise<unknown> = Promise.resolve();
+    if (!link?.sheet) {
+      link ??= document.head.appendChild(Object.assign(document.createElement('link'), { rel: 'stylesheet', href: '/css/settings.css' }));
+      css = new Promise((done) => link!.addEventListener('load', done, { once: true }));
+    }
     const src = await fetch('/js/admin-app-form.js').then((r) => r.text());
     const spec = (name: string) => src.match(new RegExp(`from '(/js/${name}\\.js[^']*)'`))?.[1] ?? `/js/${name}.js`;
-    const [form, i18n, lb, st, data, fh, shared, cc] = await Promise.all([
+    const [form, i18n, lb, st, data, fh, shared, cc, iconSet, sections] = await Promise.all([
       app('/js/admin-app-form.js'),
       app(spec('i18n')),
       app(spec('listbox')),
@@ -20,10 +24,13 @@ const load = () =>
       app(spec('fluid-hover')),
       app(spec('admin-shared')),
       app(spec('admin-color-control')),
+      app(spec('icon-set')),
+      fetch('/settings/sections.json').then((r) => r.json()),
     ]);
+    icons = iconSet;
     await Promise.all([i18n.initI18n('en'), css]);
     fh.initFluidHover();
-    return { form, i18n, lb, state: st.state, data, shared, cc };
+    return { form, i18n, lb, state: st.state, data, sections, shared, cc };
   })());
 
 function labelPens(root: Element, i18n: I18n) {
@@ -33,27 +40,76 @@ function labelPens(root: Element, i18n: I18n) {
   }
 }
 
-function frame(old: Element, label: string, caption: string, node: Element) {
+/* Keep a sprite per example. Masked icons from another component's sprite render blank on iOS Safari. */
+function ownSprite(figure: Element, name: string) {
+  const pre = `sy-e1-${name}-`;
+  const uses = [...figure.querySelectorAll('use')].filter((u) => u.getAttribute('href')?.startsWith('#sy-solid-'));
+  const ids = new Set(uses.map((u) => u.getAttribute('href')!.slice('#sy-solid-'.length)));
+  if (!ids.size) return;
+  let defs = '';
+  let syms = '';
+  for (const id of ids) {
+    if (!icons.ICONS[id]) continue;
+    const s = icons.symbol(id, icons.ICONS[id]);
+    defs += s.defs;
+    syms += s.sym;
+  }
+  for (const u of uses) u.setAttribute('href', `#${pre}${u.getAttribute('href')!.slice('#sy-solid-'.length)}`);
+  const src = `<svg xmlns="http://www.w3.org/2000/svg" class="sy-sprite" width="0" height="0" aria-hidden="true" focusable="false"><defs>${defs}</defs>${syms}</svg>`;
+  const svg = new DOMParser().parseFromString(src.replaceAll('sy-solid-', pre), 'image/svg+xml').documentElement;
+  figure.prepend(document.importNode(svg, true));
+}
+
+function frame(old: Element, name: string, label: string, caption: string, node: Element, note = 'Changes here are not saved.') {
   const figure = document.createElement('figure');
   figure.className = 'sy-e1 not-content';
-  figure.setAttribute('aria-label', label);
+  figure.dataset.shot = name;
+  figure.dataset.live = '';
+  figure.setAttribute('aria-label', old.getAttribute('aria-label') ?? old.querySelector('img')?.alt ?? label);
   const pane = document.createElement('div');
   pane.className = 'sy-e1-pane sy-app';
   pane.append(node);
   const cap = document.createElement('figcaption');
-  cap.innerHTML = `<span class="sy-e1-tag">Live example</span>${caption} Changes here are not saved.`;
+  cap.innerHTML = `<span class="sy-e1-tag">Live example</span>${caption}${note ? ` ${note}` : ''}`;
   figure.append(pane, cap);
+  ownSprite(figure, name);
   old.replaceWith(figure);
 }
 
 function prefixIds(host: Element, p: string) {
-  host.querySelectorAll('[id]').forEach((n) => (n.id = p + n.id));
-  host.querySelectorAll('[aria-labelledby]').forEach((n) =>
-    n.setAttribute('aria-labelledby', n.getAttribute('aria-labelledby')!.split(' ').map((x) => p + x).join(' ')),
-  );
+  host.querySelectorAll('[id]').forEach((n) => {
+    if (!n.closest('svg')) n.id = p + n.id;
+  });
+  for (const a of ['aria-labelledby', 'aria-describedby'])
+    host.querySelectorAll(`[${a}]`).forEach((n) => n.setAttribute(a, n.getAttribute(a)!.split(' ').map((x) => p + x).join(' ')));
 }
 
-async function appearance(shot: Element, wallpaperHeading: Element | null) {
+async function section(name: 'security' | 'backup' | 'about', spot: Element) {
+  const { sections, i18n, shared } = await load();
+  const host = document.createElement('div');
+  host.innerHTML = sections[name];
+  const p = `e1${name[0]}-`;
+  prefixIds(host, p);
+  const $ = (id: string) => host.querySelector<HTMLElement>(`#${p}${id}`)!;
+  if (name === 'security') {
+    const en = $('sec-en') as HTMLInputElement;
+    en.addEventListener('change', () => {
+      shared.reveal($('ie-pw-wrap'), en.checked);
+      shared.reveal($('pw-hint-wrap'), en.checked);
+    });
+    frame(spot, name, 'The Security group in General', 'Security, in General.', host);
+  } else if (name === 'backup') {
+    for (const input of host.querySelectorAll('input[type="file"]')) input.addEventListener('click', (e) => e.preventDefault());
+    frame(spot, name, 'The Backup group in General', 'Backup, in General.', host, 'The buttons here do not import or export.');
+  } else {
+    frame(spot, name, 'The About section of Settings', 'About, in Settings. It shows the installed version, and a notice when an update is out.', host, '');
+  }
+  await i18n.initI18n('en');
+  if (name === 'about') $('about-version').textContent = i18n.t('about.version', { v: String(sections.version).replace(/^v/, '') });
+  labelPens(host, i18n);
+}
+
+async function appearance(shot: Element, wallpaperSpot: Element | null) {
   const { data, lb, i18n, shared, cc } = await load();
   const host = document.createElement('div');
   host.innerHTML = data.appearance;
@@ -97,12 +153,8 @@ async function appearance(shot: Element, wallpaperHeading: Element | null) {
   prefixIds(host, 'e1a-');
   prefixIds(wp, 'e1a-');
   await i18n.initI18n('en');
-  frame(shot, shot.querySelector('img')?.alt ?? 'The Appearance section of Settings', 'Display options in Appearance.', host);
-  if (wallpaperHeading) {
-    const spot = document.createElement('div');
-    wallpaperHeading.after(spot);
-    frame(spot, 'The Wallpaper group in Appearance', 'Wallpaper in Appearance.', wp);
-  }
+  frame(shot, 'appearance', 'The Appearance section of Settings', 'Display options in Appearance.', host);
+  if (wallpaperSpot) frame(wallpaperSpot, 'wallpaper', 'The Wallpaper group in Appearance', 'Wallpaper in Appearance.', wp);
   await i18n.initI18n('en');
   labelPens(host, i18n);
   labelPens(wp, i18n);
@@ -135,19 +187,26 @@ async function appForm(badge: Element | null, labels: Element | null) {
   if (badge) {
     const wrap = Object.assign(document.createElement('div'), { className: 'sy-e1-form' });
     wrap.append(kids[b + 1]);
-    frame(badge, badge.querySelector('img')?.alt ?? 'The Badge section of an app', 'The three badge kinds for one app.', wrap);
+    frame(badge, 'app-edit-badge', 'The Badge section of an app', 'The three badge kinds for one app.', wrap);
   }
   if (labels) {
     const wrap = Object.assign(document.createElement('div'), { className: 'sy-e1-form' });
     wrap.append(host.querySelector('#act-labels-wrap')!);
-    frame(labels, labels.querySelector('img')?.alt ?? 'Labels for one app badge', 'Labels for one app badge.', wrap);
+    frame(labels, 'app-edit-labels', 'Labels for one app badge', 'Labels for one app badge.', wrap);
   }
   host.remove();
 }
 
-const shot = (name: string) => document.querySelector(`figure.sy-shot img[src*="/img/admin/${name}-"]`)?.closest('figure') ?? null;
+const shot = (name: string) =>
+  document.querySelector(`[data-shot="${name}"], [data-sy-example="${name}"]`) ??
+  document.querySelector(`figure.sy-shot img[src*="/img/admin/${name}-"]`)?.closest('figure') ??
+  null;
 const ap = shot('appearance');
-if (ap) appearance(ap, document.getElementById('wallpaper')?.closest('.sl-heading-wrapper') ?? null);
+if (ap) appearance(ap, shot('wallpaper'));
 const badge = shot('app-edit-badge');
 const labels = shot('app-edit-labels');
 if (badge || labels) appForm(badge, labels);
+for (const name of ['security', 'backup', 'about'] as const) {
+  const spot = shot(name);
+  if (spot) section(name, spot);
+}

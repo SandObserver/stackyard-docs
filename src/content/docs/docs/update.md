@@ -4,7 +4,7 @@ description: Update Stackyard to a new release with Docker Compose, docker run, 
 prev: false
 ---
 
-**In Settings:** About shows the installed version and an update notice.
+<div data-sy-example="about"></div>
 
 The UI ships inside the image. An update replaces the container and keeps the `/data` and `/icons` volumes.
 

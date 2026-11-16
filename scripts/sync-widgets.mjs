@@ -55,6 +55,27 @@ const LIFTED = ['set-lbl-d', 'set-lbl-m', 'theme-slot', 'dev-transparency', 'set
 for (const id of LIFTED) if (!appearance.includes(`id="${id}"`)) throw new Error(`Appearance element #${id} is gone`);
 mkdirSync(join(PUB, 'settings'), { recursive: true });
 writeFileSync(join(PUB, 'settings', 'appearance.json'), JSON.stringify({ appearance }));
+
+const between = (from, to) => {
+  const i = admin.indexOf(from);
+  const j = admin.indexOf(to, i);
+  if (i < 0 || j < 0) throw new Error(`Settings markup between ${from} and ${to} is gone`);
+  return admin.slice(i, j);
+};
+const sections = {
+  security: between('<h2 class="grp-hdr" data-i18n="general.security">', '<h2 class="grp-hdr" data-i18n="general.backup">'),
+  backup: between('<h2 class="grp-hdr" data-i18n="general.backup">', '<div class="signout-row">'),
+  about: between('<div class="about-hero">', '</section>'),
+  version: REF,
+};
+const SECTION_IDS = {
+  security: ['sec-en', 'ie-pw-wrap', 'pw-hint-wrap'],
+  backup: ['imp', 'imp-foreign', 'btn-exp', 'btn-imp-docker'],
+  about: ['about-version'],
+};
+for (const [name, ids] of Object.entries(SECTION_IDS))
+  for (const id of ids) if (!sections[name].includes(`id="${id}"`)) throw new Error(`${name} element #${id} is gone`);
+writeFileSync(join(PUB, 'settings', 'sections.json'), JSON.stringify(sections));
 rmSync(tree, { recursive: true, force: true });
 
 function walk(dir, out = []) {

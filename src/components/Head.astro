@@ -2,6 +2,7 @@
 import Default from '@astrojs/starlight/components/Head.astro';
 import { iconMaskUri } from '../lib/icon-set';
 import { SPECULATION_RULES } from '../lib/speculation.mjs';
+import { examples } from '../lib/rehype-settings-examples.mjs';
 
 const site = Astro.site?.href.replace(/\/$/, '') ?? '';
 const { entry, head } = Astro.locals.starlightRoute;
@@ -9,6 +10,7 @@ for (const tag of head) if (tag.attrs?.property === 'og:locale') tag.attrs.conte
 const docTitle = head.find((tag) => tag.tag === 'title')?.content;
 const pageTitle = entry.data.title;
 const pageDescription = entry.data.description ?? '';
+const hasExample = Object.keys(examples).some((k) => entry.body?.includes(`/img/admin/${k}-`) || entry.body?.includes(`data-sy-example="${k}"`));
 
 const crumbs = [{ name: 'Stackyard', item: `${site}/` }];
 if (Astro.url.pathname !== '/docs/') crumbs.push({ name: 'Docs', item: `${site}/docs/` });
@@ -36,6 +38,7 @@ const breadcrumb = {
 
 <Default {...Astro.props}><slot /></Default>
 <meta name="color-scheme" content="light dark" />
+{hasExample && <link rel="stylesheet" href="/css/settings.css" />}
 <script is:inline>
   (() => {
     const t = localStorage.getItem('starlight-theme');
@@ -111,5 +114,5 @@ const breadcrumb = {
 <script src="../scripts/motion.ts"></script>
 <script src="../scripts/page-filter.ts"></script>
 <script>
-  if (document.querySelector('figure.sy-shot img[src*="/img/admin/"]')) import('../scripts/settings-examples');
+  if (document.querySelector('[data-shot], [data-sy-example], figure.sy-shot img[src*="/img/admin/"]')) import('../scripts/settings-examples');
 </script>

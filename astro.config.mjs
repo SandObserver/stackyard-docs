@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import rehypeExternalLinks from 'rehype-external-links';
 import rehypeTableScroll from './src/lib/rehype-table-scroll.mjs';
+import rehypeSettingsExamples, { examplesDigest } from './src/lib/rehype-settings-examples.mjs';
 import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
@@ -28,6 +29,7 @@ export default defineConfig({
     rehypePlugins: [
       [rehypeExternalLinks, { target: '_blank', rel: ['noopener', 'noreferrer'] }],
       rehypeTableScroll,
+      [rehypeSettingsExamples, { digest: examplesDigest }],
     ],
   },
   integrations: [

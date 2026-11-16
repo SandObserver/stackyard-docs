@@ -31,6 +31,8 @@ Browsers only allow **Keep Screen Awake** over HTTPS. On a plain HTTP address th
 
 ## Wallpaper
 
+<div data-sy-example="wallpaper"></div>
+
 | Source | What it does |
 | --- | --- |
 | Image | Upload a file, or paste a link that is downloaded once. |

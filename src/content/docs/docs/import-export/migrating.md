@@ -3,7 +3,7 @@ title: Import from Homepage or Dashy
 description: Import links and folders into Stackyard from a gethomepage (Homepage) or Dashy YAML config, or from gethomepage labels on your Docker containers.
 ---
 
-**In Settings:** General, then Backup.
+<div data-sy-example="backup"></div>
 
 Stackyard reads Homepage and Dashy YAML files, and Homepage labels on Docker containers. It adds apps and folders and changes nothing already there. A preview lists what will be added, changed or left out. The import is one way.
 

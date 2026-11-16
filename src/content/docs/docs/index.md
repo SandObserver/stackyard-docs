@@ -9,9 +9,9 @@ description: Stackyard is a calm, self-hosted homelab dashboard for your apps, w
 Stackyard is a home screen for your homelab: app tiles, folders, a dock and a few widgets over your wallpaper, all set up in a web UI.
 
 <picture>
-  <source type="image/avif" srcset="/img/dashboard-720-4ed5f554.avif 720w, /img/dashboard-1080-666025e2.avif 1080w, /img/dashboard-1440-91cfcc41.avif 1440w, /img/dashboard-1800-57fc34f8.avif 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" />
-  <source type="image/webp" srcset="/img/dashboard-720-d6409f52.webp 720w, /img/dashboard-1080-2aa1e541.webp 1080w, /img/dashboard-1440-fba8e231.webp 1440w, /img/dashboard-1800-799957b1.webp 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" />
-  <img src="/img/dashboard-1048c3eb.jpg" srcset="/img/dashboard-720-f1fc6dbb.jpg 720w, /img/dashboard-1080-76cef4d7.jpg 1080w, /img/dashboard-1440-0f81a683.jpg 1440w, /img/dashboard-1048c3eb.jpg 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" width="1800" height="1125" fetchpriority="high" decoding="async" alt="The Stackyard dashboard, with widgets, app tiles, two folders and the dock." />
+  <source type="image/avif" srcset="/img/dashboard-720-6f55cd6b.avif 720w, /img/dashboard-1080-3ad4f1f4.avif 1080w, /img/dashboard-1440-b1cb73a0.avif 1440w, /img/dashboard-1800-228c262e.avif 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" />
+  <source type="image/webp" srcset="/img/dashboard-720-b5e28cb9.webp 720w, /img/dashboard-1080-691b0aa8.webp 1080w, /img/dashboard-1440-467523a7.webp 1440w, /img/dashboard-1800-f6072153.webp 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" />
+  <img src="/img/dashboard-fc57bd2d.jpg" srcset="/img/dashboard-720-559de860.jpg 720w, /img/dashboard-1080-472e2a66.jpg 1080w, /img/dashboard-1440-bd4dc5c9.jpg 1440w, /img/dashboard-fc57bd2d.jpg 1800w" sizes="(min-width: 50rem) 45rem, calc(100vw - 2rem)" width="1800" height="1125" fetchpriority="high" decoding="async" alt="The Stackyard dashboard, with widgets, app tiles, two folders and the dock." />
 </picture>
 
 Most homelab dashboards end up as a wall of widgets. Every service gets a card, every card says it is fine, and after a week you stop reading any of them.

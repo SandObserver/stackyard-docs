@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, wri
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { extname, join, resolve } from 'node:path';
+import { settingsSourceHash } from './settings-source.mjs';
 
 const DIST = resolve(process.cwd(), 'dist');
 const OUT = resolve(process.cwd(), 'src', 'data', 'settings-examples.json');
@@ -115,5 +116,5 @@ try {
 }
 
 mkdirSync(resolve(OUT, '..'), { recursive: true });
-writeFileSync(OUT, `${JSON.stringify(examples, null, 2)}\n`);
-console.log(`saved ${Object.keys(examples).join(', ')} to ${OUT}. Run npm run build again.`);
+writeFileSync(OUT, `${JSON.stringify({ source: settingsSourceHash(), examples }, null, 2)}\n`);
+console.log(`saved ${Object.keys(examples).join(', ')} to ${OUT}`);

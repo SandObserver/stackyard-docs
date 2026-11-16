@@ -7,7 +7,7 @@ const FILE = resolve(process.cwd(), 'src', 'data', 'settings-examples.json');
 
 const raw = existsSync(FILE) ? readFileSync(FILE, 'utf8') : '{}';
 /** @type {Record<string, string>} */
-export const examples = JSON.parse(raw);
+export const examples = JSON.parse(raw).examples ?? {};
 /* Pass to the plugin as an option. Without it, a new snapshot builds pages with the old examples. */
 export const examplesDigest = createHash('sha256').update(raw).digest('hex');
 

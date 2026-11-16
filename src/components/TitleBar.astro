@@ -8,34 +8,36 @@ const items = toc ? flat(toc.items as Item[]) : [];
 const menuIcon = await inlineIcon('menu');
 ---
 
-{
-  items.length > 1 && (
-    <div class="sy-tbar" id="sy-tbar" data-title={entry.data.title}>
-      <span class="sy-tbar-t" aria-hidden="true"><span /></span>
-      <button class="sy-otp" id="sy-otp-btn" type="button" popovertarget="sy-otp" aria-expanded="false" aria-label="On this page">
-        <svg class="sy-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" set:html={menuIcon} />
-        <span class="lbl">On this page</span>
-      </button>
-      <nav class="sy-menu sy-otp-menu" id="sy-otp" popover="auto" aria-label="On this page" tabindex="-1">
-        <ul>
-          {items.map((i) => (
-            <li class:list={{ sub: i.depth > toc!.minHeadingLevel }}>
-              <a href={`#${i.slug}`} data-slug={i.slug}>{i.text}</a>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
-  )
-}
+<div class="sy-tbar" id="sy-tbar" data-title={entry.data.title}>
+  <span class="sy-tbar-t" aria-hidden="true"><span /></span>
+  {
+    items.length > 1 && (
+      <>
+        <button class="sy-otp" id="sy-otp-btn" type="button" popovertarget="sy-otp" aria-expanded="false" aria-label="On this page">
+          <svg class="sy-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false" set:html={menuIcon} />
+          <span class="lbl">On this page</span>
+        </button>
+        <nav class="sy-menu sy-otp-menu" id="sy-otp" popover="auto" aria-label="On this page" tabindex="-1">
+          <ul>
+            {items.map((i) => (
+              <li class:list={{ sub: i.depth > toc!.minHeadingLevel }}>
+                <a href={`#${i.slug}`} data-slug={i.slug}>{i.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </>
+    )
+  }
+</div>
 
 <script>
   const bar = document.getElementById('sy-tbar');
   const btn = document.getElementById('sy-otp-btn');
   const menu = document.getElementById('sy-otp');
-  if (bar && btn && menu) {
+  if (bar) {
     const titleBox = bar.querySelector<HTMLElement>('.sy-tbar-t')!;
-    const links = [...menu.querySelectorAll<HTMLAnchorElement>('a[data-slug]')];
+    const links = menu ? [...menu.querySelectorAll<HTMLAnchorElement>('a[data-slug]')] : [];
     const heads = links
       .map((a) => document.getElementById(a.dataset.slug!))
       .filter((h): h is HTMLElement => !!h);
@@ -100,26 +102,28 @@ const menuIcon = await inlineIcon('menu');
     spy();
     update();
 
-    btn.addEventListener('click', (e) => (byPointer = e.detail > 0));
-    menu.addEventListener('toggle', (e) => {
-      const open = (e as ToggleEvent).newState === 'open';
-      btn.setAttribute('aria-expanded', String(open));
-      if (!open) return;
-      if (!CSS.supports('anchor-name: --a')) {
-        const r = btn.getBoundingClientRect();
-        menu.style.top = `${r.bottom}px`;
-        menu.style.right = `${document.documentElement.clientWidth - r.right}px`;
-      }
-      (byPointer ? menu : links.find((a) => a.hasAttribute('aria-current')) ?? links[0])?.focus({ preventScroll: true });
-    });
-    menu.addEventListener('click', (e) => {
-      if ((e.target as Element).closest('a')) menu.hidePopover();
-    });
-    menu.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
-      e.preventDefault();
-      const i = links.indexOf(document.activeElement as HTMLAnchorElement);
-      links.at((i + (e.key === 'ArrowDown' ? 1 : -1)) % links.length)!.focus();
-    });
+    if (btn && menu) {
+      btn.addEventListener('click', (e) => (byPointer = e.detail > 0));
+      menu.addEventListener('toggle', (e) => {
+        const open = (e as ToggleEvent).newState === 'open';
+        btn.setAttribute('aria-expanded', String(open));
+        if (!open) return;
+        if (!CSS.supports('anchor-name: --a')) {
+          const r = btn.getBoundingClientRect();
+          menu.style.top = `${r.bottom}px`;
+          menu.style.right = `${document.documentElement.clientWidth - r.right}px`;
+        }
+        (byPointer ? menu : links.find((a) => a.hasAttribute('aria-current')) ?? links[0])?.focus({ preventScroll: true });
+      });
+      menu.addEventListener('click', (e) => {
+        if ((e.target as Element).closest('a')) menu.hidePopover();
+      });
+      menu.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+        e.preventDefault();
+        const i = links.indexOf(document.activeElement as HTMLAnchorElement);
+        links.at((i + (e.key === 'ArrowDown' ? 1 : -1)) % links.length)!.focus();
+      });
+    }
   }
 </script>

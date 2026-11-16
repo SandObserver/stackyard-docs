@@ -494,9 +494,9 @@ starlight-toc nav a {
     position: absolute;
     inset: 0;
     background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
-      url('/img/wallpaper.jpg');
+      url('/img/wallpaper-7db68631.jpg');
     background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
-      image-set(url("/img/wallpaper-a6425c42.avif") type("image/avif"), url("/img/wallpaper-b978fc23.webp") type("image/webp"), url("/img/wallpaper.jpg") type("image/jpeg"));
+      image-set(url("/img/wallpaper-69360b29.avif") type("image/avif"), url("/img/wallpaper-b700eea5.webp") type("image/webp"), url("/img/wallpaper-7db68631.jpg") type("image/jpeg"));
     background-size: cover, cover;
     background-position: center, center;
     filter: blur(6px);

@@ -146,7 +146,7 @@ A widget that reached its service and got nothing back stays at full brightness 
 
 A widget whose definition could not be loaded has its whole stored config withheld, because without the definition the server cannot tell which fields are secret. Nothing is lost. The config is put back on save.
 
-Check the container logs for a definition that failed to load. A `WIDGETS_PATH` pointing at the wrong directory loads an empty registry, and every widget reports as unknown.
+Check the container logs for a definition that failed to load.
 
 ### A hand-written custom widget never appears in the type list
 

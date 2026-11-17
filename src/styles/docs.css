@@ -2317,9 +2317,9 @@ html:not(:has(.sy-tbar)) {
   body {
     background: #0b0d0c center / cover fixed no-repeat;
     background-image: image-set(
-      url('/img/docs-wallpaper-3dbf8933.avif') type('image/avif'),
-      url('/img/docs-wallpaper-fd4b2a4e.webp') type('image/webp'),
-      url('/img/docs-wallpaper-3850aedb.jpg') type('image/jpeg')
+      url('/img/docs-wallpaper-427abe1d.avif') type('image/avif'),
+      url('/img/docs-wallpaper-6158f017.webp') type('image/webp'),
+      url('/img/docs-wallpaper-5cbfa4e9.jpg') type('image/jpeg')
     );
   }
   .page {

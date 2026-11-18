@@ -13,6 +13,8 @@ Follow these steps in order. They end with a protected dashboard that holds one 
 
 Open `http://<host>:8700/admin` in a browser. Use the port you mapped if it is not 8700. On TrueNAS the default is 30245.
 
+Stackyard needs Safari 26.2 or newer on macOS and iOS, or a current Chrome, Edge or Firefox.
+
 A dashboard with nothing on it shows a welcome screen. Its **Open settings** button also goes to Settings. The link under it imports a [backup](/docs/import-export/backup-and-restore/) or [another dashboard's config](/docs/import-export/migrating/).
 
 ## Set a password

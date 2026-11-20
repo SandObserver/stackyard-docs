@@ -36,6 +36,7 @@ A widget message is one line, in place of the widget's data. Each names a kind o
 | `(may be out of date)` | App status | A stale reading. The last poll failed and the previous value is shown. |
 | `The item limit is N. Remove some first.` | App status | A config can hold 5,000 items and widget rows. An install already over the limit can save if it does not grow. |
 | `Two rows in NAME share an id. Remove one of them, then save again.` | App status | A new or edited widget repeats a row id. |
+| `The item <id> has a link that is not allowed. Links must use http or https.` | App status | A widget's **Link URL** uses a scheme such as `javascript:` or `data:`. Nothing was saved. |
 | `The id settings is reserved for the Settings tile. Delete this item, then add it again.` | App status | An item uses the id of the Settings tile. |
 | `This backup was made by a newer version of Stackyard. Update first, then import it.` | App status | The backup's schema is newer than this version. |
 | `This configuration is larger than the 2 MB limit.` | App status | The import or save is over the size limit. |

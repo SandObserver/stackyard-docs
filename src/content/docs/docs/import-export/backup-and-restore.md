@@ -23,6 +23,8 @@ Reads a file produced by Export. Stackyard shows how many items will be added, u
 
 An import replaces apps, folders, widgets, badges and settings. The password is never replaced. An export from an older release is upgraded as it is imported.
 
+A setting this release does not know is dropped. The container log names it under `unknown settings dropped`.
+
 If the file names an uploaded wallpaper that this install does not hold, the current background stays.
 
 After an import that replaces settings, reload the page before you change any settings. Until then, Settings shows the values from before the import.

@@ -133,7 +133,7 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | `transient` | When `true`, the field is sent to an `optionsFrom` fetch but not saved. Use it for a search box. Top-level fields only. |
 | `carries` | For a `select` with `optionsFrom`: extra config keys this picker writes, from the chosen option's `set` block. |
 | `showIf` | Shows the field only when a sibling matches: `{ "field": "provider", "equals": "adguard" }`, or `{ "field": "provider", "in": ["adguard", "pihole"] }`. Anything else is rejected. |
-| `options` | For a `select`, `multiselect` or `picklist`: an array of `{ "value", "label" }` objects. Any other entry is rejected. |
+| `options` | For a `select`, `multiselect` or `picklist`: an array of `{ "value", "label" }` objects. An option may add a `hint`. A `"pills"` control shows the picked option's `hint` in place of the field `hint`. Any other entry is rejected. |
 | `optionsFrom` | For a `select`: the data endpoint that returns the options at config time. |
 | `variant` | For a `select`: `"pills"` renders a radio group. |
 | `min`, `max` | For a `group`: the fewest and most entries. |

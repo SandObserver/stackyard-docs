@@ -3,6 +3,7 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { globSync } from 'node:fs';
 import { relative, join } from 'node:path';
 import { settingsSourceHash } from './settings-source.mjs';
+import { checkYard404 } from '../src/lib/yard-404/check.mjs';
 
 const DIST = 'dist';
 const SRC_ROOTS = ['src', 'scripts', 'public/api', 'public/icons', 'public/img'];
@@ -154,6 +155,8 @@ report('examples', [
     : []),
   ...html.flatMap((f) => [...read(f).matchAll(/data-sy-example="([^"]+)"/g)].map((m) => `${relative(DIST, f)}: no saved example "${m[1]}"`)),
 ]);
+
+report('404', checkYard404('stackyard', DIST));
 
 report('domain', html.filter((f) => read(f).includes('stackyard.example')).map((f) => relative(DIST, f)));
 

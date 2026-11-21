@@ -128,7 +128,7 @@ Neither is saved. `e2e/localisation.spec.js` loads the dashboard and Settings in
 ## Validation
 
 ```sh
-cd ui/test && node --test i18n.test.mjs i18n-reachability.test.mjs i18n-coverage.test.mjs widget-i18n.test.mjs i18n-markup.test.mjs
+(cd ui/test && node --test i18n.test.mjs i18n-reachability.test.mjs i18n-coverage.test.mjs widget-i18n.test.mjs i18n-markup.test.mjs)
 ```
 
 These run offline and contact no translation service.
@@ -158,11 +158,11 @@ In `widget.json`, write the key where the text would go:
 In the widget page, ask the toolbox:
 
 ```js
-import { loadStrings, wt } from '/js/widget-toolbox.js?v=1';
+import { loadStrings, wt } from '/js/widget-toolbox.js';
 await loadStrings();
 wt('ui.queriesBlocked', 'Queries Blocked');
 ```
 
-Resolution is the selected language, then the widget `en.json`, then the text passed in. The toolbox has no counted-message form. A widget that needs one selects the category itself with `Intl.PluralRules`.
+Resolution is the selected language, then the widget `en.json`, then the text passed in. `wtCount(key, count, { one, other })` reads a counted message, stored as `key_<category>` in the catalog. `{count}` is filled in the reader's digits.
 
 See [Build your first widget](/docs/create-a-widget/).

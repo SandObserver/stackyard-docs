@@ -4,7 +4,9 @@ description: What to check before opening a pull request for a new Stackyard wid
 next: false
 ---
 
-CI validates every manifest. Run the same check locally with `cd api && node --test`.
+CI validates every manifest. Run the same check locally with `npm test` in the repository root, after `npm ci --ignore-scripts`.
+
+`npm run typecheck` checks `data.js` and `demo.js` against the `WidgetCtx` type. `npm run typecheck:ui` checks the widget's other `.js` files. Both must pass.
 
 ## Files
 
@@ -13,7 +15,7 @@ CI validates every manifest. Run the same check locally with `cd api && node --t
 - A line under Widgets in the app `README.md`.
 - `data.js`, unless the widget runs entirely in the browser.
 - `index.html`.
-- `i18n/en.json`, plus one catalog per shipped language.
+- `i18n/en.json`, plus one catalog per dashboard language. Translations are preferred, not required. Without `i18n/`, put the text in `widget.json`.
 - `demo.js`, optional.
 
 ## Behavior

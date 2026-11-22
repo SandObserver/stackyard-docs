@@ -33,6 +33,8 @@ A widget message is one line, in place of the widget's data. Each names a kind o
 | `The token cannot read this. Give it the PVEAuditor role.` | App status | The token is valid but lacks a permission. |
 | `No container has both a homepage.name and a homepage.group label.` | App status | **Import from Docker Labels** found no container it could turn into an app. |
 | `Saving is turned off in the live demo.` | App status | The public demo is read-only. |
+| `Enter a poll interval from 10 to 3600 seconds.` | App status | A Live Activity poll interval is empty or out of range. Nothing was saved. |
+| `Enter the setup code from the container log.` | App status | The setup code field is empty. The code is in the container log, and a restart makes a new one. |
 | `(may be out of date)` | App status | A stale reading. The last poll failed and the previous value is shown. |
 | `The item limit is N. Remove some first.` | App status | A config can hold 5,000 items and widget rows. An install already over the limit can save if it does not grow. |
 | `Two rows in NAME share an id. Remove one of them, then save again.` | App status | A new or edited widget repeats a row id. |

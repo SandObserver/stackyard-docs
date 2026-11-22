@@ -1,5 +1,12 @@
 import { iconChain } from '/js/icons.js?v=76c29d43';
-import { widgetSrc, cardPreset, fixedAppearance, uniqueTitle, WIDGET_DESIGN } from '/js/widget-types.js?v=b0e8f76d';
+import {
+  widgetSrc,
+  cardPreset,
+  fixedAppearance,
+  overlayHref,
+  uniqueTitle,
+  WIDGET_DESIGN,
+} from '/js/widget-types.js?v=afec2dab';
 import {
   mk,
   clr,
@@ -9,17 +16,17 @@ import {
   renderEmptyState,
   mkWrap as _mkWrap,
   ICON_R,
-  mountScaledWidget,
   pageDir,
-  teardownWidgets,
   el,
   q,
   qa,
   setCentredText,
   setUserText,
-} from '/js/utils.js?v=c1d4e76c';
-import { t, currentLang } from '/js/i18n.js?v=99563c71';
+} from '/js/utils.js?v=457d9918';
+import { mountScaledWidget, teardownWidgets } from '/js/widget-frame.js?v=8e76d79b';
+import { t, currentLang } from '/js/i18n.js?v=82ba9da2';
 import { toneForColor } from '/js/label-contrast.js?v=a160c6d1';
+import { DEFAULT_WIDGET_SIZE } from '/js/limits.js?v=ff61256e';
 import {
   BASE_VW,
   mobileMetrics,
@@ -28,11 +35,11 @@ import {
   dockFit,
   WIDEST_PHONE,
 } from '/js/mobile-metrics.js?v=ae661544';
-import { animate, easing, glide, isScripted, requestFrame, stopGlide } from '/js/frame-motion.js?v=1d86154d';
-import { openFolderGlass } from '/js/glass.js?v=258316fb';
+import { animate, easing, glide, isScripted, requestFrame, stopGlide } from '/js/frame-motion.js?v=911f7c03';
+import { openFolderGlass } from '/js/glass.js?v=7c376881';
 import { fingerSpeed, rubberBand, settleMs, swipeSettle, SWIPE_LOCK_PX } from '/js/dashboard-logic.js?v=b4828b62';
 import { formatNumber } from '/js/format-number.js?v=263fa390';
-import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
+import { EASE_IOS, EASE_OUT } from '/js/motion-curve.js?v=7fea8800';
 
 /* Matches the --pill-inset transition in dashboard.css. */
 const PILL_MS = 250;
@@ -145,6 +152,7 @@ export function mkFolder(item) {
   a.type = 'button';
   a.className = 'icon';
   a.setAttribute('aria-label', folderName(item));
+  a.setAttribute('aria-haspopup', 'dialog');
   a.dataset.tileName = folderName(item);
   if (!showLabel) a.title = item.label || t('type.folder');
   a.onclick = () => {
@@ -436,10 +444,11 @@ function folderMotion(ov, parts, tile, panel) {
     const from = !still && tile?.isConnected ? tile.getBoundingClientRect() : null;
     if (!from?.width) return [0, 0, 1];
     const r = p.getBoundingClientRect();
-    const s = from.width / r.width;
+    const b = p !== panel && p.contains(panel) ? panel.getBoundingClientRect() : r;
+    const s = from.width / b.width;
     return [
-      from.left + from.width / 2 - r.left - (r.width * s) / 2,
-      from.top + from.height / 2 - r.top - (r.height * s) / 2,
+      from.left + from.width / 2 - r.left - (b.left - r.left) * s - (b.width * s) / 2,
+      from.top + from.height / 2 - r.top - (b.top - r.top) * s - (b.height * s) / 2,
       s,
     ];
   };
@@ -448,7 +457,7 @@ function folderMotion(ov, parts, tile, panel) {
   /** @param {string} prop @param {boolean} open */
   const timing = (prop, open) =>
     still
-      ? { duration: 150, delay: 0, easing: 'ease-out' }
+      ? { duration: 150, delay: 0, easing: EASE_OUT }
       : prop === 'opacity'
         ? open
           ? { duration: 120, delay: 0, easing: FADE_EASE }
@@ -575,7 +584,7 @@ export function openFolderDesktop(folder, tile) {
      tiles under the scrim were reachable by Tab and by a screen reader. */
   ov.showModal();
   ov.focus();
-  shrink = folderMotion(ov, [outer], tile, box);
+  shrink = folderMotion(ov, [outer], tile?.querySelector('.dyn-folder-box') ?? tile, box);
 }
 
 function mFolder(item, cw, rh, isz, sc) {
@@ -585,6 +594,7 @@ function mFolder(item, cw, rh, isz, sc) {
   a.type = 'button';
   a.className = 'dyn-mob-btn';
   a.setAttribute('aria-label', folderName(item));
+  a.setAttribute('aria-haspopup', 'dialog');
   a.dataset.tileName = folderName(item);
   css(a, { '--rh': rh + 'px' });
   let _opening = false;
@@ -816,6 +826,7 @@ export function openFolderMobile(folder, tile) {
   ov.addEventListener(
     'touchend',
     e => {
+      if (/** @type {Element} */ (e.target).closest?.('[popover]')) return;
       const touch = e.changedTouches[0],
         rb = box.getBoundingClientRect();
       if (touch.clientX < rb.left || touch.clientX > rb.right || touch.clientY < rb.top || touch.clientY > rb.bottom) {
@@ -895,7 +906,7 @@ export function buildMobile() {
       1,
       ...items()
         .filter(i => i.type === 'widget' && !i.hidden)
-        .map(i => (MOB_FOOTPRINT[i.widgetSize] || MOB_FOOTPRINT.medium)[1]),
+        .map(i => (MOB_FOOTPRINT[i.widgetSize] || MOB_FOOTPRINT[DEFAULT_WIDGET_SIZE])[1]),
     ),
   });
   css(document.body, { '--mcols': String(COLS), '--mrows': String(ROWS) });
@@ -914,7 +925,7 @@ export function buildMobile() {
       ...new Set(
         items()
           .filter(i => i.type === 'widget' && !i.hidden)
-          .map(i => i.widgetSize || 'medium'),
+          .map(i => i.widgetSize || DEFAULT_WIDGET_SIZE),
       ),
     ].map(sz => ({
       design: WIDGET_DESIGN[sz] || WIDGET_DESIGN.medium,
@@ -932,7 +943,7 @@ export function buildMobile() {
      is 0.424 of the icon it sits beside. */
   const wBR = Math.round(isz * 0.424);
 
-  const fp = it => (it.type !== 'widget' ? [1, 1] : MOB_FOOTPRINT[it.widgetSize] || MOB_FOOTPRINT.medium);
+  const fp = it => (it.type !== 'widget' ? [1, 1] : MOB_FOOTPRINT[it.widgetSize] || MOB_FOOTPRINT[DEFAULT_WIDGET_SIZE]);
 
   const inFolder = new Set(
     items()
@@ -1012,7 +1023,7 @@ export function buildMobile() {
 
   function makeWidgetCard(item) {
     const card = mk('div');
-    const sz = item.widgetSize || 'medium';
+    const sz = item.widgetSize || DEFAULT_WIDGET_SIZE;
     const design = WIDGET_DESIGN[sz] || WIDGET_DESIGN.medium;
     const wtype = item.widgetType || '';
     card.className = 'mob-widget-card';
@@ -1026,13 +1037,12 @@ export function buildMobile() {
       `flex-shrink:0;border-radius:${wBR}px;overflow:hidden;position:relative;`;
     /* An iframe swallows the touch, so the home pager never sees the swipe
        without the transparent layer. */
-    const overlayHref = item.url || item.href || item.widgetConfig?.scrutinyHref || item.widgetConfig?.linkUrl || null;
     mountScaledWidget(card, {
       src: widgetSrc(item, widgetReg(), { mobile: true, lang: currentLang() }),
       title: widgetTitle(item),
       design,
       iframeOpts: item.iframe,
-      overlayHref,
+      overlayHref: overlayHref(item, widgetReg()),
       mobile: true,
       swipe: () => CB().homeSwipe,
     });

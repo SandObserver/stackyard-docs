@@ -1,18 +1,19 @@
-import { carriesTypedValues, rejectionLines, sizesForView, widgetConfigMode } from '/js/admin-logic.js?v=06da6a19';
-import { initInlineEdit, PE_SVG, swapContent } from '/js/admin-shared.js?v=495be496';
+import { carriesTypedValues, rejectionLines, sizesForView, widgetConfigMode } from '/js/admin-logic.js?v=81fd47cf';
+import { initInlineEdit, PE_SVG, REQ_MARK, swapContent, syncRequiredLegend } from '/js/admin-shared.js?v=0f28a237';
 import { state } from '/js/admin-state.js?v=064b9b85';
-import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { t } from '/js/i18n.js?v=99563c71';
-import { iconSvg } from '/js/icon-set.js?v=361e54a5';
-import { createListbox } from '/js/listbox.js?v=384c0ad5';
-import { focusFirst, q, qa, qi } from '/js/utils.js?v=c1d4e76c';
-import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=8109f3fd';
+import { html, raw, setHtml } from '/js/html.js?v=48f9dc21';
+import { t } from '/js/i18n.js?v=82ba9da2';
+import { iconSvg } from '/js/icon-set.js?v=beda3062';
+import { DEFAULT_WIDGET_SIZE } from '/js/limits.js?v=ff61256e';
+import { createListbox } from '/js/listbox.js?v=c9cee787';
+import { focusFirst, q, qa, qi } from '/js/utils.js?v=457d9918';
+import { renderWidgetConfigForm } from '/js/widget-config-form.js?v=21b1393d';
 
 const SIZES_WITH_ICONS = new Set(['small', 'medium', 'large', 'xlarge']);
 
 const CUSTOM_SIZES = ['small', 'medium', 'large', 'xlarge'];
 function widgetSizes(type) {
-  return type === 'custom' ? CUSTOM_SIZES : state._widgetReg[type]?.sizes || ['medium'];
+  return type === 'custom' ? CUSTOM_SIZES : state._widgetReg[type]?.sizes || [DEFAULT_WIDGET_SIZE];
 }
 const SIZE_KEYS = {
   small: 'widgetCfg.sizeSmall',
@@ -26,7 +27,7 @@ export const sizeLabel = size => (SIZE_KEYS[size] ? t(SIZE_KEYS[size]) : size);
 
 export function buildWidgetForm(body, item) {
   const wt = item?.widgetType || 'custom';
-  const ws = item?.widgetSize || 'medium';
+  const ws = item?.widgetSize || DEFAULT_WIDGET_SIZE;
   const wc = item?.widgetConfig || {};
   state._wtype = wt;
   state._wsize = ws;
@@ -101,23 +102,25 @@ function _renderWidgetForm(body) {
   }
 
   const _sizeOpts = sizesForView(widgetSizes(state._wtype), state._widgetReg[state._wtype], state._wAutoCfg);
-  if (!_sizeOpts.includes(state._wsize)) state._wsize = _sizeOpts.includes('medium') ? 'medium' : _sizeOpts[0];
+  if (!_sizeOpts.includes(state._wsize))
+    state._wsize = _sizeOpts.includes(DEFAULT_WIDGET_SIZE) ? DEFAULT_WIDGET_SIZE : _sizeOpts[0];
   const sizeHdr = document.createElement('h2');
   sizeHdr.className = 'grp-hdr';
+  sizeHdr.id = 'wsize-hdr';
   sizeHdr.textContent = t('widgetCfg.size');
   body.appendChild(sizeHdr);
   const scard = document.createElement('div');
   scard.className = 'grp';
   setHtml(
     scard,
-    html`<div class="row tile-row"><div class="tile-grp">${_sizeOpts.map(s => html`<button type="button" class="tile-opt${s === state._wsize ? ' on' : ''}" aria-pressed="${String(s === state._wsize)}" data-size="${s}"><span class="tile-ico">${raw(iconSvg(SIZES_WITH_ICONS.has(s) ? s : 'medium', 38))}</span><span class="tile-cap">${sizeLabel(s)}</span></button>`)}</div></div>`,
+    html`<div class="row tile-row"><fieldset class="tile-grp" aria-labelledby="wsize-hdr">${_sizeOpts.map(s => html`<label class="tile-opt${s === state._wsize ? ' on' : ''}" data-size="${s}"><input type="radio" name="wsize" value="${s}"${raw(s === state._wsize ? ' checked' : '')}><span class="tile-ico">${raw(iconSvg(SIZES_WITH_ICONS.has(s) ? s : 'medium', 38))}</span><span class="tile-cap">${sizeLabel(s)}</span></label>`)}</fieldset></div>`,
   );
   body.appendChild(scard);
-  qa('.tile-opt', scard).forEach(b =>
-    b.addEventListener('click', () => {
-      state._wsize = b.dataset.size;
+  qa('.tile-opt input', scard).forEach(radio =>
+    radio.addEventListener('change', () => {
+      state._wsize = /** @type {HTMLInputElement} */ (radio).value;
       _renderWidgetForm(body);
-      focusFirst(q(`.tile-opt[data-size="${state._wsize}"]`, body));
+      focusFirst(q(`.tile-opt[data-size="${state._wsize}"] input`, body));
     }),
   );
 
@@ -148,6 +151,7 @@ function _renderWidgetForm(body) {
     state._autoFormSession = state._evSession;
   } else if (_mode === 'unavailable') _renderUnavailableConfig(body);
   else _renderCustomConfig(body);
+  syncRequiredLegend(body);
 }
 
 /* Its stored settings are held on the server and not sent here. A save leaves
@@ -189,7 +193,7 @@ function _renderCustomConfig(body) {
   body.appendChild(card);
   setHtml(
     card,
-    html`<div class="row ie-row" id="cust-url-row"><span class="rl">${t('widgetCfg.iframeUrl')} <span class="req">*</span></span><span class="rv${state._customUrl ? '' : ' is-ph'}">${state._customUrl ? state._customUrl : 'https://app.example.com/widget.html'}</span><input id="f-url" type="url" value="${state._customUrl || ''}" class="d-none"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
+    html`<div class="row ie-row" id="cust-url-row"><span class="rl">${t('widgetCfg.iframeUrl')}${REQ_MARK}</span><span class="rv${state._customUrl ? '' : ' is-ph'}">${state._customUrl ? state._customUrl : 'https://app.example.com/widget.html'}</span><input id="f-url" type="url" value="${state._customUrl || ''}" class="d-none" aria-required="true"><button class="pe" type="button">${raw(PE_SVG)}</button></div>`,
   );
   const tip = document.createElement('p');
   tip.className = 'grp-tip';

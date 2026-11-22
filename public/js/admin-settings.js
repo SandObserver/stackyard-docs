@@ -1,4 +1,4 @@
-import { renderColorControl } from '/js/admin-color-control.js?v=860d341e';
+import { renderColorControl } from '/js/admin-color-control.js?v=55a89c05';
 import { passwordRefusalKey, socketProbeAdvice } from '/js/admin-error.js?v=5abd7438';
 import {
   BLOCK,
@@ -9,16 +9,17 @@ import {
   settingsSaveBlocker,
   shouldWritePassword,
   wallpaperFileName,
-} from '/js/admin-logic.js?v=06da6a19';
+} from '/js/admin-logic.js?v=81fd47cf';
 import {
   advancedBase,
   applyGeneralFields,
+  configWrites,
   generalServerFields,
   labelsWith,
   planFieldSave,
-  serialWrites,
-} from '/js/admin-save-logic.js?v=6ebda0e2';
+} from '/js/admin-save-logic.js?v=2a82f10d';
 import {
+  announce,
   apiGet,
   apiPost,
   busyPress,
@@ -27,6 +28,7 @@ import {
   confirmSaved,
   errorAction,
   errorText,
+  failedSave,
   reveal,
   sectionSave,
   setStatus,
@@ -34,8 +36,9 @@ import {
   swapContent,
   toast,
   wireInlineEdit,
-} from '/js/admin-shared.js?v=495be496';
-import { BACKDROP } from '/js/background.js?v=eca5642a';
+} from '/js/admin-shared.js?v=0f28a237';
+import { state } from '/js/admin-state.js?v=064b9b85';
+import { BACKDROP } from '/js/background.js?v=51e46417';
 import { formatNumber } from '/js/format-number.js?v=263fa390';
 import {
   ALLOWED_HOSTS_MAX,
@@ -44,11 +47,11 @@ import {
   isLocalAddress,
   parseHostList,
 } from '/js/host-names.js?v=98bf44d7';
-import { t } from '/js/i18n.js?v=99563c71';
-import { confirmText, promptModal } from '/js/modal.js?v=84ba5279';
+import { t } from '/js/i18n.js?v=82ba9da2';
+import { confirmText, promptModal } from '/js/modal.js?v=93d3e755';
 import { contextWords, passwordMeter, passwordMismatch } from '/js/password-policy.js?v=e16ebd1a';
-import { setRevealed } from '/js/password-reveal.js?v=37f218b4';
-import { el, inp, qa, setUserText } from '/js/utils.js?v=c1d4e76c';
+import { setRevealed } from '/js/password-reveal.js?v=bdd477f5';
+import { el, inp, qa, setUserText } from '/js/utils.js?v=457d9918';
 
 /* Mirrors the server's rule: auth cannot be switched on with no password. */
 let _passwordSet = false;
@@ -65,6 +68,8 @@ let _srvBase = { form: {}, server: {} };
 let _bgBase = { form: {}, server: {} };
 let _unsplashKeySet = false;
 let _pveSecretSet = false;
+/** @type {{ applyBg: () => unknown }} */
+let _page = { applyBg: () => {} };
 
 /** The wallpaper link the server holds, for undoing a link that failed. */
 export const savedWallpaperUrl = () => _savedWallpaperUrl;
@@ -239,7 +244,9 @@ function renderBgColor(value) {
   renderColorControl(slot, { value, idPrefix: 'bg-color', label: t('appearance.color') });
 }
 
-export function loadSettings(c) {
+/** @param {any} c the config as loaded @param {typeof _page} page what the page owns */
+export function loadSettings(c, page) {
+  _page = page;
   const s = c.settings || {};
   const ld = inp('set-lbl-d');
   const lm = inp('set-lbl-m');
@@ -363,12 +370,13 @@ export function loadSettings(c) {
       text: t('confirm.revokeSessions'),
       confirmLabel: t('confirm.revokeBtn'),
       cancelLabel: t('common.cancel'),
+      destructive: true,
       irreversible: true,
     });
     if (!ok) return;
     secRevoke.disabled = true;
     try {
-      await apiPost('/api/auth/revoke-sessions', {});
+      await configWrites.run(() => apiPost('/api/auth/revoke-sessions', {}));
       location.reload();
     } catch (e) {
       toast(errorText(e), 'err');
@@ -529,26 +537,28 @@ export function showBgFields(type) {
   });
 }
 /** @param {Event} [e] */
-/* Switch saves run one after another. Overlapping saves read the same _rev,
-   so the second one is refused as stale and its switch is put back. */
-const switchSaves = serialWrites();
-
 /** Save a switch's change, and put it back if the save fails and no later
     click has moved it since.
     @param {Event} e @param {(c: any) => void} apply */
 function saveSwitchChange(e, apply) {
   const toggled = /** @type {HTMLInputElement} */ (e.target);
   const value = toggled.checked;
-  return switchSaves.run(async () => {
+  return configWrites.run(async () => {
+    const own = sectionSave(toggled);
+    /* A Save press in flight or just failed owns the mark. */
+    const taken = () => own?.getAttribute('aria-busy') === 'true' || !!own?.classList.contains('failed');
     try {
       const c = await apiGet('/api/config');
       c.settings = c.settings || {};
       apply(c.settings);
       await apiPost('/api/config', c);
-      confirmSaved(sectionSave(toggled));
+      state._settings = c.settings;
+      if (taken()) announce(t('toast.saved'));
+      else confirmSaved(own);
     } catch (err) {
       /* Assigning `checked` fires no event, so this does not loop. */
       if (toggled.checked === value) toggled.checked = !value;
+      if (!taken()) failedSave(own);
       toast(t('toast.saveFailed', { err: errorText(err) }), 'err', errorAction(err));
     }
   });
@@ -572,18 +582,25 @@ function saveSwitch(e, key) {
     settings[key] = value;
   });
 }
-async function saveWallpaper() {
+function saveWallpaper() {
+  const sent = wallpaperFormValues();
+  const form = readBackgroundFields();
+  return configWrites.run(() => writeWallpaper(sent, form));
+}
+
+/** @param {string[]} sent @param {{ background: any }} form */
+async function writeWallpaper(sent, form) {
   try {
-    const sent = wallpaperFormValues();
-    const form = readBackgroundFields();
     const bg = form.background;
     const type = bg.type;
     const c = await apiGet('/api/config');
     c.settings = c.settings || {};
-    if (fieldsToWrite(_bgBase, form, { background: storedBackground(c.settings) }).length) {
+    let written = fieldsToWrite(_bgBase, form, { background: storedBackground(c.settings) }).length > 0;
+    if (written) {
       c.settings.background = bg;
       await apiPost('/api/config', c);
       _bgBase = { form, server: { background: bg } };
+      state._settings = c.settings;
     }
     _savedWallpaperUrl = bg.url || '';
     /* After the main config. GET /api/config strips the key, so a config write
@@ -595,12 +612,15 @@ async function saveWallpaper() {
         await apiPost('/api/settings/unsplash-key', { apiKey: keyVal });
         keyEl.value = '';
         showUnsplashKeyState(true);
+        written = true;
       }
     }
+    if (written) _page.applyBg();
     /* Not the live form. A wallpaper that lands during the save would never be written. */
     _bgTrack?.reset(true, JSON.stringify(sent.with(-1, _val('bg-apikey-inp'))));
     confirmSaved(el('bg-save'));
   } catch (e) {
+    failedSave(el('bg-save'));
     toast(staleText(e) || t('toast.saveFailed', { err: errorText(e) }), 'err', errorAction(e));
   }
 }
@@ -664,6 +684,7 @@ async function saveServer() {
     try {
       probe = await apiPost('/api/docker/test', { url });
     } catch (e) {
+      failedSave(el('srv-save'));
       toast(t('toast.saveFailed', { err: errorText(e) }), 'err', errorAction(e));
       return;
     }
@@ -682,7 +703,8 @@ async function saveServer() {
     if (!probe.ok) socketWarning = t('toast.socketUrlUnverified', { reason: socketReason }) + hint;
   }
 
-  const write = (currentPassword, code) => writeServer({ enabled, pw, currentPassword, code, allowedHosts });
+  const write = (currentPassword, code) =>
+    configWrites.run(() => writeServer({ enabled, pw, currentPassword, code, allowedHosts }));
 
   /** @type {{ langChanged: boolean } | undefined} */
   let done;
@@ -746,6 +768,7 @@ async function saveServer() {
 
   if (failure || !done) {
     const key = passwordRefusalKey(failure);
+    failedSave(el('srv-save'));
     if (/** @type {any} */ (failure)?.protectionOff)
       toast(
         t('toast.protectionOffOthersNot', { err: staleText(failure) || errorText(failure) }),
@@ -830,6 +853,7 @@ async function writeServer({ enabled, pw, currentPassword, code, allowedHosts })
     if (changed.length) {
       applyGeneralFields(c.settings, changed, form);
       await apiPost('/api/config', c);
+      state._settings = c.settings;
     }
     if (!enabled) {
       const pwEl = inp('sec-pw');

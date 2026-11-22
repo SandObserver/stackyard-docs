@@ -1,13 +1,13 @@
 /* Optional toolbox for widget authors: data access, self-contained visuals and
    a fetch/render loop. */
 
-import { esc, html, setHtml } from '/js/html.js?v=c71f8903';
-import { isSafeLinkUrl } from '/js/link-url.js?v=54adb40f';
+import { esc, html, parseMarkup, raw, setHtml } from '/js/html.js?v=48f9dc21';
+import { isSafeLinkUrl } from '/js/link-url.js?v=0bffa1dd';
 import { jitter } from '/js/jitter.js?v=087a1fcf';
-import { errorState as _errorState, errorKind, errorCopy, kindGlyph } from '/js/widget-error.js?v=f8d3aca3';
+import { errorState as _errorState, errorKind, errorCopy, kindGlyph } from '/js/widget-error.js?v=7af0beb3';
 import { formatNumber, numberSymbols, setNumberLanguage } from '/js/format-number.js?v=263fa390';
 
-export { esc, html, setHtml };
+export { esc, html, parseMarkup, raw, setHtml };
 export { toneForColor } from '/js/label-contrast.js?v=a160c6d1';
 
 /* Escaping cannot make a CSS value safe. `red; background-image: url(...)`
@@ -116,7 +116,11 @@ export async function fetchData(endpoint, opts = {}) {
   const qs = query ? '?' + query : '';
   let r;
   for (let tries = 0; ; tries++) {
-    r = await fetch(`/api/widget-data/${encodeURIComponent(id)}${qs}`, { cache: 'no-store', signal: opts.signal });
+    r = await fetch(`/api/widget-data/${encodeURIComponent(id)}${qs}`, {
+      cache: 'no-store',
+      signal: opts.signal,
+      priority: _rate > 1 ? 'low' : 'auto',
+    });
     if (r.status !== 202) break;
     if (tries >= PENDING_TRIES) {
       throw Object.assign(new Error('The service did not respond in time.'), { status: 202, kind: 'timeout' });
@@ -389,6 +393,47 @@ export function reducedMotion(onChange) {
   }
   if (onChange) query?.addEventListener?.('change', e => onChange(!!e.matches));
   return !!query?.matches;
+}
+
+const SOFTWARE_KEY = 'sy-software-render';
+const SOFTWARE_RENDERER = /swiftshader|llvmpipe|softpipe|software/i;
+/** @type {boolean|null} */
+let _software = null;
+
+/** True when the browser draws without a graphics chip, so every animation
+    frame costs CPU. Checked once per tab.
+    @returns {boolean} */
+export function softwareRendering() {
+  if (_software !== null) return _software;
+  try {
+    const kept = sessionStorage.getItem(SOFTWARE_KEY);
+    if (kept === '0' || kept === '1') {
+      _software = kept === '1';
+      return _software;
+    }
+  } catch {
+    /* Storage blocked: check below. */
+  }
+  let soft = true;
+  try {
+    const gl = /** @type {WebGLRenderingContext|null} */ (
+      document.createElement('canvas').getContext('webgl', { failIfMajorPerformanceCaveat: true })
+    );
+    if (gl) {
+      const info = gl.getExtension('WEBGL_debug_renderer_info');
+      soft = SOFTWARE_RENDERER.test(info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '');
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    }
+  } catch {
+    soft = true;
+  }
+  _software = soft;
+  try {
+    sessionStorage.setItem(SOFTWARE_KEY, soft ? '1' : '0');
+  } catch {
+    /* Storage blocked: each widget checks for itself. */
+  }
+  return soft;
 }
 
 const _fitted = new Map();
@@ -851,6 +896,12 @@ export function errorLine(err) {
   return _t(key, text);
 }
 
+/** A failure line with the time since the last good data, for a screen reader.
+    @param {string} line @param {string} [since] @returns {string} */
+export function failureName(line, since) {
+  return since ? _fill(_t('describeFailure', '{text}, {since}'), { text: line, since }) : line;
+}
+
 /** The glyph the shared error caption draws for a failure.
     @param {unknown} err a caught error, or { kind } from a response
     @returns {Element} */
@@ -927,8 +978,17 @@ function asInternal(e) {
   return Object.assign(new Error(String(e)), { kind: 'internal' });
 }
 
+export const MIN_POLL_MS = 3000;
+let _floor = MIN_POLL_MS;
+
+/** @param {number} ms the shortest interval poll() waits, MIN_POLL_MS unless set */
+export function setPollFloor(ms) {
+  _floor = Number(ms) >= 0 ? Number(ms) : MIN_POLL_MS;
+}
+
 export function poll(opts = {}) {
-  const intervalFor = d => (typeof opts.interval === 'function' ? opts.interval(d) : opts.interval) || 30000;
+  const intervalFor = d =>
+    Math.max(_floor, (typeof opts.interval === 'function' ? opts.interval(d) : opts.interval) || 30000);
   /* A slow widget that waits for a second failure shows data two intervals old
      with no sign of it. */
   const staleAfter = () => (opts.staleAfter != null ? opts.staleAfter : intervalFor(lastData) >= SLOW_POLL_MS ? 1 : 2);

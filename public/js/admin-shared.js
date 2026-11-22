@@ -1,16 +1,16 @@
 /* Stateless helpers shared by the admin modules. Mutable state stays out. */
 
 import { errorAdvice } from '/js/admin-error.js?v=5abd7438';
-import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=06da6a19';
-import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=da14e1c7';
+import { recoversSession, toastHoldMs } from '/js/admin-logic.js?v=81fd47cf';
+import { blockingScreenFor, recoveryShown, showBlockingScreen } from '/js/config-recovery.js?v=ad222fc7';
 import { formatList, formatNumber } from '/js/format-number.js?v=263fa390';
-import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { t } from '/js/i18n.js?v=99563c71';
-import { iconSvg } from '/js/icon-set.js?v=361e54a5';
+import { html, raw, setHtml } from '/js/html.js?v=48f9dc21';
+import { t } from '/js/i18n.js?v=82ba9da2';
+import { iconSvg } from '/js/icon-set.js?v=beda3062';
 import { iconChain } from '/js/icons.js?v=76c29d43';
-import { slideBlock } from '/js/modal.js?v=84ba5279';
-import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
-import { el, isolate, q, qa } from '/js/utils.js?v=c1d4e76c';
+import { slideBlock } from '/js/modal.js?v=93d3e755';
+import { EASE_IOS } from '/js/motion-curve.js?v=7fea8800';
+import { el, isolate, plainInput, q, qa } from '/js/utils.js?v=457d9918';
 
 const API = '';
 
@@ -140,6 +140,7 @@ export function busyPress(btn, run, after) {
   return async (...args) => {
     if (btn.getAttribute('aria-busy') === 'true') return;
     const had = document.activeElement === btn;
+    clearSaveMark(btn);
     btn.disabled = true;
     btn.setAttribute('aria-busy', 'true');
     const cancel = afterDialogs(() => btn.classList.add('busy'));
@@ -167,17 +168,23 @@ export function rowBusy(node, run) {
     node.setAttribute('aria-busy', 'true');
     /** @type {HTMLElement|null} */
     let status = null;
+    let fill = 0;
     const cancel = afterDialogs(() => {
-      status = document.createElement('span');
-      status.className = 'row-status end';
-      status.setAttribute('role', 'status');
-      status.textContent = t('common.working');
-      node.closest('.row')?.querySelector('.row-btns')?.before(status);
+      const line = document.createElement('span');
+      status = line;
+      line.className = 'row-status end';
+      line.setAttribute('role', 'status');
+      node.closest('.row')?.querySelector('.row-btns')?.before(line);
+      /* Keep the delay. Text present when the region is inserted is not announced. */
+      fill = setTimeout(() => {
+        line.textContent = t('common.working');
+      }, 100);
     });
     try {
       await run(...args);
     } finally {
       cancel();
+      clearTimeout(fill);
       status?.remove();
       node.removeAttribute('aria-busy');
       node.disabled = false;
@@ -252,6 +259,91 @@ export function setStatus(st, tone, text, action = null) {
 /** @type {WeakMap<Element, number>} */
 const _savedTimers = new WeakMap();
 
+const SAVE_EASE = 'cubic-bezier(.35,.15,.25,1)';
+
+/** @param {Element} b */
+function resetSaveMark(b) {
+  for (const n of b.querySelectorAll('.sv-i, .sv-i *')) for (const a of n.getAnimations()) a.cancel();
+}
+
+/** @param {Element} b @param {boolean} ok */
+function playSaveMark(b, ok) {
+  const svg = b.querySelector('.sv-i');
+  if (!svg) return;
+  resetSaveMark(b);
+  const dots = [...svg.querySelectorAll('.sv-c')];
+  const marks = [...svg.querySelectorAll(ok ? '.sv-k' : '.sv-x')];
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fromDots = b.classList.contains('busy') && !still;
+  if (!fromDots) for (const d of dots) d.animate([{ opacity: 0 }], { duration: 0, fill: 'forwards' });
+  if (still) {
+    for (const m of marks) m.animate([{ strokeDashoffset: 0, opacity: 1 }], { duration: 0, fill: 'forwards' });
+    return;
+  }
+  const gather = fromDots ? 120 : 0;
+  if (fromDots) {
+    const to = ok ? [0, -6, -12] : [6, 0, -6];
+    dots.forEach((d, i) => {
+      d.animate(
+        [
+          { transform: 'translateX(0)', opacity: 1 },
+          { transform: `translateX(${to[i]}px)`, opacity: 1 },
+          { transform: `translateX(${to[i]}px)`, opacity: 0 },
+        ],
+        { duration: gather + 40, easing: 'cubic-bezier(.55,0,.45,1)', fill: 'forwards' },
+      );
+    });
+  }
+  for (const m of marks)
+    m.animate(
+      [
+        { strokeDashoffset: 1, opacity: 1 },
+        { strokeDashoffset: 0, opacity: 1 },
+      ],
+      {
+        duration: ok ? 240 : 180,
+        delay: gather,
+        easing: SAVE_EASE,
+        fill: 'both',
+      },
+    );
+  if (!ok)
+    svg.animate(
+      [
+        { transform: 'translateX(0)' },
+        { transform: 'translateX(-2px)' },
+        { transform: 'translateX(2px)' },
+        { transform: 'translateX(0)' },
+      ],
+      { duration: 200, delay: gather + 200, easing: 'ease-in-out' },
+    );
+}
+
+/** @param {Element} b */
+function clearSaveMark(b) {
+  clearTimeout(_savedTimers.get(b));
+  _savedTimers.delete(b);
+  b.classList.remove('saved', 'failed');
+  resetSaveMark(b);
+}
+
+/** @param {HTMLElement} b @param {'saved'|'failed'} cls @param {number} ms */
+function showSaveMark(b, cls, ms) {
+  clearSaveMark(b);
+  playSaveMark(b, cls === 'saved');
+  b.classList.add(cls);
+  _savedTimers.set(
+    b,
+    window.setTimeout(() => {
+      b.classList.remove(cls);
+      _savedTimers.set(
+        b,
+        window.setTimeout(() => resetSaveMark(b), 200),
+      );
+    }, ms),
+  );
+}
+
 /** Keep `quiet` for list moves. Otherwise the save announcement replaces the position
     announcement before a screen reader reads it.
     @param {Element|null|undefined} btn
@@ -260,17 +352,19 @@ const _savedTimers = new WeakMap();
 export function confirmSaved(btn, quiet = false) {
   const b = /** @type {HTMLElement|null|undefined} */ (btn);
   if (el('toast')?.classList.contains('err')) hideToast();
-  if (!b?.isConnected || !b.getClientRects().length || !b.querySelector('.sv-done')) {
+  if (!b?.isConnected || !b.getClientRects().length || !b.querySelector('.sv-i')) {
     if (!quiet) toast(t('toast.saved'));
     return;
   }
-  clearTimeout(_savedTimers.get(b));
-  b.classList.add('saved');
+  showSaveMark(b, 'saved', 1500);
   if (!quiet) announce(t('toast.saved'));
-  _savedTimers.set(
-    b,
-    window.setTimeout(() => b.classList.remove('saved'), 1500),
-  );
+}
+
+/** @param {Element|null|undefined} btn */
+export function failedSave(btn) {
+  const b = /** @type {HTMLElement|null|undefined} */ (btn);
+  if (!b?.isConnected || !b.getClientRects().length || !b.querySelector('.sv-i')) return;
+  showSaveMark(b, 'failed', 2000);
 }
 
 /** @param {Element|null} node */
@@ -311,8 +405,7 @@ export function showFieldError(row, message, { focus = true } = {}) {
     const pen = c.classList.contains('pe');
     if (c.tagName === 'BUTTON' && !pen && !c.classList.contains('row-dd-btn')) continue;
     if (!pen) c.setAttribute('aria-invalid', 'true');
-    const ids = (c.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
-    c.setAttribute('aria-describedby', [...ids, note.id].join(' '));
+    addDescribedBy(c, note.id);
   }
   const ac = new AbortController();
   _fieldErrWatch.set(box, ac);
@@ -353,11 +446,51 @@ export function clearFieldError(row) {
   }
   for (const c of qa('[aria-invalid="true"]', row)) c.removeAttribute('aria-invalid');
   if (!noteId) return;
-  for (const c of qa('[aria-describedby]', row)) {
-    const ids = (c.getAttribute('aria-describedby') || '').split(/\s+/).filter(id => id && id !== noteId);
-    if (ids.length) c.setAttribute('aria-describedby', ids.join(' '));
-    else c.removeAttribute('aria-describedby');
+  for (const c of qa('[aria-describedby]', row)) removeDescribedBy(c, noteId);
+}
+
+/** @param {Element|null|undefined} node @param {string} id */
+export function addDescribedBy(node, id) {
+  if (!node || !id) return;
+  const ids = (node.getAttribute('aria-describedby') || '').split(/\s+/).filter(Boolean);
+  if (!ids.includes(id)) node.setAttribute('aria-describedby', [...ids, id].join(' '));
+}
+
+/** @param {Element|null|undefined} node @param {string} id */
+export function removeDescribedBy(node, id) {
+  if (!node || !id) return;
+  const ids = (node.getAttribute('aria-describedby') || '').split(/\s+/).filter(x => x && x !== id);
+  if (ids.length) node.setAttribute('aria-describedby', ids.join(' '));
+  else node.removeAttribute('aria-describedby');
+}
+
+export const REQ_MARK = html` <span class="req" aria-hidden="true">*</span>`;
+
+export const REQ_MARKS_CHANGED = 'req-marks-changed';
+const _legendRoots = new WeakSet();
+
+/** @param {HTMLElement} root */
+export function syncRequiredLegend(root) {
+  if (!_legendRoots.has(root)) {
+    _legendRoots.add(root);
+    root.addEventListener(REQ_MARKS_CHANGED, () => syncRequiredLegend(root));
   }
+  const group = qa('.req', root)
+    .find(m => !m.closest('.req-legend'))
+    ?.closest('.grp');
+  const anchor = group?.closest('.wcf-group') ?? group;
+  const legends = qa('.req-legend', root);
+  if (anchor && legends.length === 1 && anchor.nextElementSibling === legends[0]) return;
+  for (const old of legends) old.remove();
+  if (!anchor) return;
+  const legend = document.createElement('p');
+  legend.className = 'grp-tip req-legend';
+  const mark = document.createElement('span');
+  mark.className = 'req';
+  mark.setAttribute('aria-hidden', 'true');
+  mark.textContent = '*';
+  legend.append(mark, ` ${t('common.required')}`);
+  anchor.after(legend);
 }
 
 /** @param {string} text */
@@ -512,8 +645,8 @@ export function setTogDisabled(input, disabled, describedById) {
   input.setAttribute('aria-disabled', disabled ? 'true' : 'false');
   input.closest('.tog')?.classList.toggle('tog-disabled', disabled);
   if (describedById) {
-    if (disabled) input.setAttribute('aria-describedby', describedById);
-    else input.removeAttribute('aria-describedby');
+    if (disabled) addDescribedBy(input, describedById);
+    else removeDescribedBy(input, describedById);
   }
   if (input.dataset.togGuard) return;
   input.dataset.togGuard = '1';
@@ -604,13 +737,6 @@ export function swapContent(node, apply) {
 
 export const PE_SVG = iconSvg('edit', 17);
 
-/** @param {HTMLInputElement} inp */
-function plainInput(inp) {
-  inp.setAttribute('autocapitalize', 'none');
-  inp.setAttribute('autocorrect', 'off');
-  inp.spellcheck = false;
-}
-
 /* `root` lets a caller wire a subtree that is not in the document yet. */
 /** A function placeholder is resolved on use, not at wiring time: this runs
     before the catalog is fetched, so a translated one has to be read later.
@@ -636,7 +762,14 @@ export function initInlineEdit(
 export function nameEditPen(row) {
   const labelEl = q('.rl', row);
   const pen = q('.pe', row);
-  if (labelEl && pen) pen.setAttribute('aria-label', t('common.editNamed', { name: labelEl.textContent.trim() }));
+  if (labelEl && pen) pen.setAttribute('aria-label', t('common.editNamed', { name: spokenText(labelEl).trim() }));
+}
+
+/** @param {Node} node @returns {string} the text without its aria-hidden parts */
+function spokenText(node) {
+  if (node.nodeType === 3) return node.textContent || '';
+  if (node.nodeType !== 1 || /** @type {Element} */ (node).getAttribute('aria-hidden') === 'true') return '';
+  return [...node.childNodes].map(spokenText).join('');
 }
 
 /** The same row behaviour for elements a caller already holds. `row` needs an id.

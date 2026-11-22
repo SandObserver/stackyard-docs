@@ -42,38 +42,74 @@ export function isSafeLinkUrl(value) {
 
 /* The link-bearing fields on a config item. Add a new one here. */
 export const LINK_FIELDS = Object.freeze(['href', 'url']);
-export const WIDGET_LINK_FIELDS = Object.freeze(['scrutinyHref', 'linkUrl']);
+
+/** A widget field that holds a link: marked `link: true`, or a text field
+    named `href` or ending in `Href`.
+    @param {any} f @returns {boolean} */
+export function isLinkField(f) {
+  if (!f || typeof f.key !== 'string') return false;
+  return f.link === true || (f.type === 'text' && /^href$|Href$/.test(f.key));
+}
+
+/** @param {unknown} fields @returns {string[]} */
+function linkFieldKeys(fields) {
+  if (!Array.isArray(fields)) return [];
+  return fields.filter(isLinkField).map(f => f.key);
+}
+
+/** @param {any} wc @param {unknown} fields
+    @returns {{ holder: any, key: string, path: string }[]} */
+function widgetLinks(wc, fields) {
+  const out = [];
+  if (!wc || typeof wc !== 'object' || !Array.isArray(fields)) return out;
+  for (const key of linkFieldKeys(fields)) if (Object.hasOwn(wc, key)) out.push({ holder: wc, key, path: key });
+  for (const group of fields) {
+    if (typeof group?.key !== 'string' || !Object.hasOwn(wc, group.key)) continue;
+    const keys = linkFieldKeys(group.fields);
+    const value = wc[group.key];
+    if (!keys.length || !value || typeof value !== 'object') continue;
+    if (group.type === 'object' && !Array.isArray(value)) {
+      for (const key of keys)
+        if (Object.hasOwn(value, key)) out.push({ holder: value, key, path: `${group.key}.${key}` });
+      continue;
+    }
+    if (group.type !== 'group' || !Array.isArray(value)) continue;
+    value.forEach((row, i) => {
+      if (!row || typeof row !== 'object') return;
+      for (const key of keys)
+        if (Object.hasOwn(row, key)) out.push({ holder: row, key, path: `${group.key}.${i}.${key}` });
+    });
+  }
+  return out;
+}
 
 /** Blank any unsafe link on the items, in place.
-    @param {Array<any>} items */
-export function sanitizeItemLinks(items) {
+    @param {Array<any>} items
+    @param {(widgetType: string) => unknown} [fieldsFor] a widget type's manifest fields */
+export function sanitizeItemLinks(items, fieldsFor) {
   for (const item of Array.isArray(items) ? items : []) {
     if (!item || typeof item !== 'object') continue;
     for (const f of LINK_FIELDS) {
       if (f in item && !isSafeLinkUrl(item[f])) item[f] = '';
     }
-    const wc = item.widgetConfig;
-    if (wc && typeof wc === 'object') {
-      for (const f of WIDGET_LINK_FIELDS) {
-        if (f in wc && !isSafeLinkUrl(wc[f])) wc[f] = '';
-      }
-    }
+    if (!fieldsFor || typeof item.widgetType !== 'string') continue;
+    for (const { holder, key } of widgetLinks(item.widgetConfig, fieldsFor(item.widgetType)))
+      if (!isSafeLinkUrl(holder[key])) holder[key] = '';
   }
   return items;
 }
 
 /** The first unsafe link on an item, or null.
-    @param {any} item @returns {{ field:string, value:string }|null} */
-export function firstUnsafeLink(item) {
+    @param {any} item
+    @param {(widgetType: string) => unknown} [fieldsFor] a widget type's manifest fields
+    @returns {{ field:string, value:string }|null} */
+export function firstUnsafeLink(item, fieldsFor) {
   if (!item || typeof item !== 'object') return null;
   for (const f of LINK_FIELDS) {
     if (f in item && !isSafeLinkUrl(item[f])) return { field: f, value: String(item[f]) };
   }
-  const wc = item.widgetConfig;
-  if (wc && typeof wc === 'object') {
-    for (const f of WIDGET_LINK_FIELDS) {
-      if (f in wc && !isSafeLinkUrl(wc[f])) return { field: `widgetConfig.${f}`, value: String(wc[f]) };
-    }
-  }
+  if (!fieldsFor || typeof item.widgetType !== 'string') return null;
+  for (const { holder, key, path } of widgetLinks(item.widgetConfig, fieldsFor(item.widgetType)))
+    if (!isSafeLinkUrl(holder[key])) return { field: `widgetConfig.${path}`, value: String(holder[key]) };
   return null;
 }

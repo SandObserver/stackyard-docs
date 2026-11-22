@@ -25,7 +25,7 @@ Sizes: Small, Medium.
     kind: 'The host Stackyard runs on',
     needs: 'Nothing',
     fields: [
-      ['Temperature', 'Needs `/sys/class/thermal` mounted into the container.'],
+      ['Temperature', 'Reads the host sensors under `/sys/class/hwmon`. A container sees them with no mount.'],
       ['Disk', 'Needs each mount path mounted into the container.'],
     ],
     notes: ['See Host mounts below.'],
@@ -102,11 +102,10 @@ Sizes: Small, Medium.
 
 ## Host mounts
 
-This Machine reads temperature and disk use from paths mounted into the Stackyard container:
+This Machine reads disk use from paths mounted into the Stackyard container:
 
 ```yaml
 volumes:
-  - /sys/class/thermal:/sys/class/thermal:ro
   - /mnt/your-drive:/mnt/your-drive:ro
 ```
 
@@ -116,7 +115,7 @@ The widget always shows three slots.
 
 <SettingList title="Settings for each slot" items={[
   { name: 'Resource', text: 'CPU, RAM, Temperature, Disk Mount, IO Wait or Processes.' },
-  { name: 'Thermal Zone or Sensor', text: 'Temperature only. A thermal zone number for This Machine, 0 by default. A sensor picked from the loaded list for the other sources.' },
+  { name: 'Sensor', text: 'Temperature only. A sensor picked from the loaded list. For This Machine, CPU (automatic) by default, which finds the CPU sensor and shows no reading when the host has none. A slot saved with a thermal zone number keeps reading that zone, listed as Thermal Zone N (can change after a restart), until you pick another sensor.' },
   { name: 'First and second disk', text: 'Disk Mount only. Mount paths for This Machine and Glances, filesystem names for Beszel, share names for Unraid, storage IDs such as `local-lvm` for Proxmox, pool names for TrueNAS. The second is optional. An empty Unraid share reads the whole array. An empty TrueNAS pool reads the first pool.' },
   { name: 'Color', text: 'The slot color. Defaults to blue.' },
 ]} />

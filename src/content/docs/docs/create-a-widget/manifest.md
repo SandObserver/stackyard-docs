@@ -130,10 +130,11 @@ A widget with no light design declares it, and keeps its dark card and dark inte
 | `optional` | When `true`, the field is not required to save. A required `secret` counts as missing only when nothing is stored. |
 | `cosmetic` | When `true`, changing the field keeps a stored `secret`. Use it only on a field that cannot change the server a secret is sent to, the user name sent with it, or a path on a user-entered server. Links, labels, colors and units qualify, and so does a value sent to a fixed vendor host, such as a profile ID or a user to look up. A repeated key needs it on every declaration. The keys a cosmetic picker `carries` count as cosmetic too. |
 | `plain` | When `true`, a `text` row turns off capitalisation, autocorrect and spell check. Use it for names that must match exactly, such as a pool or share. A key ending in `url`, `href`, `user`, `username`, `id` or `profile` gets this without it. |
+| `link` | When `true`, a `text` field holds a link. A save is refused when the link uses a scheme that can run script, such as `javascript:` or `data:`, at top level or in a `group` row. On a phone, tapping the widget opens the item's address, else the first filled `link` field that is shown. Only on a `text` field, and not inside an `object`. |
 | `transient` | When `true`, the field is sent to an `optionsFrom` fetch but not saved. Use it for a search box. Top-level fields only. |
 | `carries` | For a `select` with `optionsFrom`: extra config keys this picker writes, from the chosen option's `set` block. |
 | `showIf` | Shows the field only when a sibling matches: `{ "field": "provider", "equals": "adguard" }`, or `{ "field": "provider", "in": ["adguard", "pihole"] }`. Anything else is rejected. |
-| `options` | For a `select`, `multiselect` or `picklist`: an array of `{ "value", "label" }` objects. Any other entry is rejected. |
+| `options` | For a `select`, `multiselect` or `picklist`: an array of `{ "value", "label" }` objects. An option may add a `hint`. A `"pills"` control shows the picked option's `hint` in place of the field `hint`. Any other entry is rejected. |
 | `optionsFrom` | For a `select`: the data endpoint that returns the options at config time. |
 | `variant` | For a `select`: `"pills"` renders a radio group. |
 | `min`, `max` | For a `group`: the fewest and most entries. |

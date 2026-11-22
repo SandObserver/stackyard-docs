@@ -35,9 +35,10 @@ A widget that renders entirely in the browser, like [Clock](/docs/widgets/clock/
 | `ctx.serviceLink(own, url, path)` | Where the widget opens. `own` is the Link URL. `url` is the address the server reads. Without `path`, returns `own`, else `url` when a browser can reach it, else `''`. With `path`, returns that page under `ctx.serviceBase(own, url)`, or `own` when there is no base. A browser cannot reach a container name, `localhost` or a loopback address. |
 | `ctx.serviceBase(own, url)` | The address item pages go under, or `''`. A Link URL counts only when it is a bare http or https address, with no path, query or fragment. A blank Link URL falls back to `url` when a browser can reach it. |
 | `ctx.remember(map, key, value, cap)` | Stores `value` under `key` in a `Map` and returns it. Drops the oldest entries above `cap`, 32 by default. Use it for a module-level cache keyed by server. |
-| `ctx.metrics` | Host metrics: `cpuSample`, `ramPercent`, `cpuTemp`, `diskStats`, `procCount`, `uptimeSeconds`. Each is a function. `cpuSample()` is async and returns `{ cpu, iowait }`. They read `/proc` and `/sys`, so they report the host, not the container limits. |
+| `ctx.metrics` | Host metrics: `cpuSample`, `ramPercent`, `tempSensors`, `sensorTemps`, `diskStats`, `procCount`, `uptimeSeconds`. Each is a function. `cpuSample()` is async and returns `{ cpu, iowait }`. `tempSensors()` lists the temperature sensors as `{ id, label, chip, raw, file }`. `sensorTemps(keys)` takes `"cpu"` or sensor ids and returns degrees Celsius by key; keys with no reading are left out. They read `/proc` and `/sys`, so they report the host, not the container limits. |
 | `ctx.dispatchProvider(handlers, opts)` | Runs the handler for the provider the user picked. `opts.field` holds the key, `provider` by default. `opts.default` is the fallback key. |
 | `ctx.fail(message, opts)` | Reports a failure. Throws. `opts.kind` is one of `ctx.KIND`, `UPSTREAM` by default. |
+| `ctx.classify(e)` | Returns the `{ kind, detail }` the API reports for an error, with `detail` only when set. Use it to label a failure caught for one slot or row. |
 | `ctx.KIND` | `AUTH`, `INVALID`, `UPSTREAM`, `NETWORK`, `TIMEOUT`, `BLOCKED`, `INTERNAL`. See [API errors](/docs/contributing/api-errors/). |
 | `ctx.log` | The structured logger. |
 

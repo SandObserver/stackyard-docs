@@ -37,13 +37,40 @@ function summaryLink(ctx) {
   return ctx.serviceLink(c.href, c.beszelUrl, `/system/${encodeURIComponent(c.beszelSystem)}`);
 }
 
-/* Only a source that names its sensors offers the picker, so the local machine
-   has no handler here. */
 function sensorOptions(ctx) {
   return ctx.dispatchProvider(
-    { glances: glancesSensorOptions, beszel: beszelSensorOptions, unraid: unraidSensorOptions },
-    { field: 'statProvider' },
+    {
+      system: localSensorOptions,
+      glances: glancesSensorOptions,
+      beszel: beszelSensorOptions,
+      unraid: unraidSensorOptions,
+    },
+    { field: 'statProvider', default: 'system' },
   );
+}
+
+const LEGACY_ZONE = /^thermal_zone(\d+)$/;
+
+/* Must match tempKey in index.html. */
+function tempKey(slot) {
+  if (slot.localSensor) return slot.localSensor;
+  return Number.isInteger(slot.thermalZone) ? slot.thermalZone : 0;
+}
+
+function localSensorOptions({ metrics, row }) {
+  /** @type {{ value: string, label: string, labelKey?: string, labelVars?: Record<string, string> }[]} */
+  const options = [{ value: 'cpu', label: 'CPU (automatic)', labelKey: 'slots.sensor.opt.cpu' }];
+  const legacy = LEGACY_ZONE.exec(String(row?.localSensor ?? ''));
+  if (legacy) {
+    options.push({
+      value: row.localSensor,
+      label: `Thermal Zone ${legacy[1]} (can change after a restart)`,
+      labelKey: 'slots.sensor.opt.zone',
+      labelVars: { n: legacy[1] },
+    });
+  }
+  for (const s of metrics.tempSensors()) options.push({ value: s.id, label: s.label });
+  return { options };
 }
 
 /* Mount paths come from the widget's disk slots, then the global
@@ -67,37 +94,31 @@ async function systemSummaryLocal({ config, settings, metrics, params }) {
   const procs = metrics.procCount();
   const uptime = metrics.uptimeSeconds();
 
-  const zones = new Set([0]);
-  for (const s of slots) if (s.type === 'temp' && Number.isInteger(s.thermalZone)) zones.add(s.thermalZone);
-  const temps = {};
-  for (const z of zones) {
-    const t = metrics.cpuTemp(z);
-    if (t !== null) temps[z] = t;
-  }
+  const keys = slots.filter(s => s.type === 'temp').map(tempKey);
+  const temps = keys.length ? metrics.sensorTemps(keys) : {};
 
   return {
     cpu,
     ram,
-    temp: temps[0] ?? null,
     temps,
     disks,
     iowait,
     procs,
     uptime,
-    history: params?.get('seed') === '1' ? seedHistory(metrics, zones) : undefined,
+    history: params?.get('seed') === '1' ? seedHistory(metrics, keys) : undefined,
   };
 }
 
 /* Charts start empty and gain one point per tick, so a fresh demo shows a flat
    widget for minutes. Only the demo host supplies a past. */
-function seedHistory(metrics, zones) {
+function seedHistory(metrics, keys) {
   if (typeof metrics.series !== 'function') return undefined;
   /* The series ends at the reading this same response reports live, and the
      widget appends that reading to the seed. Stop one step short, or the chart
      draws the same value twice at its right edge. */
   const past = kind => metrics.series(kind, SEED_POINTS + 1, SEED_STEP_SEC).slice(0, -1);
   const temps = {};
-  for (const z of zones) temps[z] = past('temp');
+  for (const k of keys) temps[k] = past('temp');
   return {
     cpu: past('cpu'),
     ram: past('ram'),
@@ -535,9 +556,9 @@ async function unraidSensorOptions(ctx) {
 const KB = 1024;
 const kbToGb = v => (Number(v) || 0) / KB ** 2;
 
-/* A named slot is a user share. A blank one is the array as a whole. */
+/* A named slot is a user share. '/' is the array as a whole. */
 function unraidDisk(data, name) {
-  if (!name) {
+  if (name === '/') {
     const kb = data.array?.capacity?.kilobytes || {};
     const total = Number(kb.total) || 0;
     const used = Number(kb.used) || 0;
@@ -555,10 +576,11 @@ function unraidDisk(data, name) {
 async function systemSummaryUnraid(ctx) {
   const slots = ctx.config.slots || [];
   const wants = type => slots.some(s => s.type === type);
+  /* The widget looks an empty slot up as '/'. */
   const mounts = new Set();
   for (const s of slots) {
     if (s.type !== 'disk') continue;
-    mounts.add(s.primary || '');
+    mounts.add(s.primary || '/');
     if (s.secondary) mounts.add(s.secondary);
   }
 
@@ -566,8 +588,8 @@ async function systemSummaryUnraid(ctx) {
      asked for when a slot needs them. */
   const parts = [`metrics { cpu { percentTotal } memory { percentTotal }${wants('temp') ? ' ' + UNRAID_TEMPS : ''} }`];
   parts.push('info { os { uptime } }');
-  if ([...mounts].some(m => m)) parts.push('shares { name size used free }');
-  if (mounts.has('')) parts.push('array { capacity { kilobytes { total used } } }');
+  if ([...mounts].some(m => m !== '/')) parts.push('shares { name size used free }');
+  if (mounts.has('/')) parts.push('array { capacity { kilobytes { total used } } }');
 
   const data = await unraidQuery(ctx, `{ ${parts.join(' ')} }`);
   const temps = unraidTemps(data.metrics?.temperature);
@@ -814,6 +836,7 @@ const _netPrev = new Map();
 function rateFromTotals(ctx, key, at, rx, tx) {
   const prev = _netPrev.get(key);
   if (prev && at <= prev.at) return prev.rate;
+  /** @type {{ rx: number, tx: number } | null} */
   let rate = null;
   /* Counters that went backwards mean the interface was reset or replaced.
      Skip the window rather than report a negative rate. */

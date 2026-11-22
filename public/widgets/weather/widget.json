@@ -16,11 +16,13 @@
       "options": [
         {
           "value": "openmeteo",
-          "label": "provider.opt.openmeteo"
+          "label": "provider.opt.openmeteo",
+          "hint": "provider.hint.openmeteo"
         },
         {
           "value": "openweather",
-          "label": "provider.opt.openweather"
+          "label": "provider.opt.openweather",
+          "hint": "provider.hint.openweather"
         }
       ]
     },
@@ -91,6 +93,7 @@
     {
       "key": "href",
       "type": "text",
+      "link": true,
       "label": "href.label",
       "placeholder": "href.placeholder",
       "optional": true,

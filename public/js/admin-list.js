@@ -11,8 +11,8 @@
    The filter and the collapsed folders are in admin-state.js, because the page
    reads and writes them too. */
 
-import { initDrag, redrawHeld, wireDockZone, wireRowDrag } from '/js/admin-drag.js?v=f9ca43d1';
-import { listGroup } from '/js/admin-drag-logic.js?v=4824d269';
+import { initDrag, redrawHeld, wireDockZone, wireRowDrag } from '/js/admin-drag.js?v=a9aede9a';
+import { listGroup } from '/js/admin-drag-logic.js?v=7033af1f';
 import {
   filterActive,
   folderChildren,
@@ -21,21 +21,21 @@ import {
   reorderItems,
   shownChildren,
   topLevelRows,
-} from '/js/admin-logic.js?v=06da6a19';
-import { snapshotItems } from '/js/admin-save-logic.js?v=6ebda0e2';
-import { announce, paintIcon, toast } from '/js/admin-shared.js?v=495be496';
+} from '/js/admin-logic.js?v=81fd47cf';
+import { snapshotItems } from '/js/admin-save-logic.js?v=2a82f10d';
+import { announce, paintIcon, toast } from '/js/admin-shared.js?v=0f28a237';
 import { collapsedFolders, filter, state } from '/js/admin-state.js?v=064b9b85';
-import { sizeLabel } from '/js/admin-widget-form.js?v=93bb034e';
+import { sizeLabel } from '/js/admin-widget-form.js?v=30b500f1';
 import { formatNumber } from '/js/format-number.js?v=263fa390';
-import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { t } from '/js/i18n.js?v=99563c71';
-import { iconSvg } from '/js/icon-set.js?v=361e54a5';
-import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
-import { EASE_IOS } from '/js/motion-curve.js?v=43439f5c';
+import { html, raw, setHtml } from '/js/html.js?v=48f9dc21';
+import { t } from '/js/i18n.js?v=82ba9da2';
+import { iconSvg } from '/js/icon-set.js?v=beda3062';
+import { DEFAULT_WIDGET_SIZE, DOCK_MAX } from '/js/limits.js?v=ff61256e';
+import { EASE_IOS } from '/js/motion-curve.js?v=7fea8800';
 import { pageTheme } from '/js/palette.js?v=3fb8ae43';
 import { SETTINGS_ICON, SETTINGS_ICON_LIGHT } from '/js/settings-icon.js?v=4079b66a';
-import { clr, el, focusFirst, initial, isolate, qa, setUserText } from '/js/utils.js?v=c1d4e76c';
-import { widgetGlyph } from '/js/widget-glyphs.js?v=aef2eec0';
+import { clr, el, focusFirst, initial, isolate, qa, setUserText } from '/js/utils.js?v=457d9918';
+import { widgetGlyph } from '/js/widget-glyphs.js?v=603f2e9a';
 
 /** @type {{ openModal: (id: string|null) => void,
              openFolderPicker: (folderId: string) => void,
@@ -226,7 +226,7 @@ function mkRow(item, { indent = false, childIdx = null, folderId = null, top = {
   } else if (item.type === 'widget') {
     /* The type when the widget declares one, the size otherwise. */
     const glyph = widgetGlyph(state._widgetReg?.[item.widgetType]?.glyph);
-    ico.appendChild(svgNode(glyph || SIZE_ICONS[item.widgetSize] || SIZE_ICONS.medium));
+    ico.appendChild(svgNode(glyph || SIZE_ICONS[item.widgetSize] || SIZE_ICONS[DEFAULT_WIDGET_SIZE]));
   } else if (item.system === 'settings') {
     ico.style.background = clr('auto');
     const img = document.createElement('img');
@@ -250,7 +250,7 @@ function mkRow(item, { indent = false, childIdx = null, folderId = null, top = {
     nm.setAttribute('aria-expanded', String(!collapsed));
     nm.setAttribute('aria-label', t(collapsed ? 'folder.expandAria' : 'folder.collapseAria', { name: item.label }));
     const chevron = document.createElement('span');
-    chevron.style.cssText = 'font-size:10px;color:var(--dm);transition:transform .15s;flex-shrink:0;';
+    chevron.style.cssText = 'font-size:.625rem;color:var(--dm);transition:transform .15s;flex-shrink:0;';
     chevron.textContent = '▼';
     chevron.style.transform = collapsed
       ? document.dir === 'rtl'
@@ -283,7 +283,7 @@ function mkRow(item, { indent = false, childIdx = null, folderId = null, top = {
   if (item.type === 'widget') {
     const wt = item.widgetType || 'custom';
     const wtLabel = state._widgetReg?.[wt]?.label || t('widgetCfg.typeCustom');
-    mt.textContent = t('widgetCfg.meta', { type: wtLabel, size: sizeLabel(item.widgetSize || 'medium') });
+    mt.textContent = t('widgetCfg.meta', { type: wtLabel, size: sizeLabel(item.widgetSize || DEFAULT_WIDGET_SIZE) });
   } else if (item.type === 'folder')
     mt.textContent = t('folder.appsCount', { count: shownChildren(state.items, item).length });
   else if (item.system === 'settings') mt.textContent = t('home.opensSettings');
@@ -519,5 +519,32 @@ export function syncFilterUI() {
     const on = c.dataset.flt === filter.type;
     c.classList.toggle('on', on);
     c.setAttribute('aria-pressed', String(on));
+  });
+}
+
+let _filterTimer;
+function runFilter() {
+  applyFilter();
+  if (filterActive(filter)) announce(t('list.matchCount', { count: filterMatchCount() }));
+}
+
+/** Filter the list as the search box is typed in and as a type chip is picked. */
+export function wireFilter() {
+  const s = /** @type {HTMLInputElement|null} */ (el('al-search'));
+  if (s)
+    s.addEventListener('input', () => {
+      clearTimeout(_filterTimer);
+      _filterTimer = setTimeout(() => {
+        if (isReordering()) return;
+        filter.q = s.value.trim();
+        runFilter();
+      }, 120);
+    });
+  qa('#al-filter .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      filter.type = c.dataset.flt;
+      syncFilterUI();
+      runFilter();
+    });
   });
 }

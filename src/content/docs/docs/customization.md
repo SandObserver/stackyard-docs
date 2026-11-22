@@ -25,7 +25,7 @@ Browsers only allow **Keep Screen Awake** over HTTPS. On a plain HTTP address th
 
 
 <figure class="sy-shot">
-  <img class="sy-shot__light" src="/img/admin/appearance-bf243557.png" alt="The Appearance section of Settings" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-c54c7e01.png" alt="The Appearance section of the admin UI" loading="lazy">
+  <img class="sy-shot__light" src="/img/admin/appearance-b18849de.png" alt="The Appearance section of Settings" loading="lazy"><img class="sy-shot__dark" src="/img/admin/appearance-dark-0751dd29.png" alt="The Appearance section of the admin UI" loading="lazy">
   <figcaption>Appearance, in Settings.</figcaption>
 </figure>
 
@@ -78,7 +78,7 @@ Persian is right to left. The whole layout flips, not only the text.
 
 Stackyard has a real mobile layout, not a shrunken desktop one. The grid re-flows, the search bar moves within thumb reach, and the settings sidebar becomes a tab bar.
 
-Add it to your home screen and it opens in its own window, without browser chrome.
+Add it to your home screen and it opens in its own window, without browser chrome. Chrome and Edge install it only over HTTPS or on localhost, not from a plain HTTP address on your network.
 
 :::note
 There is no offline mode, by design. Every tile is live, so a cached copy would show stale badges and widget data.

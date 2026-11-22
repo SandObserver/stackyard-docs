@@ -1,6 +1,7 @@
 // @ts-check
-import { folderChildren } from '/js/admin-logic.js?v=06da6a19';
+import { folderChildren } from '/js/admin-logic.js?v=81fd47cf';
 import { BADGE_DEFAULT, MAX_LABELS } from '/js/badge-logic.js?v=7112fd10';
+import { generalKeysIn, SERVER, TOP } from '/js/settings-schema.js?v=b9da9301';
 
 /* Keep this module free of the DOM. The DOM reads stay in doSave. */
 
@@ -188,15 +189,8 @@ export function restoreBody(file, live, keepBackground = false) {
   };
 }
 
-const GENERAL_SERVER_FIELDS = [
-  'hostIp',
-  'healthChecks',
-  'socketProxyUrl',
-  'hideHealthyBadge',
-  'proxmox',
-  'allowedHosts',
-];
-const GENERAL_TOP_FIELDS = ['logLevel', 'language'];
+export const GENERAL_SERVER_FIELDS = generalKeysIn(SERVER);
+export const GENERAL_TOP_FIELDS = generalKeysIn(TOP);
 
 /** The General values as the server holds them, one entry per field.
     @param {any} settings @returns {Record<string, unknown>} */
@@ -260,6 +254,11 @@ export function serialWrites() {
     },
   };
 }
+
+/** Every admin write that posts /api/config or bumps its revision runs here,
+    and reads the config inside its turn. Two writes that overlap read the same
+    revision, and the server refuses the second as stale. */
+export const configWrites = serialWrites();
 
 /** Put `item` where the item with `id` currently is, or append it. Match by id,
     never by position: a position goes stale as soon as items move, and writing
@@ -352,11 +351,31 @@ export function activityAuth(v) {
   };
 }
 
+export const POLL_MIN = 10;
+export const POLL_MAX = 3600;
+
+/** @param {unknown} value the typed poll interval
+    @returns {number|null} whole seconds from POLL_MIN to POLL_MAX, or null */
+export function pollSeconds(value) {
+  const typed = typeof value === 'string' ? value.trim() : value;
+  if (typed === '' || typed == null) return null;
+  const n = Number(typed);
+  return Number.isInteger(n) && n >= POLL_MIN && n <= POLL_MAX ? n : null;
+}
+
+/** @param {unknown} value @returns {number} */
+function keptPoll(value) {
+  const n = Number.parseInt(String(value ?? '') || '30', 10);
+  return Number.isNaN(n) ? 30 : Math.min(POLL_MAX, Math.max(POLL_MIN, n));
+}
+
 /** @param {any} v @param {any} [orig] @param {Iterable<string>} [takenIds] */
 export function buildAppItem(v, orig, takenIds = []) {
   /* A key, not a sentence. This module stays free of imports. */
   if (!v.label) return { errorKey: 'toast.nameRequired' };
   if (!v.href) return { errorKey: 'toast.urlRequired' };
+  const poll = pollSeconds(v.actInt);
+  if (v.actEn && poll == null) return { errorKey: 'toast.pollRange' };
   const DEFCOL = '#0289ff';
   /* One badges any count above zero, which is the default, so it is not stored. */
   const custMin = Number.isFinite(v.custMin) && v.custMin > 1 ? Math.floor(v.custMin) : undefined;
@@ -406,7 +425,7 @@ export function buildAppItem(v, orig, takenIds = []) {
           extract: spaths.length === 1 ? spaths[0] : spaths.length > 1 ? spaths.map(p => ({ path: p })) : undefined,
           labels: combine ? undefined : labels,
           combine: combine || undefined,
-          interval: Math.max(10, v.actInt),
+          interval: v.actEn ? poll : keptPoll(v.actInt),
           custom: combinedCustom || customObj,
         },
         staticBadge: staticBadgeObj,

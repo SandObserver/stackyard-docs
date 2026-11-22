@@ -154,6 +154,14 @@ A definition that is refused is not listed, and the reason is written to the con
 
 Run `docker logs <container>` and look for the refusal at startup. See [Widget checklist](/docs/create-a-widget/checklist/).
 
+### The log warns about inline script in a widget
+
+The warning reads `widget registry: inline script found, the next release blocks it`, and names the widget folder and its pages. The widget still works in this release.
+
+Move the code from the page's `<script>` into a file next to the page, and load it with `<script type="module" src="widget.js"></script>`. Replace `on...=` attributes with `addEventListener`. See [Widget page](/docs/create-a-widget/widget-page/#script-in-a-file).
+
+The bundled widgets already load their code from a file. A copy of a bundled widget made before this release still has inline script. Copy it again from the current release.
+
 ## Settings that do not apply
 
 ### A setting has no effect

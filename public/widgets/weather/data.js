@@ -150,10 +150,8 @@ function airScale(config) {
   if (typeof config.countryCode === 'string' && config.countryCode) {
     return EAQI_CODES.has(config.countryCode.toUpperCase()) ? 'eu' : 'us';
   }
-  const country = String(config.city || '')
-    .split(',')
-    .pop()
-    .trim();
+  const parts = String(config.city || '').split(',');
+  const country = (parts.at(-1) ?? '').trim();
   return EAQI_COUNTRIES.has(country) ? 'eu' : 'us';
 }
 
@@ -235,6 +233,7 @@ module.exports = async function (ctx) {
     temp: Math.round(temp),
     usedFeels: useFeels,
     units: units,
+    source: ow ? 'openweather' : 'openmeteo',
     code: w.code,
     ...(w.condition && { condition: w.condition }),
     isDay: w.isDay,

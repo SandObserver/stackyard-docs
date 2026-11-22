@@ -16,11 +16,11 @@ import {
   edgeScrollSpeed,
   folderRowZone,
   pastLiftSlop,
-} from '/js/admin-drag-logic.js?v=4824d269';
-import { DOCK_MAX } from '/js/limits.js?v=4b70a7dd';
+} from '/js/admin-drag-logic.js?v=7033af1f';
+import { DOCK_MAX } from '/js/limits.js?v=ff61256e';
 import { state } from '/js/admin-state.js?v=064b9b85';
-import { snapshotItems } from '/js/admin-save-logic.js?v=6ebda0e2';
-import { qa } from '/js/utils.js?v=c1d4e76c';
+import { snapshotItems } from '/js/admin-save-logic.js?v=2a82f10d';
+import { qa } from '/js/utils.js?v=457d9918';
 
 /** @type {(before: unknown) => void} */
 let _save = () => {};

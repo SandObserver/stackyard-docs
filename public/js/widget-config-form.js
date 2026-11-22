@@ -1,25 +1,34 @@
 /* Renders a widget's declared `fields` into a config form and reads the values
    back. Each builder returns { el, get, control, liveValue }. */
 
-import { t } from '/js/i18n.js?v=99563c71';
-import { html, raw, setHtml } from '/js/html.js?v=c71f8903';
-import { apiPost, fadeIn, PE_SVG, reveal, wireInlineEdit } from '/js/admin-shared.js?v=495be496';
-import { createListbox } from '/js/listbox.js?v=384c0ad5';
-import { renderColorControl } from '/js/admin-color-control.js?v=860d341e';
+import { t } from '/js/i18n.js?v=82ba9da2';
+import { html, raw, setHtml } from '/js/html.js?v=48f9dc21';
+import {
+  addDescribedBy,
+  apiPost,
+  fadeIn,
+  PE_SVG,
+  REQ_MARK,
+  REQ_MARKS_CHANGED,
+  reveal,
+  wireInlineEdit,
+} from '/js/admin-shared.js?v=0f28a237';
+import { createListbox } from '/js/listbox.js?v=c9cee787';
+import { renderColorControl } from '/js/admin-color-control.js?v=55a89c05';
 import {
   seedCarried,
   applyOptionSet,
   collectFieldValues,
   requiredFieldMissing,
   groupBounds,
-  visibleFieldFlags,
   isPlainField,
-} from '/js/admin-logic.js?v=06da6a19';
+} from '/js/admin-logic.js?v=81fd47cf';
 import { optionsErrorAdvice, TONE } from '/js/admin-error.js?v=5abd7438';
-import { qi } from '/js/utils.js?v=c1d4e76c';
+import { qi } from '/js/utils.js?v=457d9918';
 import { formatNumber } from '/js/format-number.js?v=263fa390';
 import { SAVED_ROW } from '/js/saved-row.js?v=44039df6';
-import { slideBlock } from '/js/modal.js?v=84ba5279';
+import { visibleFieldFlags } from '/js/widget-types.js?v=afec2dab';
+import { slideBlock } from '/js/modal.js?v=93d3e755';
 
 /* A counter, not randomness. Six base-36 characters collide plausibly over a
    long session, and an id that changes per run cannot be asserted on. */
@@ -27,9 +36,20 @@ let _seq = 0;
 const uniqueId = prefix => `${prefix}-${++_seq}`;
 
 function _tag(field) {
-  return field.optional
-    ? html` <span class="opt-span">(${t('app.optional')})</span>`
-    : html` <span class="req">*</span>`;
+  return field.optional ? html` <span class="opt-span">(${t('app.optional')})</span>` : REQ_MARK;
+}
+
+/** @param {boolean} required */
+const _ariaRequired = required => raw(required ? ' aria-required="true"' : '');
+
+/** @param {Element} wrap @param {string} text @param {(Element|null|undefined)[]} controls */
+function _hint(wrap, text, controls) {
+  const h = document.createElement('p');
+  h.className = 'grp-tip in-card';
+  h.id = uniqueId('wcf-hint');
+  h.textContent = text;
+  wrap.appendChild(h);
+  for (const c of controls) addDescribedBy(c, h.id);
 }
 
 function _ieRow(field, value, inputType) {
@@ -40,7 +60,7 @@ function _ieRow(field, value, inputType) {
   row.id = uniqueId('wcf-ie');
   setHtml(
     row,
-    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv${has ? '' : ' is-ph'}">${has ? value : ph}</span><input class="row-inp d-none" type="${inputType}" autocomplete="off" value="${has ? value : field.default != null ? field.default : ''}"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE_SVG)}</button>`,
+    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv${has ? '' : ' is-ph'}">${has ? value : ph}</span><input class="row-inp d-none" type="${inputType}" autocomplete="off"${_ariaRequired(!field.optional)} value="${has ? value : field.default != null ? field.default : ''}"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE_SVG)}</button>`,
   );
   const inp = qi('.row-inp', row);
   wireInlineEdit(row, inp, {
@@ -62,26 +82,25 @@ function _ieRow(field, value, inputType) {
   if (field.hint) {
     const w = document.createElement('div');
     w.appendChild(row);
-    const h = document.createElement('p');
-    h.className = 'grp-tip in-card';
-    h.textContent = field.hint;
-    w.appendChild(h);
+    _hint(w, field.hint, [inp, row.querySelector('.pe')]);
     return { el: w, get, control: inp, liveValue: () => inp.value };
   }
   return { el: row, get, control: inp, liveValue: () => inp.value };
 }
 
 /* ── Secret: shows Configured / Not set, edit reveals a password input. Blank = keep. ── */
-function _secret(field, isSet) {
+function _secret(field, isSet, typed) {
   const row = document.createElement('div');
   row.className = 'row ie-row';
   row.id = uniqueId('wcf-secret');
   const display = isSet ? t('common.configured') : t('common.notSet');
+  const carried = typeof typed === 'string' && typed.trim() !== '';
   setHtml(
     row,
-    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv is-ph">${display}</span><input class="row-inp d-none" type="password" autocomplete="new-password"><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE_SVG)}</button>`,
+    html`<span class="rl">${field.label}${_tag(field)}</span><span class="rv is-ph">${carried ? t('widgetCfg.newValueSet') : display}</span><input class="row-inp d-none" type="password" autocomplete="new-password"${_ariaRequired(!field.optional && !isSet)}><button class="pe" type="button" aria-label="${t('common.editNamed', { name: field.label })}">${raw(PE_SVG)}</button>`,
   );
   const inp = qi('.row-inp', row);
+  if (carried) inp.value = typed;
   wireInlineEdit(row, inp, {
     type: 'password',
     placeholder: isSet ? t('widgetCfg.replaceSecret') : field.placeholder || '',
@@ -100,10 +119,7 @@ function _secret(field, isSet) {
   if (hint) {
     const w = document.createElement('div');
     w.appendChild(row);
-    const h = document.createElement('p');
-    h.className = 'grp-tip in-card';
-    h.textContent = hint;
-    w.appendChild(h);
+    _hint(w, hint, [inp, row.querySelector('.pe')]);
     return { el: w, ...api };
   }
   return { el: row, ...api };
@@ -122,10 +138,7 @@ function _toggle(field, value) {
   if (field.hint) {
     const w = document.createElement('div');
     w.appendChild(row);
-    const h = document.createElement('p');
-    h.className = 'grp-tip in-card';
-    h.textContent = field.hint;
-    w.appendChild(h);
+    _hint(w, field.hint, [input]);
     return { el: w, get, control: input, liveValue: () => input.checked };
   }
   return { el: row, get, control: input, liveValue: () => input.checked };
@@ -151,13 +164,13 @@ function _loadedText(got) {
 }
 
 /** @param {(options: any[]) => void} apply */
-function _fetchRow(field, ctx, apply) {
+function _fetchRow(field, ctx, apply, { hint = true } = {}) {
   const fr = document.createElement('div');
   fr.className = 'row';
   const status = document.createElement('span');
   status.className = 'row-status';
   status.setAttribute('role', 'status');
-  status.textContent = field.hint || '';
+  status.textContent = (hint && field.hint) || '';
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'row-btn';
@@ -278,6 +291,7 @@ function _select(field, value, ctx, config = {}) {
       row.dispatchEvent(new Event('change', { bubbles: true }));
     },
   });
+  if (!field.optional) lb.list.setAttribute('aria-required', 'true');
   row.appendChild(lb.el);
   wrap.appendChild(row);
 
@@ -296,22 +310,17 @@ function _select(field, value, ctx, config = {}) {
   }
 
   if (field.optionsFrom) {
-    wrap.appendChild(
-      _fetchRow(field, ctx, options => {
-        const before = chosen;
-        opts = options;
-        chosen = lb.getValue() || chosen;
-        paint();
-        syncCarried();
-        if (chosen !== before) row.dispatchEvent(new Event('change', { bubbles: true }));
-      }),
-    );
-  } else if (field.hint) {
-    const h = document.createElement('p');
-    h.className = 'grp-tip in-card';
-    h.textContent = field.hint;
-    wrap.appendChild(h);
+    const apply = options => {
+      const before = chosen;
+      opts = options;
+      chosen = lb.getValue() || chosen;
+      paint();
+      syncCarried();
+      if (chosen !== before) row.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    wrap.appendChild(_fetchRow(field, ctx, apply, { hint: false }));
   }
+  if (field.hint) _hint(wrap, field.hint, [lb.button]);
 
   const get = () => [field.key, chosen, carryKeys.length ? carried : null];
   return { el: wrap, get, control: wrap, liveValue: () => chosen };
@@ -366,10 +375,19 @@ function _pills(field, value) {
     });
     ro.observe(row);
   }
-  if (field.hint) {
+  const hintFor = v => opts.find(o => String(o.value) === String(v))?.hint || field.hint || '';
+  if (opts.some(o => o.hint) || field.hint) {
     const h = document.createElement('p');
     h.className = 'grp-tip in-card';
-    h.textContent = field.hint;
+    h.id = uniqueId('wcf-hint');
+    const paint = () => {
+      h.textContent = hintFor(sel);
+      h.hidden = !h.textContent;
+    };
+    paint();
+    row.querySelector('.segr').setAttribute('aria-describedby', h.id);
+    wrap.addEventListener('change', paint);
+    row.addEventListener('change', paint);
     wrap.appendChild(h);
   }
   const get = () => [field.key, sel];
@@ -403,12 +421,7 @@ function _multiselect(field, value) {
   });
   row.appendChild(lb.el);
   wrap.appendChild(row);
-  if (field.hint) {
-    const h = document.createElement('p');
-    h.className = 'grp-tip in-card';
-    h.textContent = field.hint;
-    wrap.appendChild(h);
-  }
+  if (field.hint) _hint(wrap, field.hint, [lb.button]);
   const get = () => [field.key, opts.map(o => String(o.value)).filter(v => cur.has(v))];
   return { el: wrap, get, control: wrap, liveValue: () => [...cur] };
 }
@@ -557,7 +570,11 @@ function _group(field, rows, size, ctx) {
   const secretKeys = subFields.filter(sf => sf.type === 'secret').map(sf => sf.key);
   const tracked = secretKeys.length > 0;
   const newRow = () => (tracked ? { [SAVED_ROW]: null } : {});
-  let data = Array.isArray(rows) ? rows.map((r, i) => (tracked ? { ...r, [SAVED_ROW]: i } : { ...r })) : [];
+  let data = Array.isArray(rows)
+    ? rows.map((r, i) =>
+        tracked ? { ...r, [SAVED_ROW]: r && Object.hasOwn(r, SAVED_ROW) ? r[SAVED_ROW] : i } : { ...r },
+      )
+    : [];
   while (data.length < min) data.push(newRow());
   if (data.length > max) data.length = max;
 
@@ -642,6 +659,7 @@ function _group(field, rows, size, ctx) {
       rowBuilt.push(built);
     });
     if (!fixed) addBtn.parentElement.style.display = data.length >= max ? 'none' : '';
+    wrap.dispatchEvent(new Event(REQ_MARKS_CHANGED, { bubbles: true }));
   }
 
   function captureCurrent() {
@@ -679,7 +697,7 @@ function _buildSimple(field, config, ctx) {
   const value = config[field.key];
   switch (field.type) {
     case 'secret':
-      return _secret(field, config[field.key + 'Set'] === true);
+      return _secret(field, config[field.key + 'Set'] === true, value);
     case 'number':
       return _ieRow(field, value, 'number');
     case 'toggle':

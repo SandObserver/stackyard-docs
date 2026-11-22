@@ -11,6 +11,7 @@ import sitemap from '@astrojs/sitemap';
 import { lastModified } from './src/lib/last-modified.mjs';
 import { iconModules, starlightIcons } from './src/lib/vite-icon-modules.mjs';
 import rehypeStackyardIcons from './src/lib/rehype-stackyard-icons.mjs';
+import { notFound } from './src/lib/not-found.mjs';
 
 const SITE = 'https://stackyard.sandobserver.com';
 
@@ -61,6 +62,7 @@ export default defineConfig({
       },
       customCss: ['./src/styles/docs.css'],
       routeMiddleware: './src/route-data.ts',
+      disable404Route: true,
       head: [
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' } },
         { tag: 'link', attrs: { rel: 'manifest', href: '/manifest.webmanifest' } },
@@ -219,5 +221,6 @@ export default defineConfig({
       },
     },
     mdx(),
+    notFound(),
   ],
 });

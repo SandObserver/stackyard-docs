@@ -29,13 +29,19 @@ export function starlightIcons() {
   };
 }
 
+const APP_JS = '\0sy-app-js:';
+const APP_IMPORT = /^\/js\/([\w-]+\.js)(?:\?.*)?$/;
+
 export function iconModules() {
   return {
     name: 'sy-icon-modules',
-    resolveId(id) {
+    resolveId(id, importer) {
       if (id === SET || id === MOTION) return `\0${id}`;
+      const app = APP_IMPORT.exec(id);
+      if (app && importer?.startsWith('\0') && read(`ui/js/${app[1]}`) !== null) return `${APP_JS}${app[1]}`;
     },
     load(id) {
+      if (id.startsWith(APP_JS)) return read(`ui/js/${id.slice(APP_JS.length)}`);
       if (id === `\0${SET}`) {
         return read('ui/js/icon-set.js') ?? 'export const ICONS = {};\nexport function symbol() { return { defs: "", sym: "" }; }';
       }

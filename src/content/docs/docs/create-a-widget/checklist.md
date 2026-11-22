@@ -14,7 +14,7 @@ CI validates every manifest. Run the same check locally with `npm test` in the r
 - A `glyph` no other widget uses. Add one to `ui/js/widget-glyphs.js` when none is free.
 - A line under Widgets in the app `README.md`.
 - `data.js`, unless the widget runs entirely in the browser.
-- `index.html`.
+- `index.html`, and its script in `widget.js`. A view page such as `analog.html` loads `analog.js`.
 - `i18n/en.json`, plus one catalog per dashboard language. Translations are preferred, not required. Without `i18n/`, put the text in `widget.json`.
 - `demo.js`, optional.
 
@@ -24,6 +24,8 @@ CI validates every manifest. Run the same check locally with `npm test` in the r
 - Failures use `ctx.fail`, never a returned error.
 - Empty and failed look different.
 - The page calls no other host.
+- No inline script: no `<script>` without `src`, no `on...=` attribute, no `javascript:` URL.
+- Markup goes through `setHtml` or `parseMarkup`, never straight into `innerHTML`.
 - Spacing next to text uses logical properties.
 
 ## Look

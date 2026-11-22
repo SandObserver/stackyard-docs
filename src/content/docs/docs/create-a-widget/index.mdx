@@ -14,7 +14,7 @@ A widget is one folder in `ui/widgets/`. This page builds one from the template 
     { type: 'mywidget', file: 'index.html', id: 'tpl-mywidget', size: 'medium', title: 'Template widget, medium', label: 'Medium' },
   ]} />
 
-A widget has three files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` runs on the dashboard and draws the result. The template also has `i18n/`, the widget's text, and `demo.js`, which runs only with `DEMO_MODE=true`.
+A widget has four files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` and its script, `widget.js`, run on the dashboard and draw the result. The template also has `i18n/`, the widget's text, and `demo.js`, which runs only with `DEMO_MODE=true`.
 
 ## 1. Copy the template
 
@@ -89,34 +89,36 @@ The return value is served at `/api/widget-data/<id>`. Report every failure thro
   <div class="l" id="caption">Total</div>
   <div id="msg" hidden></div>
 </div>
-<script type="module">
-  import { errorState, formatNumber, linkTo, loadStrings, placeholder, poll, wt } from '/js/widget-toolbox.js';
-
-  await loadStrings();
-
-  const root = document.getElementById('root');
-  const valueEl = document.getElementById('value');
-  document.getElementById('caption').textContent = wt('ui.caption', 'Total');
-  root.setAttribute('aria-label', wt('widget.label', 'My Widget'));
-  valueEl.replaceChildren(placeholder(48, 26, 6));
-
-  const state = errorState({ root, content: [valueEl], caption: document.getElementById('msg') });
-
-  poll({
-    interval: 30000,
-    render: data => {
-      state.ok();
-      linkTo(root, data.link);
-      valueEl.textContent = formatNumber(data.count);
-    },
-    onError: ({ error, everOk, stale, since }) => {
-      if (!everOk || stale) state.fail(error, { since, inert: everOk });
-    },
-  });
-</script>
+<script type="module" src="widget.js"></script>
 ```
 
-`loadStrings()` loads the widget's catalog. `wt(key, fallback)` reads one string from it. `errorState()` draws the failure state. `linkTo()` makes the card open the link. `poll()` fetches the data and handles loading, stale and failed states. It waits at least 3 seconds between fetches. The template adds the styles. Run `node scripts/bump-cache-busting.js` after you edit an import. It adds the `?v=` stamp. See [Widget page](/docs/create-a-widget/widget-page/).
+```js title="widget.js"
+import { errorState, formatNumber, linkTo, loadStrings, placeholder, poll, wt } from '/js/widget-toolbox.js';
+
+await loadStrings();
+
+const root = document.getElementById('root');
+const valueEl = document.getElementById('value');
+document.getElementById('caption').textContent = wt('ui.caption', 'Total');
+root.setAttribute('aria-label', wt('widget.label', 'My Widget'));
+valueEl.replaceChildren(placeholder(48, 26, 6));
+
+const state = errorState({ root, content: [valueEl], caption: document.getElementById('msg') });
+
+poll({
+  interval: 30000,
+  render: data => {
+    state.ok();
+    linkTo(root, data.link);
+    valueEl.textContent = formatNumber(data.count);
+  },
+  onError: ({ error, everOk, stale, since }) => {
+    if (!everOk || stale) state.fail(error, { since, inert: everOk });
+  },
+});
+```
+
+Keep the code in `widget.js`. A widget page may not run inline script. `loadStrings()` loads the widget's catalog. `wt(key, fallback)` reads one string from it. `errorState()` draws the failure state. `linkTo()` makes the card open the link. `poll()` fetches the data and handles loading, stale and failed states. It waits at least 3 seconds between fetches. The template adds the styles. Run `node scripts/bump-cache-busting.js` after you edit an import. It adds the `?v=` stamp. See [Widget page](/docs/create-a-widget/widget-page/).
 
 ## 5. Try it
 

@@ -19,7 +19,7 @@ A widget message is one line, in place of the widget's data. Each names a kind o
 | `Took too long` | On a widget | The service answered too slowly. The service's own load, or a link that drops packets. |
 | `Key rejected` | On a widget | The credential was refused. The API key or token, and its scopes. |
 | `Request blocked` | On a widget | Stackyard refused to make the request. A private address with `ALLOW_PRIVATE_IPS` unset. See [Security](/docs/security/). |
-| `Not set up yet` | On a widget | The widget has no address or credential yet. The widget's own settings. |
+| `Not set up yet` | On a widget | The widget has no address or credential yet, or its address is not valid. The widget's own settings. |
 | `Service error` | On a widget | The service answered with an error, or with a reply the widget cannot read. The service's logs, and that the URL points at the service's API. |
 | `Something went wrong` | On a widget | Anything else, including a widget that fails to draw the data it received. The container logs, then the browser console. |
 | `No data` | On a widget | The service answered, and had nothing to report. Nothing. This is not a failure. |

@@ -35,7 +35,7 @@ Small holds one slot. Medium holds three. Each slot reads one job.
     kind: 'Backup software',
     needs: 'URL, login if set',
     fields: [
-      ['URL', 'The Kopia server address, for example `http://kopia:51515`.'],
+      ['URL', 'The Kopia server address, for example `http://kopia:51515`. Without `http://` or `https://`, Stackyard adds `http://`.'],
       ['Username', 'Optional. The server username.'],
       ['Password', 'Optional. Stored as a secret.'],
       ['Source', 'Optional. Enter the URL and credentials, then load the sources and pick one.'],

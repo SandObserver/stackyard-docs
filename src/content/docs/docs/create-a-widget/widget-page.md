@@ -37,7 +37,7 @@ The frame's `<html>` carries two attributes:
 
 ## What a page may load
 
-The widget frame has a stricter Content-Security-Policy than the dashboard. Scripts must be same-origin. Styles may be inline. `connect-src` is `'self'`, so the only host a widget can call is Stackyard. Images may come from the icon CDN or a `data:` URI. Forms and plugins are blocked: `form-action` and `object-src` are `'none'`.
+The widget frame has a stricter Content-Security-Policy than the dashboard. Scripts load from Stackyard. Inline script still runs in this release. Stackyard reports it, and a later release blocks it. See [Script in a file](#script-in-a-file). Styles may be inline. `connect-src` is `'self'`, so the only host a widget can call is Stackyard. Images may come from the icon CDN or a `data:` URI. Forms and plugins are blocked: `form-action` and `object-src` are `'none'`.
 
 ### Script in a file
 

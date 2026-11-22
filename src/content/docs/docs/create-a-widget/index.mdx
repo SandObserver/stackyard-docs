@@ -14,7 +14,7 @@ A widget is one folder in `ui/widgets/`. This page builds one from the template 
     { type: 'mywidget', file: 'index.html', id: 'tpl-mywidget', size: 'medium', title: 'Template widget, medium', label: 'Medium' },
   ]} />
 
-A widget has three files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` runs on the dashboard and draws the result.
+A widget has four files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` and its script, `widget.js`, run on the dashboard and draw the result.
 
 ## 1. Copy the template
 
@@ -66,22 +66,25 @@ The return value is served at `/api/widget-data/<id>`. Report every failure thro
 ## 4. Page
 
 ```html title="index.html"
-<script type="module">
-  import { formatNumber, poll } from '/js/widget-toolbox.js?v=1';
-  const root = document.getElementById('root');
-
-  poll({
-    render: data => {
-      const names = data.items.slice(0, 3).map(i => i.name).join(', ');
-      root.textContent = data.total == null ? names : `${formatNumber(data.total)} items: ${names}`;
-    },
-    isEmpty: data => !data.items?.length,
-    interval: 30000,
-  });
-</script>
+<div id="root"></div>
+<script type="module" src="widget.js"></script>
 ```
 
-`poll()` fetches the data and handles loading, empty, stale and failed states. The template adds the markup and styles. See [Widget page](/docs/create-a-widget/widget-page/).
+```js title="widget.js"
+import { formatNumber, poll } from '/js/widget-toolbox.js?v=1';
+const root = document.getElementById('root');
+
+poll({
+  render: data => {
+    const names = data.items.slice(0, 3).map(i => i.name).join(', ');
+    root.textContent = data.total == null ? names : `${formatNumber(data.total)} items: ${names}`;
+  },
+  isEmpty: data => !data.items?.length,
+  interval: 30000,
+});
+```
+
+Keep the code in `widget.js`. A widget page may not run inline script. `poll()` fetches the data and handles loading, empty, stale and failed states. The template adds the markup and styles. See [Widget page](/docs/create-a-widget/widget-page/).
 
 ## 5. Try it
 

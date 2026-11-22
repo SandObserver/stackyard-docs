@@ -1,11 +1,11 @@
 ---
 title: Widget page reference
-description: The index.html side of a Stackyard widget. Frame parameters, the content policy, canvas sizes, text direction and the widget toolbox.
+description: The index.html and widget.js side of a Stackyard widget. Frame parameters, the content policy, canvas sizes, text direction and the widget toolbox.
 ---
 
 A widget page runs in a frame, scaled uniformly from a fixed design size to its card. It reads its `id` from the query string, fetches its own data, and draws it.
 
-- Keep styles and scripts inline or same-origin. There is no shared widget stylesheet.
+- Put the page's script in a file next to the page. Styles may stay inline. There is no shared widget stylesheet.
 - Never call an external host. Reach a service through `data.js`.
 - The saved config, without secrets, is at `/api/widget-config/<id>`.
 
@@ -37,7 +37,25 @@ The frame's `<html>` carries two attributes:
 
 ## What a page may load
 
-The widget frame has a stricter Content-Security-Policy than the dashboard. Scripts and styles must be inline or same-origin. `connect-src` is `'self'`, so the only host a widget can call is Stackyard. Images may come from the icon CDN or a `data:` URI. Forms and plugins are blocked: `form-action` and `object-src` are `'none'`.
+The widget frame has a stricter Content-Security-Policy than the dashboard. Scripts load from Stackyard. Inline script still runs in this release. Stackyard reports it, and a later release blocks it. See [Script in a file](#script-in-a-file). Styles may be inline. `connect-src` is `'self'`, so the only host a widget can call is Stackyard. Images may come from the icon CDN or a `data:` URI. Forms and plugins are blocked: `form-action` and `object-src` are `'none'`.
+
+### Script in a file
+
+Load the page's code from a file in the widget folder:
+
+```html
+<script type="module" src="widget.js"></script>
+```
+
+`index.html` loads `widget.js`. A view page such as `analog.html` loads `analog.js`. Relative imports in the file resolve against the file. Relative URLs in `fetch` resolve against the page, as before. A widget in this layout also runs on older Stackyard releases.
+
+A page must not run inline script: a `<script>` without `src`, an `on...=` attribute, or a `javascript:` URL. Stackyard logs a warning at startup for each widget with such a page. A later release blocks them.
+
+### Markup through Trusted Types
+
+Write markup with ``setHtml(el, html`...`)`` and parse it with `parseMarkup`. Values inside ``html`...` `` are escaped. Wrap markup you built yourself in `raw()`. A string written straight to `innerHTML`, `outerHTML` or `insertAdjacentHTML` is reported as a Trusted Types violation, and a later release blocks it. `textContent` and DOM methods are always allowed.
+
+A violation is written to the container log as `content security policy violation`, with the page path and the rule.
 
 ## Text direction
 
@@ -146,7 +164,10 @@ The wording comes from the failure kind, not the upstream message. `errorLine(er
 
 - `openUrl(href)` opens a link in a new tab. Use it instead of `window.open`, which the sandbox can block.
 - `linkTo(el, href)` makes `el` a link to `href`: a tab stop that opens on click and on Enter. Call it again to change the link. An empty `href` removes it. Keep buttons out of `el`.
-- `esc(value)` HTML-escapes a value for `innerHTML`. Use it for anything from config or upstream.
+- ``html`...` `` builds markup and escapes every value inside it. `raw(markup)` passes markup through unescaped.
+- `setHtml(el, markup)` writes an `html` or `raw` result into `el`. It refuses a plain string.
+- `parseMarkup(markup, type)` parses an `html` or `raw` result with `DOMParser`.
+- `esc(value)` HTML-escapes a value, for an attribute or text you join by hand.
 - `sparkline(values, opts?)` returns an `<svg>` area and line chart.
 - `barFill(percent, opts?)` returns a track and fill bar. It skips its transition under reduced motion.
 - `setBar(track, percent)` moves a `barFill` bar to `percent`, clamped to 0 to 100.

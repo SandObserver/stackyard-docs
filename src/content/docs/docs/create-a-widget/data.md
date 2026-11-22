@@ -35,6 +35,7 @@ A widget that renders entirely in the browser, like [Clock](/docs/widgets/clock/
 | `ctx.metrics` | Host metrics: `cpuSample`, `ramPercent`, `cpuTemp`, `diskStats`, `procCount`, `uptimeSeconds`. Each is a function. `cpuSample()` is async and returns `{ cpu, iowait }`. They read `/proc` and `/sys`, so they report the host, not the container limits. |
 | `ctx.dispatchProvider(handlers, opts)` | Runs the handler for the provider the user picked. `opts.field` holds the key, `provider` by default. `opts.default` is the fallback key. |
 | `ctx.fail(message, opts)` | Reports a failure. Throws. `opts.kind` is one of `ctx.KIND`, `UPSTREAM` by default. |
+| `ctx.classify(e)` | Returns the `{ kind, detail }` the API reports for an error, with `detail` only when set. Use it to label a failure caught for one slot or row. |
 | `ctx.KIND` | `AUTH`, `INVALID`, `UPSTREAM`, `NETWORK`, `TIMEOUT`, `BLOCKED`, `INTERNAL`. See [API errors](/docs/contributing/api-errors/). |
 | `ctx.log` | The structured logger. |
 

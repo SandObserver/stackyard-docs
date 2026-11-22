@@ -101,14 +101,16 @@ Returning to a page refreshes a widget at once when its data is older than one n
 
 ## Cache busting
 
-Nothing to do by hand. The release build hashes each widget entry file and stamps the version into the manifest.
+Every `/css/` and `/js/` reference carries a `?v=` stamp of the file's content. After you add a reference, or edit a file in `ui/js` or `ui/css`, run `node scripts/bump-cache-busting.js` from the repository root and commit the result. It adds missing stamps and updates stale ones. Never edit a stamp by hand. CI fails a missing or stale stamp.
+
+The release build hashes each widget entry file and stamps the version into the manifest.
 
 ## Toolbox
 
-Optional, and it bundles the pieces widgets keep needing. Import from `/js/widget-toolbox.js` and keep the `?v=1`:
+Optional, and it bundles the pieces widgets keep needing. Import from `/js/widget-toolbox.js`, then run `node scripts/bump-cache-busting.js` to stamp the import:
 
 ```js
-import { poll, fetchData, sparkline } from '/js/widget-toolbox.js?v=1';
+import { poll, fetchData, sparkline } from '/js/widget-toolbox.js';
 ```
 
 ### Data
@@ -131,6 +133,8 @@ poll({
 ```
 
 A failure keeps the last good render. After `staleAfter` consecutive failures, 2 by default, it shows the failure and how long ago the last success was. `sinceLabel(ts)` gives that label on its own.
+
+`interval` is in milliseconds, 30000 by default. `poll()` waits at least 3 seconds between fetches, whatever `interval` says.
 
 The first fetch runs at once. Each repeat is spread by up to 15%, so widgets on one dashboard do not fetch on the same tick.
 

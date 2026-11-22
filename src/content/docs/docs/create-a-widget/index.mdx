@@ -14,7 +14,7 @@ A widget is one folder in `ui/widgets/`. This page builds one from the template 
     { type: 'mywidget', file: 'index.html', id: 'tpl-mywidget', size: 'medium', title: 'Template widget, medium', label: 'Medium' },
   ]} />
 
-A widget has four files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` and its script, `widget.js`, run on the dashboard and draw the result.
+A widget has four files. `widget.json` defines its settings. `data.js` runs on the server and calls your service. `index.html` and its script, `widget.js`, run on the dashboard and draw the result. The template also has `i18n/`, the widget's text, and `demo.js`, which runs only with `DEMO_MODE=true`.
 
 ## 1. Copy the template
 
@@ -27,64 +27,98 @@ cp -r docs/widget-template ui/widgets/mywidget
 ```json title="widget.json"
 {
   "name": "mywidget",
-  "label": "My Widget",
+  "label": "widget.label",
+  "description": "widget.description",
+  "glyph": "gauge",
   "sizes": ["small", "medium"],
   "fields": [
-    { "key": "url", "type": "text", "label": "Service URL", "placeholder": "http://host:port" },
-    { "key": "apiKey", "type": "secret", "label": "API key", "optional": true },
-    { "key": "showTotal", "type": "toggle", "label": "Show total", "default": true, "cosmetic": true }
+    { "key": "url", "type": "text", "label": "url.label", "placeholder": "url.placeholder", "hint": "url.hint" },
+    { "key": "apiKey", "type": "secret", "label": "apiKey.label", "optional": true },
+    { "key": "href", "type": "text", "link": true, "label": "href.label", "hint": "href.hint", "optional": true, "cosmetic": true }
   ]
 }
 ```
 
-`name` must match the folder. Each field becomes a row in the widget's settings. A `secret` never returns to the browser. `cosmetic` marks a field that can change without asking for the secret again. A `toggle` that was never saved is absent from `ctx.config`, so test for `false`. See [Manifest](/docs/create-a-widget/manifest/).
+`name` must match the folder. `glyph` is the icon Settings shows in its list. Each field becomes a row in the widget's settings. A `secret` never returns to the browser. `cosmetic` marks a field that can change without asking for the secret again. `href` is the Link URL. See [Manifest](/docs/create-a-widget/manifest/).
+
+`label`, `description`, `hint` and `placeholder` hold keys. The text is in `i18n/en.json`:
+
+```json title="i18n/en.json"
+{
+  "widget.label": "My Widget",
+  "widget.description": "See one number from your service.",
+  "url.label": "Server URL",
+  "url.placeholder": "service-host:8080",
+  "url.hint": "Container name and port, or a full URL.",
+  "apiKey.label": "API Key",
+  "href.label": "Link URL",
+  "href.hint": "The address your browser uses for this service. Leave blank to use the one above, if your browser can reach it.",
+  "ui.caption": "Total"
+}
+```
+
+`i18n/` holds one catalog per dashboard language. Translations are optional. A folder you keep must hold every language, each with the same keys as `en.json`. To skip translations, delete the folder and put the text in `widget.json` in place of the keys. See [Translations](/docs/contributing/translations/).
 
 ## 3. Data
 
 ```js title="data.js"
 module.exports = async function (ctx) {
-  const { url, apiKey, showTotal } = ctx.config;
-  if (!url) ctx.fail('Enter the service URL.', { kind: ctx.KIND.INVALID });
+  const { url, apiKey, href } = ctx.config;
+  const base = ctx.normalizeBase(url);
+  if (!base) ctx.fail('Server URL not configured', { kind: ctx.KIND.INVALID });
 
-  const r = await ctx.fetchJSON(`${ctx.normalizeBase(url)}/api/items`, {
+  const r = await ctx.fetchJSON(`${base}/api/status`, {
     headers: apiKey ? { 'X-Api-Key': apiKey } : {},
     timeout: 8000,
   });
   if (r.status === 401 || r.status === 403) ctx.fail('Auth failed (check API key)', { kind: ctx.KIND.AUTH });
   if (r.status >= 400) ctx.fail('HTTP ' + r.status);
-  if (!r.data || !Array.isArray(r.data.items)) ctx.fail('Reply has no items');
+  if (typeof r.data?.count !== 'number') ctx.fail('Reply has no count');
 
-  return {
-    items: r.data.items.slice(0, 10).map(i => ({ name: i.name })),
-    total: showTotal === false ? null : (r.data.total ?? r.data.items.length),
-  };
+  return { count: r.data.count, link: ctx.serviceLink(href, url) };
 };
 ```
 
-The return value is served at `/api/widget-data/<id>`. Report every failure through `ctx.fail`, as the template does, so the widget shows its failure state. See [Data](/docs/create-a-widget/data/).
+The return value is served at `/api/widget-data/<id>`. Report every failure through `ctx.fail`, as the template does, so the widget shows its failure state. `ctx.serviceLink(href, url)` returns the Link URL. When it is blank, it returns the server URL, if a browser can reach it. The `ctx` type is `WidgetCtx` in `api/src/widget-data.js`. See [Data](/docs/create-a-widget/data/).
 
 ## 4. Page
 
 ```html title="index.html"
-<div id="root"></div>
+<div id="root" role="group">
+  <div class="n" id="value"></div>
+  <div class="l" id="caption">Total</div>
+  <div id="msg" hidden></div>
+</div>
 <script type="module" src="widget.js"></script>
 ```
 
 ```js title="widget.js"
-import { formatNumber, poll } from '/js/widget-toolbox.js?v=1';
+import { errorState, formatNumber, linkTo, loadStrings, placeholder, poll, wt } from '/js/widget-toolbox.js';
+
+await loadStrings();
+
 const root = document.getElementById('root');
+const valueEl = document.getElementById('value');
+document.getElementById('caption').textContent = wt('ui.caption', 'Total');
+root.setAttribute('aria-label', wt('widget.label', 'My Widget'));
+valueEl.replaceChildren(placeholder(48, 26, 6));
+
+const state = errorState({ root, content: [valueEl], caption: document.getElementById('msg') });
 
 poll({
-  render: data => {
-    const names = data.items.slice(0, 3).map(i => i.name).join(', ');
-    root.textContent = data.total == null ? names : `${formatNumber(data.total)} items: ${names}`;
-  },
-  isEmpty: data => !data.items?.length,
   interval: 30000,
+  render: data => {
+    state.ok();
+    linkTo(root, data.link);
+    valueEl.textContent = formatNumber(data.count);
+  },
+  onError: ({ error, everOk, stale, since }) => {
+    if (!everOk || stale) state.fail(error, { since, inert: everOk });
+  },
 });
 ```
 
-Keep the code in `widget.js`. A widget page may not run inline script. `poll()` fetches the data and handles loading, empty, stale and failed states. The template adds the markup and styles. See [Widget page](/docs/create-a-widget/widget-page/).
+Keep the code in `widget.js`. A widget page may not run inline script. `loadStrings()` loads the widget's catalog. `wt(key, fallback)` reads one string from it. `errorState()` draws the failure state. `linkTo()` makes the card open the link. `poll()` fetches the data and handles loading, stale and failed states. It waits at least 3 seconds between fetches. The template adds the styles. Run `node scripts/bump-cache-busting.js` after you edit an import. It adds the `?v=` stamp. See [Widget page](/docs/create-a-widget/widget-page/).
 
 ## 5. Try it
 

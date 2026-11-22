@@ -25,13 +25,16 @@ A widget that renders entirely in the browser, like [Clock](/docs/widgets/clock/
 | Property | What it is |
 | --- | --- |
 | `ctx.config` | The saved widget config, secrets included. Server-side only. |
-| `ctx.settings` | A frozen copy of the dashboard settings shared with widgets. An allowlist, currently `stats` only. Everything else is withheld. To share another key, add it to `SHARED_KEYS` in `api/src/widget-settings.js`. |
+| `ctx.settings` | A frozen copy of the dashboard settings shared with widgets. An allowlist, currently `stats` only. Everything else is withheld. To share another key, set `widgets: true` on its entry in `ui/js/settings-schema.js`. Never set it on a key that holds a secret. |
 | `ctx.endpoint` | The endpoint name, set for an `optionsFrom` fetch or a multi-view widget. |
 | `ctx.row` | For an `optionsFrom` fetch from a field in a `group`, that row's values. Otherwise `null`. |
 | `ctx.params` | The query parameters the manifest lists in [`params`](/docs/create-a-widget/manifest/#query-parameters), plus `endpoint`, as `URLSearchParams`. |
 | `ctx.fetchJSON(url, opts)` | Fetches a URL and parses the body. Returns `{ status, data }` or throws. JSON is returned as-is. Prometheus text and XML are parsed. Pass `{ raw: true }` for the untouched text. At most six requests to one service run at once. The rest wait in order. |
 | `ctx.parsePrometheus(text)` | Parses a Prometheus metrics body. Non-string input gives an empty object. |
 | `ctx.normalizeBase(raw)` | Tidies a user-entered base URL: adds a scheme, drops a trailing slash. |
+| `ctx.serviceLink(own, url, path)` | Where the widget opens. `own` is the Link URL. `url` is the address the server reads. Without `path`, returns `own`, else `url` when a browser can reach it, else `''`. With `path`, returns that page under `ctx.serviceBase(own, url)`, or `own` when there is no base. A browser cannot reach a container name, `localhost` or a loopback address. |
+| `ctx.serviceBase(own, url)` | The address item pages go under, or `''`. A Link URL counts only when it is a bare http or https address, with no path, query or fragment. A blank Link URL falls back to `url` when a browser can reach it. |
+| `ctx.remember(map, key, value, cap)` | Stores `value` under `key` in a `Map` and returns it. Drops the oldest entries above `cap`, 32 by default. Use it for a module-level cache keyed by server. |
 | `ctx.metrics` | Host metrics: `cpuSample`, `ramPercent`, `tempSensors`, `sensorTemps`, `diskStats`, `procCount`, `uptimeSeconds`. Each is a function. `cpuSample()` is async and returns `{ cpu, iowait }`. `tempSensors()` lists the temperature sensors as `{ id, label, chip, raw, file }`. `sensorTemps(keys)` takes `"cpu"` or sensor ids and returns degrees Celsius by key; keys with no reading are left out. They read `/proc` and `/sys`, so they report the host, not the container limits. |
 | `ctx.dispatchProvider(handlers, opts)` | Runs the handler for the provider the user picked. `opts.field` holds the key, `provider` by default. `opts.default` is the fallback key. |
 | `ctx.fail(message, opts)` | Reports a failure. Throws. `opts.kind` is one of `ctx.KIND`, `UPSTREAM` by default. |

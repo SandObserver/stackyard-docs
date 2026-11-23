@@ -15,6 +15,8 @@ A name is up to 64 characters. Keep a username and password out of the URL: anyo
 
 For the icon, type the service name, such as `sonarr`. Stackyard searches [dashboard-icons](https://github.com/homarr-labs/dashboard-icons), [selfh.st](https://github.com/selfhst/icons), [simple-icons](https://github.com/simple-icons/simple-icons) and [lobehub](https://github.com/lobehub/lobe-icons). A URL or an uploaded file also works. Icons load through your server, so the icon CDN never sees your list of services.
 
+Product names and logos belong to their owners. Screenshots in these docs show icons from [selfh.st/icons](https://selfh.st/icons), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), and from dashboard-icons, licensed under Apache-2.0.
+
 ### Tile color
 
 Pick the tile color under **Style**.

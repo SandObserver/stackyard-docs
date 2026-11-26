@@ -3,13 +3,13 @@ title: Stackyard API error reference
 description: The error shape the Stackyard API returns and what each error kind means.
 ---
 
-Every API error has a readable `error`, a `kind` to branch on, and sometimes a `detail`.
+Every API error has a readable `error`, a `kind` and a `code` to branch on, and sometimes a `detail`.
 
 ```json
-{ "error": "Could not reach the service.", "kind": "network", "detail": { "code": "ECONNREFUSED" } }
+{ "error": "every item needs a non-empty id and type", "kind": "invalid", "code": "invalid.missing-id" }
 ```
 
-Never match words in `error`. Use `kind`.
+Never match words in `error`. Use `code`, or `kind` for a code you do not know. Every code and its meaning is on [Config reference](/docs/contributing/config-reference/#error-codes).
 
 The `error` text is written from the `kind`, never copied from the underlying error, so no internal host or path reaches the browser. The original is logged.
 
@@ -29,13 +29,16 @@ An upstream 401 or 403 is `upstream`, not `auth`. Treat an unknown `kind` as `in
 
 ## detail
 
-Only these keys, only server-derived values, and omitted when empty.
+Server-derived values only, and omitted when empty.
 
-| Kind | Key |
+| Key | Holds |
 | --- | --- |
-| `network`, `timeout` | `code`, a Node error code |
-| `upstream` | `status`, the HTTP status |
-| `invalid` | `code`, such as `ERR_INVALID_URL` |
-| `blocked` | `reason`, `private-address` |
+| `id` | The refused item or setting. |
+| `field` | The refused field of that item. |
+| `max` | The limit that was passed. |
+| `status` | The upstream HTTP status. |
+| `code` | A Node error code. |
+| `minutes` | How long to wait before trying again. |
+| `host` | The address the refusal is about. |
 
 A new kind goes in `KIND` in both `api/src/api-error.js` and `ui/js/admin-error.js`. A test fails until they match.

@@ -32,6 +32,22 @@ Origin: http://stackyard.lan:8700
 
 `_rev` in the config changes on every save. Poll `/api/config` and redraw when it changes. The dashboard polls every 15 seconds. Do not poll faster.
 
+## Save the config
+
+`POST /api/config` replaces the whole config. Read it first, change it, and send all of it back.
+
+1. `GET /api/config`.
+2. Change `items` or `settings`.
+3. `POST /api/config` with the whole object, `_rev` included.
+
+A save without `_rev` gets a `428` with `invalid.missing-rev`. A `_rev` that no longer matches gets a `409` with `invalid.stale`: read again and repeat. A save returns the new revision as `rev`.
+
+Leave a secret field out to keep the stored value. An empty string clears it.
+
+A setting this release does not know is dropped and named in `dropped`. A known setting with a value it cannot use is refused.
+
+Item shapes, setting keys, widget fields and every error code are on [Config reference](/docs/contributing/config-reference/).
+
 ## Widgets
 
 Show a widget by loading its page in a web view:

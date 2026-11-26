@@ -1,0 +1,39 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { marked } from 'marked';
+import { withHeadingIds } from '../../../lib/repo';
+import { configReferenceMarkdown } from '../../../lib/config-reference';
+
+const REPO = 'https://github.com/SandObserver/stackyard';
+const markdown = await configReferenceMarkdown();
+
+const { html, headings } = markdown
+  ? withHeadingIds(
+      String(await marked.parse(markdown))
+        .replace(/<table>/g, '<div class="sy-tscroll"><table>')
+        .replace(/<\/table>/g, '</table></div>')
+        .replace(/<pre>/g, '<pre class="sy-cscroll" tabindex="0" role="region" aria-label="Code example, json">'),
+    )
+  : {
+      html: `<p data-config-reference-missing>This page is built from the Stackyard repository, and that
+       checkout was not available for this build. The sources are on
+       <a href="${REPO}">GitHub</a>.</p>`,
+      headings: [],
+    };
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Config reference',
+    description:
+      'The item shapes, setting keys, widget fields and error codes the Stackyard config API accepts. Unstable, with no compatibility promise.',
+  }}
+  headings={headings}
+>
+  <p>
+    This page is generated from the Stackyard repository, so it matches the source. How to read and
+    save the config is on <a href="/docs/contributing/other-clients/">Build another client</a>.
+  </p>
+
+  <Fragment set:html={html} />
+</StarlightPage>

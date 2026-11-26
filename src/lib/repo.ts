@@ -12,6 +12,11 @@ export function readRepoFile(relativePath: string): string | null {
   return readFileSync(full, 'utf8');
 }
 
+export function repoPath(relativePath: string): string | null {
+  const full = resolve(REPO, relativePath);
+  return full.startsWith(resolve(REPO)) ? full : null;
+}
+
 export function stripTitle(markdown: string): string {
   return markdown.replace(/^#\s+.*\n+/, '');
 }

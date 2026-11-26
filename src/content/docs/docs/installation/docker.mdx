@@ -70,7 +70,7 @@ To run as root, set `user: "0:0"` and add `NET_BIND_SERVICE`, `CHOWN`, `SETUID`,
 All optional.
 
 <SettingList title="Network" items={[
-  { name: '`ALLOW_PRIVATE_IPS`', text: 'Set `true` to let badges and widgets reach LAN and loopback addresses. Most homelabs need it. Read [Security](/docs/security/) first.' },
+  { name: '`ALLOW_PRIVATE_IPS`', text: 'Set `true` to let the editor test LAN and loopback addresses. Saved apps and widgets reach them without it. Read [Security](/docs/security/) first.' },
   { name: '`TRUST_PROXY`', text: 'Set `true` behind a TLS proxy you control. See [Reverse proxy](/docs/reverse-proxy/).' },
   { name: '`TRUSTED_PROXY`', text: 'The proxy address, CIDR or container name, for per-client rate limiting.' },
   { name: '`SOCKET_PROXY_URL`', text: 'A Docker socket proxy, for container health checks.' },
@@ -78,8 +78,8 @@ All optional.
 
 <SettingList title="Sessions and logs" items={[
   { name: '`SESSION_MAX_AGE_DAYS`', text: 'Idle session lifetime. Default `0.5`, 12 hours. A session in use ends 30 days after sign-in, or after this lifetime if longer.' },
-  { name: '`INITIAL_PASSWORD`', text: 'Sets the dashboard password on the first start only. 15 to 1024 characters. In a Compose file or `.env`, write each `$` as `$$`. The value stays visible in the container environment.', optional: true },
-  { name: '`INITIAL_PASSWORD_FILE`', text: 'Reads the first-start password from a file instead, such as a Docker secret. Wins over `INITIAL_PASSWORD`.', optional: true },
+  { name: '`INITIAL_PASSWORD`', text: 'Sets the dashboard password at start, until a password was set, skipped or removed. 15 to 1024 characters. In a Compose file or `.env`, write each `$` as `$$`. The value stays visible in the container environment.', optional: true },
+  { name: '`INITIAL_PASSWORD_FILE`', text: 'Reads that password from a file instead, such as a Docker secret. Wins over `INITIAL_PASSWORD`.', optional: true },
   { name: '`PASSWORD_HASH_MEMORY`', text: 'Memory per password hash: `8mib` to `128mib`. Default `16mib`.' },
   { name: '`LOG_LEVEL`', text: '`debug`, `info`, `warn` or `error`. Default `info`. The General setting overrides it.' },
 ]} />

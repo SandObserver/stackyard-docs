@@ -17,7 +17,7 @@ At the top, before any group:
 
 | Setting | What it does |
 | --- | --- |
-| Host IP | Your server's own IP address. Setting it lets badges and widgets reach services on that IP, which the SSRF guard would otherwise block. See [Security](/docs/security/). |
+| Host IP | Your server's own IP address. The editor can then test badges, ping health checks and widgets on that IP, which the SSRF guard would otherwise block. See [Security](/docs/security/). |
 
 ### Language
 
@@ -64,9 +64,8 @@ How the dashboard looks. Every change applies immediately. Explained in full on 
 
 | Setting | What it does |
 | --- | --- |
-| App Title | The title drawn on the dashboard itself. |
-| Show On Desktop | Whether that title appears on a large screen. |
-| Show On Mobile | Whether it appears on a phone. |
+| Show App Title on Desktop | Shows each app's name under its tile on a large screen. |
+| Show App Title on Mobile | Shows each app's name under its tile on a phone. |
 
 ### Display
 

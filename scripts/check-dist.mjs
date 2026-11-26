@@ -128,6 +128,17 @@ report(
     : [],
 );
 
+const configReference = 'dist/docs/contributing/config-reference/index.html';
+const configSections = ['items', 'settings', 'widgets', 'error-codes'];
+report(
+  'confref',
+  !existsSync(configReference)
+    ? [`${configReference}: missing.`]
+    : configSections
+        .filter((id) => !read(configReference).includes(`id="${id}"`))
+        .map((id) => `${configReference}: no #${id}. The app repository was not read. Set STACKYARD_REPO.`),
+);
+
 /* The docs draw their interface icons from the app's icon set. A Starlight icon
    that src/lib/starlight-icon-map.ts replaces must not ship, and every mapped
    name must still exist in Starlight. */

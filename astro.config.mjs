@@ -198,6 +198,7 @@ export default defineConfig({
             { label: 'Translations', link: '/docs/contributing/translations/' },
             { label: 'API errors', link: '/docs/contributing/api-errors/' },
             { label: 'Other clients', link: '/docs/contributing/other-clients/' },
+            { label: 'Config reference', link: '/docs/contributing/config-reference/' },
             { label: 'Releasing', link: '/docs/contributing/releasing/' },
           ],
         },

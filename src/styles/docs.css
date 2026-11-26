@@ -259,11 +259,13 @@
   color: var(--sy-dim);
 }
 
-.sy-tscroll {
+.sy-tscroll,
+.sy-cscroll {
   overflow-x: auto;
   max-width: 100%;
 }
-.sy-tscroll:focus-visible {
+.sy-tscroll:focus-visible,
+.sy-cscroll:focus-visible {
   outline: 2px solid var(--sy-teal);
   outline-offset: 3px;
   border-radius: var(--sy-radius-md);

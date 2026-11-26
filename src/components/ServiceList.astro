@@ -45,9 +45,9 @@ const { title = 'Works with', footer, items } = Astro.props;
               </span>
             )}
             <span class="sy-disc__main">
-              <span class="sy-disc__name">{s.name}</span>
+              <span class="sy-disc__name">{s.name}</span>{' '}
               {s.kind && <span class="sy-disc__kind">{s.kind}</span>}
-            </span>
+            </span>{' '}
             <span class="sy-disc__needs" set:html={inline(s.needs)} />
             <span class="sy-disc__chev" aria-hidden="true" />
           </summary>

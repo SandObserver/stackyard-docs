@@ -8,21 +8,23 @@ import rehypeSettingsExamples, { examplesDigest } from './src/lib/rehype-setting
 import rehypeProblemPages from './src/lib/rehype-problem-pages.mjs';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import llms from 'astro-llms-md';
 import { lastModified } from './src/lib/last-modified.mjs';
 import { iconModules, starlightIcons } from './src/lib/vite-icon-modules.mjs';
 import rehypeStackyardIcons from './src/lib/rehype-stackyard-icons.mjs';
 import { notFound } from './src/lib/not-found.mjs';
 
 const SITE = 'https://stackyard.sandobserver.com';
+const REDIRECTS = {
+  '/docs/development': '/docs/contributing/',
+  '/docs/adding-services': '/docs/apps-and-folders/',
+  '/docs/advanced-configuration': '/docs/installation/docker/',
+  '/docs/widgets/github': '/docs/widgets/git/',
+};
 
 export default defineConfig({
   site: SITE,
-  redirects: {
-    '/docs/development': '/docs/contributing/',
-    '/docs/adding-services': '/docs/apps-and-folders/',
-    '/docs/advanced-configuration': '/docs/installation/docker/',
-    '/docs/widgets/github': '/docs/widgets/git/',
-  },
+  redirects: REDIRECTS,
   vite: {
     plugins: [starlightIcons(), iconModules()],
   },
@@ -34,6 +36,12 @@ export default defineConfig({
     ],
   },
   integrations: [
+    llms({
+      name: 'Stackyard',
+      description: 'A self-hosted homelab dashboard in one Docker container, configured in its web UI.',
+      exclude: ['404', '404.html', '_astro', '**.xml', '**.txt', 'docs/changelog', ...Object.keys(REDIRECTS).map((p) => p.slice(1))],
+      excludeSelectors: ['.sl-anchor-link', '[aria-hidden="true"]', 'nav', 'footer', 'img[alt=""]'],
+    }),
     sitemap({
       serialize(item) {
         const lastmod = lastModified(item.url);

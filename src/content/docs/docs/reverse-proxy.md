@@ -20,12 +20,14 @@ If `TRUST_PROXY=true` is set while Stackyard is also reachable directly, a clien
 `TRUSTED_PROXY` tells nginx where the front proxy sits, so it can resolve the real client address for rate limiting:
 
 ```text
-TRUSTED_PROXY=172.18.0.0/16
-TRUSTED_PROXY="172.18.0.0/16 10.0.0.5"
 TRUSTED_PROXY=traefik
+TRUSTED_PROXY=10.0.0.5
+TRUSTED_PROXY="traefik 10.0.0.5"
 ```
 
-A name is the proxy's container name. Stackyard resolves it when the container starts. A name that does not resolve is not trusted, and the log says so.
+A name is the proxy's container name. Stackyard resolves it when the container starts. A name that does not resolve is not trusted, and the log says so. If the proxy gets a new address, restart Stackyard.
+
+Use a single IP address for a proxy on another host. A whole network such as `172.18.0.0/16` also works, but it trusts every container in it, and the log warns at start.
 
 Without it, every request through the proxy counts as the same client, and rate limiting becomes one shared bucket.
 
@@ -44,7 +46,7 @@ services:
   stackyard:
     environment:
       - TRUST_PROXY=true
-      - TRUSTED_PROXY=172.18.0.0/16
+      - TRUSTED_PROXY=traefik
 ```
 
 Make the proxy send `X-Forwarded-Proto: https`.

@@ -19,13 +19,14 @@ A dashboard with nothing on it shows a welcome screen. Its **Open settings** but
 
 ## Set a password
 
-:::caution
-Until a password is set, the endpoint that sets one accepts the first caller with no authentication. On a shared network, the first person to reach a fresh install can claim the account. To close this gap, set `INITIAL_PASSWORD` before the first start. See [Environment variables](/docs/installation/docker/#environment-variables).
+:::note
+The first password needs the setup code that Stackyard prints to the container log. To set the password without the log, set `INITIAL_PASSWORD` before the first start. See [Environment variables](/docs/installation/docker/#environment-variables).
 :::
 
 1. In **General**, turn on **Password Protection**.
 2. Enter a password of 15 to 1024 characters in **Password** and **Confirm Password**. Common passwords are refused.
 3. Press <span class="sy-btn sy-btn--primary">Save</span>.
+4. Enter the setup code from the container log, then press <span class="sy-btn sy-btn--primary">Save</span>.
 
 The password is a gate between local users, not an authentication layer. See [Security](/docs/security/).
 
@@ -50,11 +51,11 @@ Open the dashboard. The app and the clock are on the grid.
 
 | Section | What it covers |
 | --- | --- |
-| **General** | Server identity and behavior: title, host IP, language, logging, password, health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
+| **General** | Server identity and behavior: host IP, language, logging, password, health checks, and config [import and export](/docs/import-export/backup-and-restore/). |
 | **Appearance** | How the dashboard looks: wallpaper, labels, and theme. See [Wallpaper and themes](/docs/customization/). |
 | **Dashboard** | What is on the dashboard: apps, widgets, folders, and their order. See [Apps and folders](/docs/apps-and-folders/). |
 | **About** | Version, update notice, and links to the project. |
 
-Each section saves on its own with <span class="sy-btn sy-btn--primary">Save</span>.
+**General** and the item editor save with <span class="sy-btn sy-btn--primary">Save</span>. **Appearance** applies each change at once.
 
 Set **Host IP** in **General** if your services run on the same machine as Stackyard. Badge and widget URLs can then point at that address.

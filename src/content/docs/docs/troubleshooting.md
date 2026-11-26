@@ -43,7 +43,7 @@ The setup code block in the log looks like this:
   Stackyard asks for it. A restart makes a new code.
 ```
 
-Setting `INITIAL_PASSWORD` later does not recover a password. It applies on the first start only, and the log then says `INITIAL_PASSWORD ignored: a password was set, skipped or removed before`.
+Setting `INITIAL_PASSWORD` later does not recover a password. It is ignored once a password was set, skipped or removed, and the log then says `INITIAL_PASSWORD ignored: a password was set, skipped or removed before`.
 
 Back the file up before editing it. See [Backup and restore](/docs/import-export/backup-and-restore/).
 
@@ -115,13 +115,13 @@ Icons are served with revalidation, so a re-upload appears on the next load. If 
 
 ## Apps and badges
 
-### A badge or widget cannot reach a service on my network
+### The editor refuses to test a service on my network
 
-The SSRF guard blocks private, loopback and link-local addresses by default, so a URL pointing at `192.168.x.x` or `10.x.x.x` is refused.
+The SSRF guard blocks private, loopback and link-local addresses in the editor's tests, so a test of `192.168.x.x` or `10.x.x.x` is refused. A saved app, badge, health check or widget is not checked and still reaches the address.
 
-Set `ALLOW_PRIVATE_IPS=true`. Read [Security](/docs/security/) first, then see [Environment variables](/docs/installation/docker/#environment-variables).
+To test in the editor, set **Host IP** in **General**, or use a dotless hostname such as a Docker container name on a network the container is on. Otherwise set `ALLOW_PRIVATE_IPS=true`. Read [Security](/docs/security/) first, then see [Environment variables](/docs/installation/docker/#environment-variables).
 
-Two things work without it. A dotless hostname such as a Docker container name works when it resolves to a network the container is on. The **Host IP** set in **General** also works when it is an IP address.
+A saved app or widget that still cannot reach its service has another cause. Read its message on [Messages](/docs/troubleshooting/messages/).
 
 ### The badge shows a dimmed value with a dashed outline
 

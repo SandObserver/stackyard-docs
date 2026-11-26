@@ -105,5 +105,6 @@ A widget message is one line, in place of the widget's data. Each names a kind o
 | `The service closed the connection before it answered.` | Addresses and connections | The service hung up mid-reply. Check its logs. |
 | `The service did not answer in HTTP. Check http or https and the port.` | Addresses and connections | Something answered on that port, but not a web server. Often `http` used for an `https` port, or the reverse. |
 | `The service did not answer in time.` | Addresses and connections | The service is slow or the network drops packets. |
-| `Ping failed` / `Ping returned <status>` | Addresses and connections | The URL was reached but did not answer as expected. |
+| `Ping failed: <reason>` | Addresses and connections | The health check got no answer. The reason says why. |
+| `Ping returned <status>` | Addresses and connections | The service answered with an error status. |
 | `Enter an address that starts with http:// or https://.` | Addresses and connections | The address is not an http or https URL. |

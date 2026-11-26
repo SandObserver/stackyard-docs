@@ -35,7 +35,7 @@ Run it on a trusted network, or behind a reverse proxy that terminates TLS and a
 - A sign-in checked against a password that changed meanwhile is refused.
 - Changing the password, or turning protection off, needs the current password as well as a session. Wrong attempts count toward the login limit of 5 per IP per 15 minutes.
 
-Authentication is only in force once a password is stored. Until then, the endpoint that sets one accepts the first caller. `INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` stores one on the first start, before any request is answered. It is ignored once a password was set, skipped or removed. If it cannot be stored, the container stops. `INITIAL_PASSWORD` shows in `docker inspect`, so prefer `INITIAL_PASSWORD_FILE` with a Docker secret. See [First setup](/docs/first-setup/).
+Authentication is only in force once a password is stored. Until then, setting the first password needs the setup code from the container log. `INITIAL_PASSWORD` or `INITIAL_PASSWORD_FILE` stores one on the first start, before any request is answered. It is ignored once a password was set, skipped or removed. If it cannot be stored, the container stops. `INITIAL_PASSWORD` shows in `docker inspect`, so prefer `INITIAL_PASSWORD_FILE` with a Docker secret. See [First setup](/docs/first-setup/).
 
 ### Addresses without a password
 
@@ -57,7 +57,9 @@ Secrets are stored in plain text in `apps.json` on the data volume. Stackyard wr
 
 ## The SSRF guard
 
-The server blocks outbound requests to private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
+The guard checks addresses that arrive in a request: the editor's tests of a badge, a ping health check or a widget, a widget's option lists, and a wallpaper fetched by URL. Saved apps, badges, health checks and widgets are not checked, except for link-local and cloud metadata addresses.
+
+The guard blocks private, loopback, link-local, carrier-grade NAT, multicast and reserved ranges, in IPv4 and IPv6. It resolves the host, checks the address, then pins the resolved IP so the connection cannot be re-pointed after the check.
 
 `localhost` is refused by name. A dotless hostname such as a Docker container name is resolved and pinned like any other name. It may point at a private address only on a network the container is on, and never at a loopback or link-local one. The host IP set in **General** is trusted only when it is an IP address. Only `http` and `https` URLs are fetched. The WebSocket connection TrueNAS widgets use opens on the same URL and passes the same check.
 
@@ -84,9 +86,9 @@ The server blocks outbound requests to private, loopback, link-local, carrier-gr
 
 An IPv4 address inside an IPv6 literal is checked against the same table.
 
-`ALLOW_PRIVATE_IPS=true` disables the guard, except for link-local and cloud metadata addresses, which are refused on every outbound request. Most homelab installs need it.
+`ALLOW_PRIVATE_IPS=true` disables the guard, except for link-local and cloud metadata addresses, which are refused on every outbound request. Without it, the editor cannot test a service on a private address. The service still works once saved.
 
-The guard limits what a compromised widget can reach. It does not protect against an admin, who can already point widgets anywhere.
+The guard does not protect against an admin, who can already point widgets anywhere.
 
 ## Outbound requests
 

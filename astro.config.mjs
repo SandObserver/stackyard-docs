@@ -39,8 +39,8 @@ export default defineConfig({
     llms({
       name: 'Stackyard',
       description: 'A self-hosted homelab dashboard in one Docker container, configured in its web UI.',
-      exclude: ['404', '404.html', '_astro', '**.xml', '**.txt', 'docs/changelog', ...Object.keys(REDIRECTS).map((p) => p.slice(1))],
-      excludeSelectors: ['.sl-anchor-link', '[aria-hidden="true"]', 'nav', 'footer', 'img[alt=""]'],
+      exclude: ['404', '404.html', '_astro', '**.xml', '**.txt', 'index.html', 'docs/changelog', ...Object.keys(REDIRECTS).map((p) => p.slice(1))],
+      excludeSelectors: ['.sl-anchor-link', '[aria-hidden="true"]', 'nav', 'footer', 'img[alt=""]', 'figure[data-shot]', 'figure.wpv', '.sy-cmp__list', '.sy-icons'],
     }),
     sitemap({
       serialize(item) {

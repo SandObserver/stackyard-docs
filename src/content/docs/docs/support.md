@@ -11,7 +11,7 @@ For a problem you are trying to solve yourself, start with [Troubleshooting](/do
 | What | Where |
 | --- | --- |
 | Bug reports and feature requests | [GitHub issues](https://github.com/SandObserver/stackyard/issues) |
-| Questions and setup help | A GitHub issue with the `question` label |
+| Questions and setup help | A [GitHub issue](https://github.com/SandObserver/stackyard/issues/new/choose) using the **Question** form |
 | Suspected security vulnerability | Privately, never a public issue. See [Security policy](/docs/security-policy/). |
 
 Search the existing issues first. Most setup questions have been asked already.

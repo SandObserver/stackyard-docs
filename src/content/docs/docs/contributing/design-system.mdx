@@ -12,6 +12,8 @@ Stackyard follows Apple's [Human Interface Guidelines](https://developer.apple.c
 
 Teal is the brand accent. Rules name a role below, never a raw color.
 
+A color the page needs that is not a role is a token in that page's `:root`. A shadow can use plain black or white.
+
 <ThemePanels />
 
 The other hues and grays are Apple's system colors.
@@ -33,6 +35,14 @@ The other hues and grays are Apple's system colors.
 </ul>
 
 **Display Mode** sets the theme on `<html>`, for every page and widget. Widgets cannot read tokens. A widget copies the values it needs from the palette.
+
+## Spacing
+
+Margins, paddings and gaps use the `--sp-*` steps: 2, 4, 6, 8, 10, 12, 16, 20, 24, 32 and 44 px. A test fails on a new value off this scale.
+
+## Buttons
+
+Save is the primary button in every Settings view. A dialog has at most one primary button.
 
 <div class="sy-guts">
 <section class="sy-gut">

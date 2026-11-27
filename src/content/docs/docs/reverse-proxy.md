@@ -76,6 +76,38 @@ services:
       - traefik.http.services.stackyard.loadbalancer.server.port=80
 ```
 
+## Behind a sign-in proxy
+
+A sign-in proxy such as Authelia or Authentik redirects every request without a session to its login page. Safari requests the tab icon and the home screen icon without the session cookie. The home screen icon and the installed app name can then be missing.
+
+Let these paths through without sign-in. They hold only the app name, colours and icon, including a favicon you uploaded:
+
+- `/manifest.json`
+- `/favicon.ico`
+- `/apple-touch-icon.png` and its sized and `-precomposed` variants
+- `/icons/favicon.png`, `/icons/favicon.svg`, `/icons/favicon-192.png`, `/icons/favicon-512.png` and `/icons/favicon-maskable.png`
+- `/icons/shortcut-settings-96.png`
+
+Do not let all of `/icons/` through. It also holds your uploaded icons and wallpapers.
+
+For Authelia, put this rule above the rule that protects Stackyard. The first rule that matches applies.
+
+```yaml
+access_control:
+  rules:
+    - domain: 'dashboard.home.arpa'
+      policy: 'bypass'
+      resources:
+        - '^/manifest\.json$'
+        - '^/favicon\.ico$'
+        - '^/apple-touch-icon(-[0-9]{2,4}x[0-9]{2,4})?(-precomposed)?\.png$'
+        - '^/icons/favicon\.(png|svg)$'
+        - '^/icons/favicon-(192|512|maskable)\.png$'
+        - '^/icons/shortcut-settings-96\.png$'
+```
+
+Check a path with `authelia access-control check-policy --config configuration.yml --url https://dashboard.home.arpa/manifest.json`.
+
 ## One instance
 
 Rate-limit counters are held in memory and are not shared across replicas. Run a single instance behind any proxy.

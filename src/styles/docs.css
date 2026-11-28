@@ -28,6 +28,7 @@
   --sy-radius-group: 26px;
   --sy-radius-lg: 14px;
   --sy-radius-md: 10px;
+  --pill-curve: calc((1 - pi / 4) / 2);
 
   --sy-font: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --sy-font-display: var(--sy-font);
@@ -1362,8 +1363,9 @@ h1#_top {
 }
 
 .sy-btn {
-  height: 28px;
-  padding: 0 12px;
+  --pill-h: 28px;
+  height: var(--pill-h);
+  padding: 0 calc(12px + var(--pill-h) * var(--pill-curve));
   border-radius: 999px;
   font-size: 13px;
   font-weight: 500;
@@ -2508,9 +2510,11 @@ html:root:not(:has(.sy-tbar)) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  --pill-h: max(32px, 1lh + 10px);
   min-height: 32px;
   max-width: 100%;
-  padding: 5px 12px;
+  padding-block: 5px;
+  padding-inline: calc((var(--pill-h) - 16px) / 2) calc(12px + var(--pill-h) * var(--pill-curve));
   border: 0;
   border-radius: 999px;
   background: var(--sy-fill);

@@ -495,9 +495,9 @@ starlight-toc nav a {
     position: absolute;
     inset: 0;
     background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
-      url('/img/wallpaper-7db68631.jpg');
+      url('/img/wallpaper-cedc2a6e.jpg');
     background-image: linear-gradient(rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.62)),
-      image-set(url("/img/wallpaper-69360b29.avif") type("image/avif"), url("/img/wallpaper-b700eea5.webp") type("image/webp"), url("/img/wallpaper-7db68631.jpg") type("image/jpeg"));
+      image-set(url("/img/wallpaper-2318951a.avif") type("image/avif"), url("/img/wallpaper-9d6d6b0c.webp") type("image/webp"), url("/img/wallpaper-cedc2a6e.jpg") type("image/jpeg"));
     background-size: cover, cover;
     background-position: center, center;
     filter: blur(6px);
@@ -2319,9 +2319,9 @@ html:not(:has(.sy-tbar)) {
   body {
     background: #0b0d0c center / cover fixed no-repeat;
     background-image: image-set(
-      url('/img/docs-wallpaper-427abe1d.avif') type('image/avif'),
-      url('/img/docs-wallpaper-6158f017.webp') type('image/webp'),
-      url('/img/docs-wallpaper-5cbfa4e9.jpg') type('image/jpeg')
+      url('/img/docs-wallpaper-64d199db.avif') type('image/avif'),
+      url('/img/docs-wallpaper-8d60d940.webp') type('image/webp'),
+      url('/img/docs-wallpaper-41dbcb41.jpg') type('image/jpeg')
     );
   }
   .page {
